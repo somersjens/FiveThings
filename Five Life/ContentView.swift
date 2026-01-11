@@ -25,8 +25,40 @@ struct ContentView: View {
         let q = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else { return sorted }
         return sorted.filter { entry in
-            entry.items.joined(separator: " ").range(of: q, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+            entryMatchesSearch(entry, query: q)
         }
+    }
+
+    private func entryMatchesSearch(_ entry: DayEntry, query: String) -> Bool {
+        let needle = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !needle.isEmpty else { return true }
+
+        if entry.items.joined(separator: " ")
+            .range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+            return true
+        }
+
+        let dayString = DateFormatting.formattedDayString(entry.day, language: settings.language)
+        if dayString.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+            return true
+        }
+
+        let numericFormatter = DateFormatter()
+        numericFormatter.locale = Locale(identifier: "en_US_POSIX")
+        numericFormatter.dateFormat = "dd-MM-yyyy"
+        let numericDate = numericFormatter.string(from: entry.day)
+        if numericDate.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+            return true
+        }
+
+        if settings.moonEnabled, let phase = MoonPhase.namedPhaseIfNear(entry.day) {
+            let phaseName = phase.localizedName(language: settings.language)
+            if phaseName.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+                return true
+            }
+        }
+
+        return false
     }
 
     var body: some View {
