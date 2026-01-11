@@ -28,8 +28,8 @@ struct DayCardView: View {
     private var outlineColor: Color {
         if showSuccess { return .green }
         if readyToLockPulse { return .yellow }
-        if entry.isLocked { return .secondary.opacity(0.35) }
-        return .secondary.opacity(0.25)
+        if entry.isLocked { return Color.brandAccent.opacity(0.45) }
+        return Color.brandAccent
     }
 
     var body: some View {
@@ -47,7 +47,7 @@ struct DayCardView: View {
                      ? "Vul alle velden in om te vergrendelen."
                      : "Fill all fields to lock.")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.black)
                     .transition(.opacity)
             }
         }
@@ -104,7 +104,7 @@ struct DayCardView: View {
                             Text(phase.localizedName(language: settings.language))
                         }
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.black)
                     }
                 }
             }
@@ -147,7 +147,7 @@ struct DayCardView: View {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 28, alignment: .leading)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.black)
 
             TextField(
                 settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…",
@@ -164,6 +164,7 @@ struct DayCardView: View {
             .textFieldStyle(.plain)
             .lineLimit(1...4)
             .disabled(!isEditable)
+            .foregroundStyle(.black)
             .focused($focusedIndex, equals: idx)
             .submitLabel(idx == entry.itemCount - 1 ? .done : .next)
             .onSubmit {

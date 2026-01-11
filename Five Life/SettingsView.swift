@@ -66,7 +66,7 @@ struct SettingsView: View {
                              ? "Notificaties zijn uitgeschakeld. Zet ze aan in Instellingen."
                              : "Notifications are disabled. Enable them in Settings.")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.black)
                     }
                 }
             }

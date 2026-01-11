@@ -10,19 +10,20 @@ struct SearchAndSortBar: View {
         HStack(spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.black)
 
                 TextField(settings.language == .dutch ? "Zoek in vergrendelde kaarten…" : "Search in locked cards…",
                           text: $text)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .foregroundStyle(.black)
 
                 if !text.isEmpty {
                     Button {
                         text = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.black)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(settings.language == .dutch ? "Wis zoekopdracht" : "Clear search")

@@ -51,14 +51,14 @@ struct ContentView: View {
                             Text(settings.language == .dutch
                                  ? "Je hebt geen open kaarten."
                                  : "You have no open cards.")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.black)
                         }
                         .padding(.vertical, 8)
                     }
 
                     // Thick divider
                     Rectangle()
-                        .fill(.secondary.opacity(0.20))
+                        .fill(Color.brandAccent)
                         .frame(height: 6)
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                         .padding(.vertical, 8)
@@ -76,7 +76,7 @@ struct ContentView: View {
                             Text(settings.language == .dutch
                                  ? "Geen vergrendelde kaarten gevonden."
                                  : "No locked cards found.")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.black)
                                 .padding(.horizontal, 4)
                         } else {
                             ForEach(finished) { entry in
@@ -112,6 +112,7 @@ struct ContentView: View {
                 }
                 .padding(16)
             }
+            .background(Color.brandBackground.ignoresSafeArea())
             .navigationTitle(settings.language == .dutch ? "Positieve dingen" : "Positive things")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
