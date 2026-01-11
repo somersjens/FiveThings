@@ -149,31 +149,37 @@ struct DayCardView: View {
                 .frame(width: 28, alignment: .leading)
                 .foregroundStyle(.black)
 
-            TextField(
-                settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…",
-                text: Binding(
-                    get: { entry.items[safe: idx] ?? "" },
-                    set: { newValue in
-                        if idx < entry.items.count {
-                            let hasNewline = newValue.contains("\n")
-                            let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
-                            vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
-                            if hasNewline {
-                                handleSubmit(at: idx)
+            if isEditable {
+                TextField(
+                    settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…",
+                    text: Binding(
+                        get: { entry.items[safe: idx] ?? "" },
+                        set: { newValue in
+                            if idx < entry.items.count {
+                                let hasNewline = newValue.contains("\n")
+                                let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
+                                vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
+                                if hasNewline {
+                                    handleSubmit(at: idx)
+                                }
                             }
                         }
-                    }
-                ),
-                axis: .vertical
-            )
-            .textFieldStyle(.plain)
-            .lineLimit(1...4)
-            .disabled(!isEditable)
-            .foregroundStyle(.black)
-            .focused($focusedIndex, equals: idx)
-            .submitLabel(idx == entry.itemCount - 1 ? .done : .next)
-            .onSubmit {
-                handleSubmit(at: idx)
+                    ),
+                    axis: .vertical
+                )
+                .textFieldStyle(.plain)
+                .lineLimit(1...4)
+                .foregroundStyle(.black)
+                .focused($focusedIndex, equals: idx)
+                .submitLabel(idx == entry.itemCount - 1 ? .done : .next)
+                .onSubmit {
+                    handleSubmit(at: idx)
+                }
+            } else {
+                Text(highlightedText(entry.items[safe: idx] ?? ""))
+                    .foregroundStyle(.black)
+                    .lineLimit(4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.vertical, 6)
@@ -182,6 +188,26 @@ struct DayCardView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(.secondary.opacity(0.08))
         )
+    }
+
+    private func highlightedText(_ text: String) -> AttributedString {
+        let query = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return AttributedString(text) }
+
+        var attributed = AttributedString(text)
+        var searchRange = text.startIndex..<text.endIndex
+
+        while let foundRange = text.range(of: query,
+                                          options: [.caseInsensitive, .diacriticInsensitive],
+                                          range: searchRange) {
+            if let lowerBound = AttributedString.Index(foundRange.lowerBound, within: attributed),
+               let upperBound = AttributedString.Index(foundRange.upperBound, within: attributed) {
+                attributed[lowerBound..<upperBound].font = .body.weight(.bold)
+            }
+            searchRange = foundRange.upperBound..<text.endIndex
+        }
+
+        return attributed
     }
 
     private func handleSubmit(at index: Int) {
