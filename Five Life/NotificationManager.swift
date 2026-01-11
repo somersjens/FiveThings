@@ -1,4 +1,5 @@
 //NEW DOC  NotificationManager.swift
+import Combine
 import Foundation
 import UserNotifications
 
@@ -44,7 +45,7 @@ final class NotificationManager: ObservableObject {
 
     func scheduleDailyReminder(time: ReminderTime?, language: AppLanguage) async {
         let center = UNUserNotificationCenter.current()
-        await center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.daily])
+        center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.daily])
 
         guard let time else { return }
         let allowed = await requestAuthorizationIfNeeded()
@@ -66,7 +67,7 @@ final class NotificationManager: ObservableObject {
     /// Schedules a *one-off* reminder for “next day if needed” (we refresh this from the app when state changes).
     func scheduleNextDayIfNeeded(time: ReminderTime?, shouldSchedule: Bool, language: AppLanguage) async {
         let center = UNUserNotificationCenter.current()
-        await center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.nextDay])
+        center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.nextDay])
 
         guard let time, shouldSchedule else { return }
         let allowed = await requestAuthorizationIfNeeded()

@@ -9,8 +9,8 @@ final class DayEntry {
     var day: Date
     /// How many items this day expects (3...10)
     var itemCount: Int
-    /// Stored as transformable so we can keep it simple and local.
-    @Attribute(.transformable) var items: [String]
+    /// Stored as an attribute so we can keep it simple and local.
+    @Attribute var items: [String]
     var isLocked: Bool
     var createdAt: Date
     var updatedAt: Date
