@@ -67,7 +67,7 @@ struct ContentView: View {
     }
 
     private var headerView: some View {
-        VStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Text("Five Life")
                     .font(.title.bold())
@@ -78,14 +78,31 @@ struct ContentView: View {
                     .frame(height: 32)
                     .accessibilityLabel("Five Life")
             }
-            .frame(maxWidth: .infinity)
 
-            Text(dailyTitle)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
+            HStack {
+                Text(dailyTitle)
+                    .font(.title.bold())
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showSettings.toggle()
+                    }
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .rotationEffect(showSettings ? .degrees(180) : .degrees(0))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
         .background(Color.brandBackground)
         .overlay(
             Divider(),
@@ -97,6 +114,11 @@ struct ContentView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
+                    if showSettings {
+                        SettingsView(settings: settings, showsNavigation: false)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
                     // Unfinished section
                     if !unfinished.isEmpty {
                         VStack(alignment: .leading, spacing: 10) {
@@ -182,29 +204,17 @@ struct ContentView: View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
+            .onChange(of: showSettings) { _, expanded in
+                if !expanded {
+                    // Apply notification changes after closing settings
+                    Task {
+                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime, language: settings.language)
+                        let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                        await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                              shouldSchedule: shouldScheduleNext,
+                                                              language: settings.language)
                     }
-                    .accessibilityLabel(settings.language == .dutch ? "Instellingen" : "Settings")
                 }
-            }
-            .sheet(isPresented: $showSettings) {
-                SettingsView(settings: settings)
-                    .presentationDetents([.medium, .large])
-                    .onDisappear {
-                        // Apply notification changes after closing settings
-                        Task {
-                            await notifier.scheduleDailyReminder(time: settings.dailyReminderTime, language: settings.language)
-                            let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                            await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                                  shouldSchedule: shouldScheduleNext,
-                                                                  language: settings.language)
-                        }
-                    }
             }
             .task {
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
