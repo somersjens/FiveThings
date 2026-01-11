@@ -61,6 +61,38 @@ struct ContentView: View {
         return false
     }
 
+    private var dailyTitle: String {
+        let count = settings.dailyItemCount
+        return settings.language == .dutch ? "Elke dag \(count)" : "\(count) Things everyday"
+    }
+
+    private var headerView: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 6) {
+                Text("Five Life")
+                    .font(.title.bold())
+
+                Image("NoBackground")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 32)
+                    .accessibilityLabel("Five Life")
+            }
+            .frame(maxWidth: .infinity)
+
+            Text(dailyTitle)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.brandBackground)
+        .overlay(
+            Divider(),
+            alignment: .bottom
+        )
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -145,7 +177,11 @@ struct ContentView: View {
                 .padding(16)
             }
             .background(Color.brandBackground.ignoresSafeArea())
-            .navigationTitle(settings.language == .dutch ? "Positieve dingen" : "Positive things")
+            .safeAreaInset(edge: .top) {
+                headerView
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
