@@ -78,6 +78,17 @@ struct DayCardView: View {
                 entry.resizeItemsIfNeeded(to: entry.itemCount)
             }
         }
+        .onChange(of: entry.items) { _, _ in
+            if !entry.isLocked, !entry.isComplete {
+                readyToLockPulse = false
+            }
+        }
+        .onChange(of: entry.isLocked) { _, locked in
+            if locked {
+                readyToLockPulse = false
+                showSuccess = false
+            }
+        }
     }
 
     private var header: some View {
@@ -170,4 +181,36 @@ struct DayCardView: View {
     private func handleSubmit(at index: Int) {
         guard isEditable else { return }
 
-        if index < entry.itemCount -
+        if index < entry.itemCount - 1 {
+            focusedIndex = index + 1
+            return
+        }
+
+        focusedIndex = nil
+        if entry.isComplete {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                readyToLockPulse = true
+            }
+        } else {
+            withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = false }
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+    }
+
+    private func triggerLockFlow() {
+        vm.lock(entry, modelContext: modelContext)
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            readyToLockPulse = false
+            showSuccess = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showSuccess = false
+            }
+        }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+}
