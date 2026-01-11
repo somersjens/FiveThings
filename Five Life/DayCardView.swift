@@ -59,9 +59,9 @@ struct DayCardView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(outlineColor, lineWidth: readyToLockPulse ? 4 : 2)
-                .scaleEffect(readyToLockPulse ? 1.01 : 1.0)
-                .animation(readyToLockPulse ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .default, value: readyToLockPulse)
+                .strokeBorder(outlineColor, lineWidth: readyToLockPulse ? 4 : 2)
+                .animation(readyToLockPulse ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .default,
+                           value: readyToLockPulse)
         )
         .overlay(alignment: .topTrailing) {
             if showSuccess {
@@ -155,7 +155,12 @@ struct DayCardView: View {
                     get: { entry.items[safe: idx] ?? "" },
                     set: { newValue in
                         if idx < entry.items.count {
-                            vm.updateItem(entry, index: idx, text: newValue, modelContext: modelContext)
+                            let hasNewline = newValue.contains("\n")
+                            let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
+                            vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
+                            if hasNewline {
+                                handleSubmit(at: idx)
+                            }
                         }
                     }
                 ),
