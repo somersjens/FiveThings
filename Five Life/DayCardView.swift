@@ -94,18 +94,16 @@ struct DayCardView: View {
     private var header: some View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    Text(dateString)
-                        .font(.headline)
+                Text(dateString)
+                    .font(.headline)
 
-                    if let phase = moonPhase {
-                        HStack(spacing: 6) {
-                            Image(systemName: phase.sfSymbolName)
-                            Text(phase.localizedName(language: settings.language))
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(.black)
+                if let phase = moonPhase {
+                    HStack(spacing: 6) {
+                        Image(systemName: phase.sfSymbolName)
+                        Text(phase.localizedName(language: settings.language))
                     }
+                    .font(.subheadline)
+                    .foregroundStyle(.black)
                 }
             }
 
