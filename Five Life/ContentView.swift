@@ -11,6 +11,8 @@ struct ContentView: View {
 
     @Query(sort: \DayEntry.day, order: .reverse) private var entries: [DayEntry]
 
+    @Namespace private var cardNamespace
+
     @State private var showSettings: Bool = false
 
     private var unfinished: [DayEntry] {
@@ -128,8 +130,11 @@ struct ContentView: View {
 
                             ForEach(unfinished) { entry in
                                 DayCardView(settings: settings, vm: vm, entry: entry)
+                                    .matchedGeometryEffect(id: entry.id, in: cardNamespace)
+                                    .transition(.opacity)
                             }
                         }
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: unfinished.map(\.id))
                     } else {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(settings.language == .dutch ? "Alles is af!" : "All done!")
@@ -167,9 +172,14 @@ struct ContentView: View {
                         } else {
                             ForEach(finished) { entry in
                                 DayCardView(settings: settings, vm: vm, entry: entry)
+                                    .matchedGeometryEffect(id: entry.id, in: cardNamespace)
+                                    .transition(.opacity)
                             }
                         }
                     }
+                    .animation(.spring(response: 0.5, dampingFraction: 0.85), value: finished.map(\.id))
+                    .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.searchText)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
 
                     // Share option bottom
                     VStack(spacing: 10) {
