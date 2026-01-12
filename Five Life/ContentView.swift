@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var showSettings: Bool = false
     @State private var isUnlocked: Bool = true
     @State private var isUnlocking: Bool = false
+    @State private var hasAppeared: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -335,9 +336,18 @@ struct ContentView: View {
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
             }
             .onAppear {
-                updateUnlockStateIfNeeded()
+                if !hasAppeared {
+                    hasAppeared = true
+                    if settings.faceIdLockEnabled {
+                        isUnlocked = false
+                        updateUnlockStateIfNeeded()
+                    }
+                }
             }
             .onChange(of: settings.faceIdLockEnabled) { _, _ in
+                if settings.faceIdLockEnabled {
+                    isUnlocked = false
+                }
                 updateUnlockStateIfNeeded()
             }
             .onChange(of: scenePhase) { _, phase in
@@ -357,8 +367,8 @@ struct ContentView: View {
             return
         }
 
-        if isUnlocked {
-            isUnlocked = false
+        guard !isUnlocked else {
+            return
         }
         attemptUnlock()
     }
