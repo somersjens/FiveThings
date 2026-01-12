@@ -33,14 +33,20 @@ final class ContentViewModel: ObservableObject {
         try? modelContext.save()
     }
 
-    func lock(_ entry: DayEntry, modelContext: ModelContext) {
+    func lock(_ entry: DayEntry, requiredCount: Int, modelContext: ModelContext) {
+        entry.resizeItemsIfNeeded(to: requiredCount)
         entry.isLocked = true
         entry.updatedAt = Date()
         try? modelContext.save()
     }
 
-    func unlock(_ entry: DayEntry, modelContext: ModelContext) {
+    func unlock(_ entry: DayEntry, settings: SettingsStore, modelContext: ModelContext) {
         entry.isLocked = false
+        if settings.dailyItemCount > entry.itemCount {
+            entry.ensureItemsCount(atLeast: settings.dailyItemCount)
+        } else {
+            entry.ensureItemsCount(atLeast: entry.itemCount)
+        }
         entry.updatedAt = Date()
         try? modelContext.save()
     }
@@ -49,6 +55,12 @@ final class ContentViewModel: ObservableObject {
         guard index >= 0, index < entry.items.count else { return }
         entry.items[index] = text
         entry.updatedAt = Date()
+        try? modelContext.save()
+    }
+
+    func removeItem(_ entry: DayEntry, index: Int, modelContext: ModelContext) {
+        guard index >= 0, index < entry.items.count else { return }
+        entry.removeItem(at: index)
         try? modelContext.save()
     }
 

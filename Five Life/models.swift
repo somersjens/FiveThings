@@ -26,19 +26,64 @@ final class DayEntry {
     }
 
     var isComplete: Bool {
-        items.count == itemCount && items.allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        isComplete(requiredCount: itemCount)
+    }
+
+    func isComplete(requiredCount: Int) -> Bool {
+        let clamped = max(3, min(10, requiredCount))
+        guard items.count >= clamped else { return false }
+        return items.prefix(clamped).allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     func resizeItemsIfNeeded(to newCount: Int) {
         let clamped = max(3, min(10, newCount))
-        if clamped == itemCount { return }
-        itemCount = clamped
+        var didChange = false
+        if clamped != itemCount {
+            itemCount = clamped
+            didChange = true
+        }
 
         if items.count < clamped {
             items.append(contentsOf: Array(repeating: "", count: clamped - items.count))
+            didChange = true
         } else if items.count > clamped {
-            items = Array(items.prefix(clamped))
+            let beforeCount = items.count
+            while items.count > clamped,
+                  let last = items.last,
+                  last.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                items.removeLast()
+            }
+            didChange = didChange || items.count != beforeCount
         }
+        if didChange {
+            updatedAt = Date()
+        }
+    }
+
+    func ensureItemsCount(atLeast count: Int) {
+        let clamped = max(3, min(10, count))
+        guard items.count < clamped else { return }
+        items.append(contentsOf: Array(repeating: "", count: clamped - items.count))
+        updatedAt = Date()
+    }
+
+    func pruneEmptyOptionalItems(keepingAtLeast count: Int) {
+        let clamped = max(3, min(10, count))
+        var didTrim = false
+        while items.count > clamped,
+              let last = items.last,
+              last.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            items.removeLast()
+            didTrim = true
+        }
+        if didTrim {
+            updatedAt = Date()
+        }
+    }
+
+    func removeItem(at index: Int) {
+        guard index >= 0, index < items.count else { return }
+        items.remove(at: index)
         updatedAt = Date()
     }
 }

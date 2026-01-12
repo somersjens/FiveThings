@@ -245,6 +245,9 @@ struct ContentView: View {
                                                           language: settings.language)
                 }
             }
+            .onChange(of: settings.dailyItemCount) { _, _ in
+                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            }
         }
     }
 }

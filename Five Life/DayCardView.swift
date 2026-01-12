@@ -17,6 +17,10 @@ struct DayCardView: View {
 
     private var isEditable: Bool { !entry.isLocked }
 
+    private var isToday: Bool {
+        Calendar.current.isDate(entry.day, inSameDayAs: Date())
+    }
+
     private var dateString: String {
         DateFormatting.formattedDayString(entry.day, language: settings.language)
     }
@@ -25,8 +29,32 @@ struct DayCardView: View {
         settings.moonEnabled ? MoonPhase.namedPhaseIfNear(entry.day) : nil
     }
 
+    private var requiredCount: Int {
+        if entry.isLocked { return entry.itemCount }
+        if isToday { return settings.dailyItemCount }
+        return min(entry.itemCount, settings.dailyItemCount)
+    }
+
+    private var displayCount: Int {
+        if entry.isLocked {
+            return max(entry.itemCount, entry.items.count)
+        }
+
+        var count = max(requiredCount, entry.items.count)
+        if isToday {
+            count = max(count, settings.dailyItemCount)
+        } else if settings.dailyItemCount > entry.itemCount {
+            count = max(count, settings.dailyItemCount)
+        }
+        return count
+    }
+
+    private var hasOptionalRows: Bool {
+        displayCount > requiredCount
+    }
+
     private var shouldPulse: Bool {
-        !entry.isLocked && entry.isComplete && !showSuccess
+        !entry.isLocked && entry.isComplete(requiredCount: requiredCount) && !showSuccess
     }
 
     private var outlineColor: Color {
@@ -41,7 +69,17 @@ struct DayCardView: View {
             header
 
             VStack(spacing: 10) {
-                ForEach(0..<entry.itemCount, id: \.self) { idx in
+                if hasOptionalRows && !entry.isLocked {
+                    Text(settings.language == .dutch
+                         ? "Optioneel (boven je huidige ingestelde aantal)"
+                         : "Optional (above your current set amount)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 4)
+                }
+
+                ForEach(0..<displayCount, id: \.self) { idx in
                     entryRow(idx)
                 }
             }
@@ -89,11 +127,10 @@ struct DayCardView: View {
             }
         }
         .onAppear {
-            // Keep itemCount stable for older days; only resize unlocked days if settings changed and it's today.
-            // (Today creation/resize is handled in vm.ensureTodayEntry)
-            if entry.items.count != entry.itemCount {
-                entry.resizeItemsIfNeeded(to: entry.itemCount)
-            }
+            syncEntryCounts()
+        }
+        .onChange(of: settings.dailyItemCount) { _, _ in
+            syncEntryCounts()
         }
         .onChange(of: entry.items) { _, _ in
             updatePulseAnimation()
@@ -129,11 +166,11 @@ struct DayCardView: View {
 
             Button {
                 if entry.isLocked {
-                    vm.unlock(entry, modelContext: modelContext)
+                    vm.unlock(entry, settings: settings, modelContext: modelContext)
                     showSuccess = false
                 } else {
                     // If unlocked: allow lock only if complete, otherwise show hint
-                    if entry.isComplete {
+                    if entry.isComplete(requiredCount: requiredCount) {
                         triggerLockFlow()
                     } else {
                         withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = true }
@@ -158,7 +195,9 @@ struct DayCardView: View {
     }
 
     private func entryRow(_ idx: Int) -> some View {
-        HStack(alignment: .top, spacing: 10) {
+        let showsRemove = isEditable && idx >= requiredCount
+
+        return HStack(alignment: .top, spacing: 10) {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 28, alignment: .leading)
@@ -186,7 +225,7 @@ struct DayCardView: View {
                 .lineLimit(1...4)
                 .foregroundStyle(.black)
                 .focused($focusedIndex, equals: idx)
-                .submitLabel(idx == entry.itemCount - 1 ? .done : .next)
+                .submitLabel(idx == displayCount - 1 ? .done : .next)
                 .onSubmit {
                     handleSubmit(at: idx)
                 }
@@ -199,10 +238,26 @@ struct DayCardView: View {
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
+        .padding(.trailing, showsRemove ? 28 : 0)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(.secondary.opacity(0.08))
         )
+        .overlay(alignment: .trailing) {
+            if showsRemove {
+                Button {
+                    vm.removeItem(entry, index: idx, modelContext: modelContext)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 26, height: 26)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(settings.language == .dutch ? "Optionele regel verwijderen" : "Remove optional entry")
+                .padding(.trailing, 6)
+            }
+        }
     }
 
     private func highlightedText(_ text: String) -> AttributedString {
@@ -228,13 +283,13 @@ struct DayCardView: View {
     private func handleSubmit(at index: Int) {
         guard isEditable else { return }
 
-        if index < entry.itemCount - 1 {
+        if index < displayCount - 1 {
             focusedIndex = index + 1
             return
         }
 
         focusedIndex = nil
-        if !entry.isComplete {
+        if !entry.isComplete(requiredCount: requiredCount) {
             withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = false }
@@ -244,7 +299,7 @@ struct DayCardView: View {
     }
 
     private func triggerLockFlow() {
-        vm.lock(entry, modelContext: modelContext)
+        vm.lock(entry, requiredCount: requiredCount, modelContext: modelContext)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
             showSuccess = true
         }
@@ -265,6 +320,24 @@ struct DayCardView: View {
         pulseAnimation = false
         withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
             pulseAnimation = true
+        }
+    }
+
+    private func syncEntryCounts() {
+        if entry.isLocked {
+            entry.ensureItemsCount(atLeast: entry.itemCount)
+            return
+        }
+
+        if isToday {
+            entry.resizeItemsIfNeeded(to: settings.dailyItemCount)
+            return
+        }
+
+        let required = min(entry.itemCount, settings.dailyItemCount)
+        entry.ensureItemsCount(atLeast: required)
+        if settings.dailyItemCount > entry.itemCount {
+            entry.ensureItemsCount(atLeast: settings.dailyItemCount)
         }
     }
 }
