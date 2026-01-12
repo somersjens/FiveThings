@@ -112,11 +112,6 @@ struct SettingsView: View {
             basicSettingsSection
             reminderSettingsSection
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.secondary.opacity(0.08))
-        )
     }
 
     var body: some View {

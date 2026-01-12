@@ -68,41 +68,46 @@ struct ContentView: View {
         return settings.language == .dutch ? "Elke dag \(count)" : "\(count) Things everyday"
     }
 
-    private var headerView: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Text("Five Life")
-                    .font(.title.bold())
+    private var lifeTitle: String {
+        let word = numberWord(for: settings.dailyItemCount)
+        return "\(word) Life"
+    }
 
-                Image("NoBackground")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 32)
-                    .accessibilityLabel("Five Life")
-            }
-
-            HStack {
-                Text(dailyTitle)
-                    .font(.title.bold())
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        showSettings.toggle()
-                    }
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .rotationEffect(showSettings ? .degrees(180) : .degrees(0))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 32, height: 32)
-                        .contentShape(Rectangle())
-                }
-                .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
-            }
+    private func numberWord(for count: Int) -> String {
+        switch count {
+        case 1: return "One"
+        case 2: return "Two"
+        case 3: return "Three"
+        case 4: return "Four"
+        case 5: return "Five"
+        case 6: return "Six"
+        case 7: return "Seven"
+        case 8: return "Eight"
+        case 9: return "Nine"
+        case 10: return "Ten"
+        default: return "\(count)"
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var headerView: some View {
+        ZStack {
+            Text(lifeTitle)
+                .font(.title.bold())
+        }
+        .overlay(alignment: .trailing) {
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showSettings.toggle()
+                }
+            } label: {
+                Image(systemName: "flame.fill")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 32, height: 32)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Color.brandBackground)
@@ -117,9 +122,48 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     if showSettings {
-                        SettingsView(settings: settings, showsNavigation: false)
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text(settings.language == .dutch ? "Instellingen" : "Settings")
+                                    .font(.title3.weight(.semibold))
+
+                                Spacer()
+
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        showSettings.toggle()
+                                    }
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                        .padding(8)
+                                        .background(.thinMaterial)
+                                        .clipShape(Circle())
+                                }
+                                .accessibilityLabel(settings.language == .dutch ? "Sluiten" : "Close")
+                            }
+
+                            SettingsView(settings: settings, showsNavigation: false)
+                                .padding(.top, 4)
+                        }
+                        .padding(14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Color(.systemGray6))
+                                .shadow(radius: 6, y: 2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .strokeBorder(Color.black.opacity(0.06))
+                        )
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
+
+                    Text(dailyTitle)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
 
                     // Unfinished section
                     if !unfinished.isEmpty {
