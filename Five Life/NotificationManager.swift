@@ -81,7 +81,7 @@ final class NotificationManager: ObservableObject {
         content.sound = .default
 
         // Schedule for *tomorrow* at the chosen time
-        var calendar = Calendar.current
+        let calendar = Calendar.current
         let now = Date()
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) else { return }
         let hm = DateComponents(hour: time.hour, minute: time.minute)
