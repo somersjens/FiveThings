@@ -113,12 +113,12 @@ struct ContentView: View {
                         .accessibilityHidden(true)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .center)
             .overlay(alignment: .trailing) {
                 Image(systemName: "gearshape.fill")
                     .foregroundStyle(.secondary)
                     .frame(width: 32, height: 32)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(Color.brandBackground)
