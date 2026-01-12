@@ -9,9 +9,9 @@ struct DayCardView: View {
 
     @Bindable var entry: DayEntry
 
-    @State private var readyToLockPulse: Bool = false
     @State private var showSuccess: Bool = false
     @State private var showIncompleteHint: Bool = false
+    @State private var pulseAnimation: Bool = false
 
     @FocusState private var focusedIndex: Int?
 
@@ -25,9 +25,13 @@ struct DayCardView: View {
         settings.moonEnabled ? MoonPhase.namedPhaseIfNear(entry.day) : nil
     }
 
+    private var shouldPulse: Bool {
+        !entry.isLocked && entry.isComplete && !showSuccess
+    }
+
     private var outlineColor: Color {
         if showSuccess { return .green }
-        if readyToLockPulse { return .yellow }
+        if shouldPulse { return .yellow }
         if entry.isLocked { return Color.brandAccent.opacity(0.45) }
         return Color.brandAccent
     }
@@ -59,9 +63,22 @@ struct DayCardView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(outlineColor, lineWidth: readyToLockPulse ? 4 : 2)
-                .animation(readyToLockPulse ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .default,
-                           value: readyToLockPulse)
+                .strokeBorder(outlineColor, lineWidth: 2)
+        )
+        .overlay(
+            Group {
+                if shouldPulse {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(Color.yellow, lineWidth: 3)
+                        .opacity(pulseAnimation ? 0.2 : 1)
+                        .onAppear {
+                            updatePulseAnimation()
+                        }
+                        .onDisappear {
+                            pulseAnimation = false
+                        }
+                }
+            }
         )
         .overlay(alignment: .topTrailing) {
             if showSuccess {
@@ -79,15 +96,16 @@ struct DayCardView: View {
             }
         }
         .onChange(of: entry.items) { _, _ in
-            if !entry.isLocked, !entry.isComplete {
-                readyToLockPulse = false
-            }
+            updatePulseAnimation()
         }
         .onChange(of: entry.isLocked) { _, locked in
             if locked {
-                readyToLockPulse = false
                 showSuccess = false
             }
+            updatePulseAnimation()
+        }
+        .onChange(of: shouldPulse) { _, _ in
+            updatePulseAnimation()
         }
     }
 
@@ -112,7 +130,6 @@ struct DayCardView: View {
             Button {
                 if entry.isLocked {
                     vm.unlock(entry, modelContext: modelContext)
-                    readyToLockPulse = false
                     showSuccess = false
                 } else {
                     // If unlocked: allow lock only if complete, otherwise show hint
@@ -127,7 +144,7 @@ struct DayCardView: View {
                     }
                 }
             } label: {
-                Image(systemName: entry.isLocked ? "lock.fill" : (readyToLockPulse ? "lock.open.fill" : "lock.open"))
+                Image(systemName: entry.isLocked ? "lock.fill" : (shouldPulse ? "lock.open.fill" : "lock.open"))
                     .font(.system(size: 18, weight: .semibold))
                     .padding(10)
                     .background(.thinMaterial)
@@ -217,11 +234,7 @@ struct DayCardView: View {
         }
 
         focusedIndex = nil
-        if entry.isComplete {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                readyToLockPulse = true
-            }
-        } else {
+        if !entry.isComplete {
             withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 withAnimation(.easeInOut(duration: 0.2)) { showIncompleteHint = false }
@@ -233,7 +246,6 @@ struct DayCardView: View {
     private func triggerLockFlow() {
         vm.lock(entry, modelContext: modelContext)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-            readyToLockPulse = false
             showSuccess = true
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
@@ -242,5 +254,17 @@ struct DayCardView: View {
             }
         }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+
+    private func updatePulseAnimation() {
+        guard shouldPulse else {
+            pulseAnimation = false
+            return
+        }
+
+        pulseAnimation = false
+        withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+            pulseAnimation = true
+        }
     }
 }
