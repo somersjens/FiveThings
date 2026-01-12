@@ -1,6 +1,7 @@
 //NEW DOC  DayCardView.swift
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct DayCardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -12,6 +13,9 @@ struct DayCardView: View {
     @State private var showSuccess: Bool = false
     @State private var showIncompleteHint: Bool = false
     @State private var pulseAnimation: Bool = false
+    @State private var dragIndex: Int?
+    @State private var dropTarget: DropTarget?
+    @State private var rowHeights: [Int: CGFloat] = [:]
 
     @FocusState private var focusedIndex: Int?
 
@@ -196,8 +200,7 @@ struct DayCardView: View {
 
     private func entryRow(_ idx: Int) -> some View {
         let showsRemove = isEditable && idx >= requiredCount
-
-        return HStack(alignment: .top, spacing: 10) {
+        let rowContent = HStack(alignment: .top, spacing: 10) {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 28, alignment: .leading)
@@ -236,14 +239,36 @@ struct DayCardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 10)
-        .padding(.trailing, showsRemove ? 28 : 0)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.secondary.opacity(0.08))
-        )
-        .overlay(alignment: .trailing) {
+        let styledRow = rowContent
+            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .padding(.trailing, showsRemove ? 28 : 0)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.secondary.opacity(0.08))
+            )
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear {
+                            rowHeights[idx] = proxy.size.height
+                        }
+                        .onChange(of: proxy.size.height) { _, newValue in
+                            rowHeights[idx] = newValue
+                        }
+                }
+            )
+            .overlay(alignment: dropTarget?.position == .above ? .top : .bottom) {
+                if dropTarget?.index == idx {
+                    Rectangle()
+                        .fill(Color.brandAccent)
+                        .frame(height: 3)
+                        .clipShape(Capsule())
+                        .padding(.horizontal, 8)
+                        .transition(.opacity)
+                }
+            }
+            .overlay(alignment: .trailing) {
             if showsRemove {
                 Button {
                     vm.removeItem(entry, index: idx, modelContext: modelContext)
@@ -258,6 +283,21 @@ struct DayCardView: View {
                 .padding(.trailing, 6)
             }
         }
+        let interactiveRow = styledRow
+            .onDrag {
+                dragIndex = idx
+                return NSItemProvider(object: "" as NSString)
+            } preview: {
+                styledRow
+            }
+            .onDrop(of: [UTType.text], delegate: ItemDropDelegate(destination: idx,
+                                                                   entry: entry,
+                                                                   dragIndex: $dragIndex,
+                                                                   dropTarget: $dropTarget,
+                                                                   rowHeight: rowHeights[idx] ?? 0,
+                                                                   vm: vm,
+                                                                   modelContext: modelContext))
+        return isEditable ? AnyView(interactiveRow) : AnyView(styledRow)
     }
 
     private func highlightedText(_ text: String) -> AttributedString {
@@ -338,6 +378,69 @@ struct DayCardView: View {
         entry.ensureItemsCount(atLeast: required)
         if settings.dailyItemCount > entry.itemCount {
             entry.ensureItemsCount(atLeast: settings.dailyItemCount)
+        }
+    }
+}
+
+private enum DropPosition {
+    case above
+    case below
+}
+
+private struct DropTarget: Equatable {
+    let index: Int
+    let position: DropPosition
+}
+
+private struct ItemDropDelegate: DropDelegate {
+    let destination: Int
+    let entry: DayEntry
+    @Binding var dragIndex: Int?
+    @Binding var dropTarget: DropTarget?
+    let rowHeight: CGFloat
+    let vm: ContentViewModel
+    let modelContext: ModelContext
+
+    func dropEntered(info: DropInfo) {
+        updateDropTarget(with: info)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        updateDropTarget(with: info)
+        return DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        guard let source = dragIndex, source != destination else {
+            dragIndex = nil
+            dropTarget = nil
+            return true
+        }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            let offset = dropTarget?.position == .below ? 1 : 0
+            let count = entry.items.count
+            var target = destination + offset
+            if source < target {
+                target -= 1
+            }
+            target = max(0, min(count - 1, target))
+            vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
+        }
+        dragIndex = nil
+        dropTarget = nil
+        return true
+    }
+
+    func dropExited(info: DropInfo) {
+        dropTarget = nil
+    }
+
+    private func updateDropTarget(with info: DropInfo) {
+        guard rowHeight > 0 else { return }
+        let isBelow = info.location.y > rowHeight / 2
+        let position: DropPosition = isBelow ? .below : .above
+        if dropTarget?.index != destination || dropTarget?.position != position {
+            dropTarget = DropTarget(index: destination, position: position)
         }
     }
 }

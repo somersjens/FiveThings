@@ -64,6 +64,18 @@ final class ContentViewModel: ObservableObject {
         try? modelContext.save()
     }
 
+    func moveItem(_ entry: DayEntry, from source: Int, to destination: Int, modelContext: ModelContext) {
+        guard source != destination,
+              source >= 0,
+              destination >= 0,
+              source < entry.items.count,
+              destination < entry.items.count else { return }
+        let item = entry.items.remove(at: source)
+        entry.items.insert(item, at: destination)
+        entry.updatedAt = Date()
+        try? modelContext.save()
+    }
+
     func shouldScheduleNextDayReminder(allEntries: [DayEntry]) -> Bool {
         // “If needed”: schedule if there exists any unlocked (unfinished) entry for *today* OR any prior day.
         // This is a practical interpretation given iOS notification constraints.
