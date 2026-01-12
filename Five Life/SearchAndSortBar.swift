@@ -12,7 +12,7 @@ struct SearchAndSortBar: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.black)
 
-                TextField(settings.language == .dutch ? "Zoek in vergrendelde kaarten…" : "Search in locked cards…",
+                TextField(settings.language == .dutch ? "Zoek in kaarten…" : "Search cards…",
                           text: $text)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()

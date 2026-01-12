@@ -1,4 +1,5 @@
 //NEW DOC  ContentView.swift
+import LocalAuthentication
 import SwiftUI
 import SwiftData
 
@@ -14,6 +15,10 @@ struct ContentView: View {
     @Namespace private var cardNamespace
 
     @State private var showSettings: Bool = false
+    @State private var isUnlocked: Bool = true
+    @State private var isUnlocking: Bool = false
+
+    @Environment(\.scenePhase) private var scenePhase
 
     private var unfinished: [DayEntry] {
         entries
@@ -117,140 +122,168 @@ struct ContentView: View {
         )
     }
 
+    @ViewBuilder
+    private var lockOverlay: some View {
+        if settings.faceIdLockEnabled && !isUnlocked {
+            Color.brandBackground
+                .ignoresSafeArea()
+
+            VStack(spacing: 16) {
+                Image(systemName: "faceid")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+
+                Text(settings.language == .dutch ? "Ontgrendel met Face ID" : "Unlock with Face ID")
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+
+                Button {
+                    attemptUnlock()
+                } label: {
+                    Text(settings.language == .dutch ? "Ontgrendel" : "Unlock")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(.secondary.opacity(0.12))
+                        )
+                }
+                .disabled(isUnlocking)
+            }
+            .padding(24)
+        }
+    }
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    if showSettings {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text(settings.language == .dutch ? "Instellingen" : "Settings")
-                                    .font(.title3.weight(.semibold))
+            ZStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        if showSettings {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text(settings.language == .dutch ? "Instellingen" : "Settings")
+                                        .font(.title3.weight(.semibold))
 
-                                Spacer()
+                                    Spacer()
 
-                                Button {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        showSettings.toggle()
+                                    Button {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            showSettings.toggle()
+                                        }
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(.secondary)
+                                            .padding(8)
+                                            .background(.thinMaterial)
+                                            .clipShape(Circle())
                                     }
-                                } label: {
-                                    Image(systemName: "xmark")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundStyle(.secondary)
-                                        .padding(8)
-                                        .background(.thinMaterial)
-                                        .clipShape(Circle())
+                                    .accessibilityLabel(settings.language == .dutch ? "Sluiten" : "Close")
                                 }
-                                .accessibilityLabel(settings.language == .dutch ? "Sluiten" : "Close")
+
+                                SettingsView(settings: settings, showsNavigation: false)
+                                    .padding(.top, 4)
                             }
-
-                            SettingsView(settings: settings, showsNavigation: false)
-                                .padding(.top, 4)
-                        }
-                        .padding(14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(Color(.systemGray6))
-                                .shadow(radius: 6, y: 2)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .strokeBorder(Color.black.opacity(0.06))
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-
-                    Text(dailyTitle)
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                    // Unfinished section
-                    if !unfinished.isEmpty {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(settings.language == .dutch ? "Onvoltooid" : "Unfinished")
-                                .font(.title3.weight(.semibold))
-                                .padding(.horizontal, 4)
-
-                            ForEach(unfinished) { entry in
-                                DayCardView(settings: settings, vm: vm, entry: entry)
-                                    .matchedGeometryEffect(id: entry.id, in: cardNamespace)
-                                    .transition(.opacity)
-                            }
-                        }
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: unfinished.map(\.id))
-                    } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(settings.language == .dutch ? "Alles is af!" : "All done!")
-                                .font(.title3.weight(.semibold))
-                            Text(settings.language == .dutch
-                                 ? "Je hebt geen open kaarten."
-                                 : "You have no open cards.")
-                                .foregroundStyle(.black)
-                        }
-                        .padding(.vertical, 8)
-                    }
-
-                    // Thick divider
-                    Rectangle()
-                        .fill(Color.brandAccent)
-                        .frame(height: 6)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                        .padding(.vertical, 8)
-
-                    // Search + sort (finished only)
-                    SearchAndSortBar(settings: settings, text: $vm.searchText, newestFirst: $vm.newestFirst)
-
-                    // Finished section
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(settings.language == .dutch ? "Vergrendeld" : "Locked")
-                            .font(.title3.weight(.semibold))
-                            .padding(.horizontal, 4)
-
-                        if finished.isEmpty {
-                            Text(settings.language == .dutch
-                                 ? "Geen vergrendelde kaarten gevonden."
-                                 : "No locked cards found.")
-                                .foregroundStyle(.black)
-                                .padding(.horizontal, 4)
-                        } else {
-                            ForEach(finished) { entry in
-                                DayCardView(settings: settings, vm: vm, entry: entry)
-                                    .matchedGeometryEffect(id: entry.id, in: cardNamespace)
-                                    .transition(.opacity)
-                            }
-                        }
-                    }
-                    .animation(.spring(response: 0.5, dampingFraction: 0.85), value: finished.map(\.id))
-                    .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.searchText)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
-
-                    // Share option bottom
-                    VStack(spacing: 10) {
-                        Divider().opacity(0.6)
-                        ShareLink(
-                            item: "Check out this app! (App Store link placeholder)",
-                            subject: Text("Positive Things"),
-                            message: Text(settings.language == .dutch
-                                          ? "Dit helpt me elke dag 3–10 positieve dingen op te schrijven."
-                                          : "This helps me write 3–10 positive things every day.")
-                        ) {
-                            HStack {
-                                Image(systemName: "square.and.arrow.up")
-                                Text(settings.language == .dutch ? "Deel de app" : "Share the app")
-                            }
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .padding(14)
                             .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(.secondary.opacity(0.12))
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(Color(.systemGray6))
+                                    .shadow(radius: 6, y: 2)
                             )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .strokeBorder(Color.black.opacity(0.06))
+                            )
+                            .transition(.move(edge: .top).combined(with: .opacity))
                         }
+
+                        Text(dailyTitle)
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                        // Unfinished section
+                        if !unfinished.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(settings.language == .dutch ? "Onvoltooid" : "Unfinished")
+                                    .font(.title3.weight(.semibold))
+                                    .padding(.horizontal, 4)
+
+                                ForEach(unfinished) { entry in
+                                    DayCardView(settings: settings, vm: vm, entry: entry)
+                                        .matchedGeometryEffect(id: entry.id, in: cardNamespace)
+                                        .transition(.opacity)
+                                }
+                            }
+                            .animation(.spring(response: 0.5, dampingFraction: 0.85), value: unfinished.map(\.id))
+                        } else {
+                            Text(settings.language == .dutch ? "Tot morgen!" : "See you tomorrow!")
+                                .font(.title3.weight(.semibold))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 8)
+                        }
+
+                        // Thick divider
+                        Rectangle()
+                            .fill(Color.brandAccent)
+                            .frame(height: 6)
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                            .padding(.vertical, 8)
+
+                        // Search + sort (finished only)
+                        SearchAndSortBar(settings: settings, text: $vm.searchText, newestFirst: $vm.newestFirst)
+
+                        // Finished section
+                        VStack(alignment: .leading, spacing: 10) {
+                            if finished.isEmpty {
+                                Text(settings.language == .dutch
+                                     ? "Geen kaarten gevonden."
+                                     : "No cards found.")
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, 4)
+                            } else {
+                                ForEach(finished) { entry in
+                                    DayCardView(settings: settings, vm: vm, entry: entry)
+                                        .matchedGeometryEffect(id: entry.id, in: cardNamespace)
+                                        .transition(.opacity)
+                                }
+                            }
+                        }
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: finished.map(\.id))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.searchText)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
+
+                        // Share option bottom
+                        VStack(spacing: 10) {
+                            Divider().opacity(0.6)
+                            ShareLink(
+                                item: "Check out this app! (App Store link placeholder)",
+                                subject: Text("Positive Things"),
+                                message: Text(settings.language == .dutch
+                                              ? "Dit helpt me elke dag 3–10 positieve dingen op te schrijven."
+                                              : "This helps me write 3–10 positive things every day.")
+                            ) {
+                                HStack {
+                                    Image(systemName: "square.and.arrow.up")
+                                    Text(settings.language == .dutch ? "Deel de app" : "Share the app")
+                                }
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(.secondary.opacity(0.12))
+                                )
+                            }
+                        }
+                        .padding(.top, 10)
                     }
-                    .padding(.top, 10)
+                    .padding(16)
                 }
-                .padding(16)
+
             }
             .background(Color.brandBackground.ignoresSafeArea())
             .safeAreaInset(edge: .top) {
@@ -258,6 +291,7 @@ struct ContentView: View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .overlay(lockOverlay)
             .onChange(of: showSettings) { _, expanded in
                 if !expanded {
                     // Apply notification changes after closing settings
@@ -291,6 +325,55 @@ struct ContentView: View {
             }
             .onChange(of: settings.dailyItemCount) { _, _ in
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            }
+            .onAppear {
+                updateUnlockStateIfNeeded()
+            }
+            .onChange(of: settings.faceIdLockEnabled) { _, _ in
+                updateUnlockStateIfNeeded()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase != .active, settings.faceIdLockEnabled {
+                    isUnlocked = false
+                }
+                if phase == .active {
+                    updateUnlockStateIfNeeded()
+                }
+            }
+        }
+    }
+
+    private func updateUnlockStateIfNeeded() {
+        if !settings.faceIdLockEnabled {
+            isUnlocked = true
+            return
+        }
+
+        if isUnlocked {
+            isUnlocked = false
+        }
+        attemptUnlock()
+    }
+
+    private func attemptUnlock() {
+        guard settings.faceIdLockEnabled, !isUnlocking else { return }
+
+        let context = LAContext()
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            isUnlocked = false
+            return
+        }
+
+        isUnlocking = true
+        let reason = settings.language == .dutch
+            ? "Ontgrendel je kaarten met Face ID."
+            : "Unlock your cards with Face ID."
+
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
+            Task { @MainActor in
+                isUnlocked = success
+                isUnlocking = false
             }
         }
     }

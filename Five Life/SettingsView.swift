@@ -1,4 +1,5 @@
 //NEW DOC  SettingsView.swift
+import LocalAuthentication
 import SwiftUI
 
 struct SettingsView: View {
@@ -10,6 +11,7 @@ struct SettingsView: View {
     @State private var nextDayReminderEnabled: Bool = false
     @State private var dailyReminderPickerDate: Date = Date()
     @State private var nextDayReminderPickerDate: Date = Date()
+    @State private var faceIdLockEnabled: Bool = false
 
     private var basicSettingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -48,6 +50,18 @@ struct SettingsView: View {
 
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
+
+            HStack {
+                Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { faceIdLockEnabled },
+                    set: { newValue in
+                        handleFaceIdToggleChange(newValue)
+                    }
+                ))
+                .labelsHidden()
+            }
         }
     }
 
@@ -145,6 +159,8 @@ struct SettingsView: View {
             if let rt = settings.nextDayReminderTime {
                 nextDayReminderPickerDate = Calendar.current.date(from: rt.asDateComponents()) ?? Date()
             }
+
+            faceIdLockEnabled = settings.faceIdLockEnabled
         }
         .onChange(of: dailyReminderEnabled) { _, enabled in
             if !enabled { settings.dailyReminderTime = nil }
@@ -153,6 +169,33 @@ struct SettingsView: View {
         .onChange(of: nextDayReminderEnabled) { _, enabled in
             if !enabled { settings.nextDayReminderTime = nil }
             else { settings.nextDayReminderTime = ReminderTime.from(date: nextDayReminderPickerDate) }
+        }
+    }
+
+    private func handleFaceIdToggleChange(_ enabled: Bool) {
+        if !enabled {
+            settings.faceIdLockEnabled = false
+            faceIdLockEnabled = false
+            return
+        }
+
+        let context = LAContext()
+        var error: NSError?
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            settings.faceIdLockEnabled = false
+            faceIdLockEnabled = false
+            return
+        }
+
+        let reason = settings.language == .dutch
+            ? "Activeer Face ID om je kaarten te vergrendelen."
+            : "Enable Face ID to lock your cards."
+
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
+            Task { @MainActor in
+                settings.faceIdLockEnabled = success
+                faceIdLockEnabled = success
+            }
         }
     }
 }
