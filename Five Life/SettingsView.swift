@@ -13,22 +13,37 @@ struct SettingsView: View {
 
     private var basicSettingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Stepper(value: Binding(
-                get: { settings.dailyItemCount },
-                set: { settings.dailyItemCount = max(3, min(10, $0)) }
-            ), in: 3...10) {
-                Text(settings.language == .dutch
-                     ? "Aantal dingen per dag: \(settings.dailyItemCount)"
-                     : "Things per day: \(settings.dailyItemCount)")
+            HStack {
+                Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
+                Spacer()
+                Picker("", selection: Binding(
+                    get: { settings.dailyItemCount },
+                    set: { settings.dailyItemCount = max(1, min(10, $0)) }
+                )) {
+                    ForEach(1...10, id: \.self) { count in
+                        Text("\(count)").tag(count)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .foregroundStyle(.black)
+                .tint(.black)
             }
 
-            Picker(settings.language == .dutch ? "Taal" : "Language", selection: Binding(
-                get: { settings.language },
-                set: { settings.language = $0 }
-            )) {
-                ForEach(AppLanguage.allCases) { lang in
-                    Text(lang.displayName).tag(lang)
+            HStack {
+                Text(settings.language == .dutch ? "Taal van de app" : "App language")
+                Spacer()
+                Picker("", selection: Binding(
+                    get: { settings.language },
+                    set: { settings.language = $0 }
+                )) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
                 }
+                .labelsHidden()
+                .foregroundStyle(.black)
+                .tint(.black)
             }
 
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
@@ -38,32 +53,36 @@ struct SettingsView: View {
 
     private var reminderSettingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(settings.language == .dutch ? "Herinneringen" : "Reminders")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            Toggle(settings.language == .dutch ? "Dagelijkse reminder" : "Daily reminder",
-                   isOn: $dailyReminderEnabled)
-
-            if dailyReminderEnabled {
-                DatePicker(settings.language == .dutch ? "Tijd" : "Time",
-                           selection: $dailyReminderPickerDate,
-                           displayedComponents: .hourAndMinute)
-                    .onChange(of: dailyReminderPickerDate) { _, newValue in
-                        settings.dailyReminderTime = ReminderTime.from(date: newValue)
-                    }
+            HStack {
+                Text(settings.language == .dutch ? "Dagelijkse reminder" : "Daily reminder")
+                Spacer()
+                if dailyReminderEnabled {
+                    DatePicker("",
+                               selection: $dailyReminderPickerDate,
+                               displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .onChange(of: dailyReminderPickerDate) { _, newValue in
+                            settings.dailyReminderTime = ReminderTime.from(date: newValue)
+                        }
+                }
+                Toggle("", isOn: $dailyReminderEnabled)
+                    .labelsHidden()
             }
 
-            Toggle(settings.language == .dutch ? "Volgende dag als nodig" : "Next day if needed",
-                   isOn: $nextDayReminderEnabled)
-
-            if nextDayReminderEnabled {
-                DatePicker(settings.language == .dutch ? "Tijd" : "Time",
-                           selection: $nextDayReminderPickerDate,
-                           displayedComponents: .hourAndMinute)
-                    .onChange(of: nextDayReminderPickerDate) { _, newValue in
-                        settings.nextDayReminderTime = ReminderTime.from(date: newValue)
-                    }
+            HStack {
+                Text(settings.language == .dutch ? "Volgende dag als nodig" : "Next day if needed")
+                Spacer()
+                if nextDayReminderEnabled {
+                    DatePicker("",
+                               selection: $nextDayReminderPickerDate,
+                               displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        .onChange(of: nextDayReminderPickerDate) { _, newValue in
+                            settings.nextDayReminderTime = ReminderTime.from(date: newValue)
+                        }
+                }
+                Toggle("", isOn: $nextDayReminderEnabled)
+                    .labelsHidden()
             }
 
             if notifier.authorizationStatus == .denied {
@@ -82,7 +101,7 @@ struct SettingsView: View {
                 basicSettingsSection
             }
 
-            Section(header: Text(settings.language == .dutch ? "Herinneringen" : "Reminders")) {
+            Section {
                 reminderSettingsSection
             }
         }

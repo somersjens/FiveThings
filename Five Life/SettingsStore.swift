@@ -83,7 +83,7 @@ final class SettingsStore: ObservableObject {
     var locale: Locale { Locale(identifier: language.localeIdentifier) }
 
     func clampDailyCount() {
-        dailyItemCount = max(3, min(10, dailyItemCount))
+        dailyItemCount = max(1, min(10, dailyItemCount))
     }
 
     private func encode<T: Encodable>(_ value: T?) -> Data {
