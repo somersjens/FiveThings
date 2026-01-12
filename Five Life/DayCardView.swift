@@ -62,10 +62,10 @@ struct DayCardView: View {
     }
 
     private var outlineColor: Color {
-        if showSuccess { return .green }
+        if showSuccess { return Color.brandAccent }
         if shouldPulse { return .yellow }
-        if entry.isLocked { return Color.brandAccent.opacity(0.45) }
-        return Color.brandAccent
+        if entry.isLocked { return Color.brandAccent }
+        return .orange
     }
 
     var body: some View {
@@ -105,7 +105,7 @@ struct DayCardView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(outlineColor, lineWidth: 2)
+                .strokeBorder(outlineColor, lineWidth: 3)
         )
         .overlay(
             Group {

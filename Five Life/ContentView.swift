@@ -203,23 +203,14 @@ struct ContentView: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .strokeBorder(Color.black.opacity(0.06))
+                                    .strokeBorder(Color.gray.opacity(0.4), lineWidth: 3)
                             )
                             .transition(.move(edge: .top).combined(with: .opacity))
                         }
 
-                        Text(dailyTitle)
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-
                         // Unfinished section
                         if !unfinished.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(settings.language == .dutch ? "Onvoltooid" : "Unfinished")
-                                    .font(.title3.weight(.semibold))
-                                    .padding(.horizontal, 4)
-
                                 ForEach(unfinished) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
                                         .matchedGeometryEffect(id: entry.id, in: cardNamespace)
