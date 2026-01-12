@@ -95,31 +95,39 @@ struct ContentView: View {
     }
 
     private var headerView: some View {
-        ZStack {
-            Text(lifeTitle)
-                .font(.title.bold())
-        }
-        .overlay(alignment: .trailing) {
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showSettings.toggle()
+        Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                showSettings.toggle()
+            }
+        } label: {
+            ZStack {
+                HStack(spacing: 6) {
+                    Text(lifeTitle)
+                        .font(.title.bold())
+
+                    Image("NoBackground")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 24)
+                        .accessibilityHidden(true)
                 }
-            } label: {
-                Image(systemName: "flame.fill")
+            }
+            .overlay(alignment: .trailing) {
+                Image(systemName: "gearshape.fill")
                     .foregroundStyle(.secondary)
                     .frame(width: 32, height: 32)
-                    .contentShape(Rectangle())
             }
-            .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.brandBackground)
+            .overlay(
+                Divider(),
+                alignment: .bottom
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.brandBackground)
-        .overlay(
-            Divider(),
-            alignment: .bottom
-        )
+        .buttonStyle(.plain)
+        .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
     }
 
     @ViewBuilder
