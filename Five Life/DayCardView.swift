@@ -1,7 +1,6 @@
 //NEW DOC  DayCardView.swift
 import SwiftUI
 import SwiftData
-import UniformTypeIdentifiers
 
 struct DayCardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -16,9 +15,12 @@ struct DayCardView: View {
     @State private var dragIndex: Int?
     @State private var dropTarget: DropTarget?
     @State private var rowHeights: [Int: CGFloat] = [:]
+    @State private var rowFrames: [Int: CGRect] = [:]
+    @State private var dragOffset: CGSize = .zero
+    @State private var isDragging: Bool = false
+    @State private var suppressFocus: Bool = false
 
     private let rowSpacing: CGFloat = 10
-    private let dropIndicatorHeight: CGFloat = 2
 
     @FocusState private var focusedIndex: Int?
 
@@ -72,20 +74,8 @@ struct DayCardView: View {
     }
 
     var body: some View {
-        let headerView = header
-
         VStack(alignment: .leading, spacing: 12) {
-            if isEditable {
-                headerView.onDrop(of: [UTType.text],
-                                  delegate: CardEdgeDropDelegate(edge: .top,
-                                                                 entry: entry,
-                                                                 dragIndex: $dragIndex,
-                                                                 dropTarget: $dropTarget,
-                                                                 vm: vm,
-                                                                 modelContext: modelContext))
-            } else {
-                headerView
-            }
+            header
 
             VStack(spacing: rowSpacing) {
                 if hasOptionalRows && !entry.isLocked {
@@ -105,14 +95,11 @@ struct DayCardView: View {
                 if isEditable {
                     Color.clear
                         .frame(height: rowSpacing)
-                        .onDrop(of: [UTType.text],
-                                delegate: CardEdgeDropDelegate(edge: .bottom,
-                                                               entry: entry,
-                                                               dragIndex: $dragIndex,
-                                                               dropTarget: $dropTarget,
-                                                               vm: vm,
-                                                               modelContext: modelContext))
                 }
+            }
+            .coordinateSpace(name: "entryList")
+            .overlay {
+                dragOverlay
             }
 
             if showIncompleteHint {
@@ -227,7 +214,75 @@ struct DayCardView: View {
 
     private func entryRow(_ idx: Int) -> some View {
         let showsRemove = isEditable && idx >= requiredCount
-        let rowContent = HStack(alignment: .top, spacing: 10) {
+        let styledRow = rowContainer(idx: idx,
+                                     showsRemove: showsRemove,
+                                     applyInsertionPadding: true,
+                                     trackSize: true)
+        let interactiveRow = styledRow
+            .opacity(isDragging && dragIndex == idx ? 0 : 1)
+            .allowsHitTesting(!(isDragging && dragIndex == idx))
+            .zIndex(dragIndex == idx ? 1 : 0)
+            .simultaneousGesture(dragGesture(for: idx))
+        return isEditable ? AnyView(interactiveRow) : AnyView(styledRow)
+    }
+
+    private func rowContainer(idx: Int,
+                              showsRemove: Bool,
+                              applyInsertionPadding: Bool,
+                              trackSize: Bool) -> some View {
+        let baseRow = rowContent(idx: idx)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .padding(.trailing, showsRemove ? 28 : 0)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(.systemGray6))
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+        return baseRow
+            .background(
+                Group {
+                    if trackSize {
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear {
+                                    rowHeights[idx] = proxy.size.height
+                                    rowFrames[idx] = proxy.frame(in: .named("entryList"))
+                                }
+                                .onChange(of: proxy.size.height) { _, newValue in
+                                    rowHeights[idx] = newValue
+                                }
+                                .onChange(of: proxy.frame(in: .named("entryList"))) { _, newValue in
+                                    rowFrames[idx] = newValue
+                                }
+                        }
+                    }
+                }
+            )
+            .padding(applyInsertionPadding ? dragInsertionPadding(for: idx) : EdgeInsets())
+            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: dropTarget)
+            .overlay(alignment: .trailing) {
+                if showsRemove {
+                    Button {
+                        vm.removeItem(entry, index: idx, modelContext: modelContext)
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 26, height: 26)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(settings.language == .dutch ? "Optionele regel verwijderen" : "Remove optional entry")
+                    .padding(.trailing, 6)
+                }
+            }
+    }
+
+    private func rowContent(idx: Int) -> some View {
+        HStack(alignment: .top, spacing: 10) {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 28, alignment: .leading)
@@ -255,6 +310,7 @@ struct DayCardView: View {
                 .lineLimit(1...4)
                 .foregroundStyle(.black)
                 .focused($focusedIndex, equals: idx)
+                .disabled(isDragging || suppressFocus)
                 .submitLabel(idx == displayCount - 1 ? .done : .next)
                 .onSubmit {
                     handleSubmit(at: idx)
@@ -266,66 +322,88 @@ struct DayCardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        let styledRow = rowContent
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
-            .padding(.trailing, showsRemove ? 28 : 0)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.secondary.opacity(0.08))
-            )
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear {
-                            rowHeights[idx] = proxy.size.height
-                        }
-                        .onChange(of: proxy.size.height) { _, newValue in
-                            rowHeights[idx] = newValue
-                        }
-                }
-            )
-            .overlay(alignment: dropTarget?.position == .above ? .top : .bottom) {
-                if dropTarget?.index == idx {
-                    Rectangle()
-                        .fill(Color.brandAccent)
-                        .frame(height: dropIndicatorHeight)
-                        .clipShape(Capsule())
-                        .padding(.horizontal, 8)
-                        .offset(y: dropTarget?.position == .above ? -rowSpacing / 2 : rowSpacing / 2)
-                        .transition(.opacity)
-                }
-            }
-            .overlay(alignment: .trailing) {
-            if showsRemove {
-                Button {
-                    vm.removeItem(entry, index: idx, modelContext: modelContext)
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 26, height: 26)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(settings.language == .dutch ? "Optionele regel verwijderen" : "Remove optional entry")
-                .padding(.trailing, 6)
+    }
+
+    private var dragOverlay: some View {
+        GeometryReader { _ in
+            if let dragIndex, let frame = rowFrames[dragIndex], isDragging {
+                rowContainer(idx: dragIndex,
+                             showsRemove: isEditable && dragIndex >= requiredCount,
+                             applyInsertionPadding: false,
+                             trackSize: false)
+                    .frame(width: frame.width, height: frame.height, alignment: .leading)
+                    .position(x: frame.midX + dragOffset.width, y: frame.midY + dragOffset.height)
+                    .zIndex(2)
+                    .allowsHitTesting(false)
             }
         }
-        let interactiveRow = styledRow
-            .onDrag {
-                dragIndex = idx
-                return NSItemProvider(object: "" as NSString)
-            } preview: {
-                styledRow
+    }
+
+    private func dragGesture(for idx: Int) -> some Gesture {
+        DragGesture(minimumDistance: 6)
+            .onChanged { value in
+                if dragIndex == nil {
+                    dragIndex = idx
+                    isDragging = true
+                    suppressFocus = true
+                    focusedIndex = nil
+                }
+                guard dragIndex == idx else { return }
+                dragOffset = value.translation
+                let currentY = (rowFrames[idx]?.midY ?? 0) + value.translation.height
+                updateDropTarget(currentY: currentY, source: idx)
             }
-            .onDrop(of: [UTType.text], delegate: ItemDropDelegate(destination: idx,
-                                                                   entry: entry,
-                                                                   dragIndex: $dragIndex,
-                                                                   dropTarget: $dropTarget,
-                                                                   rowHeight: rowHeights[idx] ?? 0,
-                                                                   vm: vm,
-                                                                   modelContext: modelContext))
-        return isEditable ? AnyView(interactiveRow) : AnyView(styledRow)
+            .onEnded { _ in
+                completeDrag()
+            }
+    }
+
+    private func updateDropTarget(currentY: CGFloat, source: Int) {
+        let indices = (0..<displayCount)
+            .filter { $0 != source }
+            .filter { rowFrames[$0] != nil }
+
+        guard !indices.isEmpty else {
+            dropTarget = nil
+            return
+        }
+
+        for idx in indices {
+            if let frame = rowFrames[idx], currentY < frame.midY {
+                dropTarget = DropTarget(index: idx, position: .above)
+                return
+            }
+        }
+
+        if let last = indices.last {
+            dropTarget = DropTarget(index: last, position: .below)
+        }
+    }
+
+    private func completeDrag() {
+        defer {
+            dragIndex = nil
+            dropTarget = nil
+            dragOffset = .zero
+            isDragging = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                suppressFocus = false
+            }
+        }
+
+        suppressFocus = true
+        guard let source = dragIndex, let dropTarget else { return }
+        let offset = dropTarget.position == .below ? 1 : 0
+        let count = entry.items.count
+        var target = dropTarget.index + offset
+        if source < target {
+            target -= 1
+        }
+        target = max(0, min(count - 1, target))
+        guard source != target else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
+        }
     }
 
     private func highlightedText(_ text: String) -> AttributedString {
@@ -346,6 +424,21 @@ struct DayCardView: View {
         }
 
         return attributed
+    }
+
+    private func dragInsertionPadding(for idx: Int) -> EdgeInsets {
+        guard let dragIndex, let dropTarget, dragIndex != idx else { return EdgeInsets() }
+        guard dropTarget.index == idx else { return EdgeInsets() }
+
+        let dragHeight = rowHeights[dragIndex] ?? rowHeights[idx] ?? 44
+        let gap = dragHeight + rowSpacing
+
+        switch dropTarget.position {
+        case .above:
+            return EdgeInsets(top: gap, leading: 0, bottom: 0, trailing: 0)
+        case .below:
+            return EdgeInsets(top: 0, leading: 0, bottom: gap, trailing: 0)
+        }
     }
 
     private func handleSubmit(at index: Int) {
@@ -418,110 +511,4 @@ private enum DropPosition {
 private struct DropTarget: Equatable {
     let index: Int
     let position: DropPosition
-}
-
-private struct ItemDropDelegate: DropDelegate {
-    let destination: Int
-    let entry: DayEntry
-    @Binding var dragIndex: Int?
-    @Binding var dropTarget: DropTarget?
-    let rowHeight: CGFloat
-    let vm: ContentViewModel
-    let modelContext: ModelContext
-
-    func dropEntered(info: DropInfo) {
-        updateDropTarget(with: info)
-    }
-
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        updateDropTarget(with: info)
-        return DropProposal(operation: .move)
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        guard let source = dragIndex, source != destination else {
-            dragIndex = nil
-            dropTarget = nil
-            return true
-        }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-            let offset = dropTarget?.position == .below ? 1 : 0
-            let count = entry.items.count
-            var target = destination + offset
-            if source < target {
-                target -= 1
-            }
-            target = max(0, min(count - 1, target))
-            vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
-        }
-        dragIndex = nil
-        dropTarget = nil
-        return true
-    }
-
-    func dropExited(info: DropInfo) {
-        dropTarget = nil
-    }
-
-    private func updateDropTarget(with info: DropInfo) {
-        let effectiveHeight = max(rowHeight, 44)
-        let isBelow = info.location.y > effectiveHeight / 2
-        let position: DropPosition = isBelow ? .below : .above
-        if dropTarget?.index != destination || dropTarget?.position != position {
-            dropTarget = DropTarget(index: destination, position: position)
-        }
-    }
-}
-
-private struct CardEdgeDropDelegate: DropDelegate {
-    enum Edge {
-        case top
-        case bottom
-    }
-
-    let edge: Edge
-    let entry: DayEntry
-    @Binding var dragIndex: Int?
-    @Binding var dropTarget: DropTarget?
-    let vm: ContentViewModel
-    let modelContext: ModelContext
-
-    func dropEntered(info: DropInfo) {
-        updateDropTarget()
-    }
-
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        updateDropTarget()
-        return DropProposal(operation: .move)
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        guard let source = dragIndex, !entry.items.isEmpty else {
-            dragIndex = nil
-            dropTarget = nil
-            return true
-        }
-        let target = edge == .top ? 0 : max(entry.items.count - 1, 0)
-        if source != target {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
-            }
-        }
-        dragIndex = nil
-        dropTarget = nil
-        return true
-    }
-
-    func dropExited(info: DropInfo) {
-        dropTarget = nil
-    }
-
-    private func updateDropTarget() {
-        guard !entry.items.isEmpty else { return }
-        let index = edge == .top ? 0 : max(entry.items.count - 1, 0)
-        let position: DropPosition = edge == .top ? .above : .below
-        if dropTarget?.index != index || dropTarget?.position != position {
-            dropTarget = DropTarget(index: index, position: position)
-        }
-    }
 }
