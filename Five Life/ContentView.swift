@@ -134,10 +134,6 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(Color.brandBackground)
-            .overlay(
-                Divider(),
-                alignment: .bottom
-            )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
