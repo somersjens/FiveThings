@@ -11,7 +11,6 @@ struct DayCardView: View {
 
     @State private var showSuccess: Bool = false
     @State private var showIncompleteHint: Bool = false
-    @State private var pulseAnimation: Bool = false
     @State private var dragIndex: Int?
     @State private var dropTarget: DropTarget?
     @State private var rowHeights: [Int: CGFloat] = [:]
@@ -141,23 +140,9 @@ struct DayCardView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(outlineColor, lineWidth: 3)
         )
-        .overlay(
-            Group {
-                if shouldPulse {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(Color.yellow, lineWidth: 3)
-                        .opacity(pulseAnimation ? 0.2 : 1)
-                        .onAppear {
-                            updatePulseAnimation()
-                        }
-                        .onDisappear {
-                            pulseAnimation = false
-                        }
-                }
-            }
-        )
+        .animation(.easeInOut(duration: 0.2), value: outlineColor)
         .overlay(alignment: .topTrailing) {
-            if showSuccess {
+            if showSuccess && entry.isLocked {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 28, weight: .semibold))
                     .padding(10)
@@ -170,17 +155,10 @@ struct DayCardView: View {
         .onChange(of: settings.dailyItemCount) { _, _ in
             syncEntryCounts()
         }
-        .onChange(of: entry.items) { _, _ in
-            updatePulseAnimation()
-        }
         .onChange(of: entry.isLocked) { _, locked in
-            if locked {
+            if !locked {
                 showSuccess = false
             }
-            updatePulseAnimation()
-        }
-        .onChange(of: shouldPulse) { _, _ in
-            updatePulseAnimation()
         }
     }
 
@@ -524,18 +502,6 @@ struct DayCardView: View {
             }
         }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-    }
-
-    private func updatePulseAnimation() {
-        guard shouldPulse else {
-            pulseAnimation = false
-            return
-        }
-
-        pulseAnimation = false
-        withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-            pulseAnimation = true
-        }
     }
 
     private func syncEntryCounts() {
