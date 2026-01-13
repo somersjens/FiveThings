@@ -397,6 +397,7 @@ struct ContentView: View {
                     scheduleMidnightRefresh()
                     updateUnlockStateIfNeeded()
                 } else {
+                    vm.flushPendingSaves(modelContext: modelContext)
                     midnightTask?.cancel()
                     midnightTask = nil
                 }

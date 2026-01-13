@@ -5,6 +5,11 @@ import SwiftData
 
 @MainActor
 final class ContentViewModel: ObservableObject {
+    private enum SaveConstants {
+        static let debounceNanoseconds: UInt64 = 300_000_000
+    }
+
+    private var pendingSaveTasks: [UUID: Task<Void, Never>] = [:]
     enum FinishedCardsLimit: Int, CaseIterable {
         case fourteen = 14
         case thirty = 30
@@ -81,9 +86,10 @@ final class ContentViewModel: ObservableObject {
 
     func updateItem(_ entry: DayEntry, index: Int, text: String, modelContext: ModelContext) {
         guard index >= 0, index < entry.items.count else { return }
+        guard entry.items[index] != text else { return }
         entry.items[index] = text
         entry.updatedAt = Date()
-        try? modelContext.save()
+        scheduleSave(for: entry, modelContext: modelContext)
     }
 
     func removeItem(_ entry: DayEntry, index: Int, modelContext: ModelContext) {
@@ -104,6 +110,12 @@ final class ContentViewModel: ObservableObject {
         try? modelContext.save()
     }
 
+    func flushPendingSaves(modelContext: ModelContext) {
+        pendingSaveTasks.values.forEach { $0.cancel() }
+        pendingSaveTasks.removeAll()
+        try? modelContext.save()
+    }
+
     func shouldScheduleNextDayReminder(allEntries: [DayEntry]) -> Bool {
         // “If needed”: schedule if there exists any unlocked (unfinished) entry for *today* OR any prior day.
         // This is a practical interpretation given iOS notification constraints.
@@ -117,6 +129,18 @@ final class ContentViewModel: ObservableObject {
             return sortedByNewest
         default:
             return Array(sortedByNewest.prefix(finishedLimit.rawValue))
+        }
+    }
+
+    private func scheduleSave(for entry: DayEntry, modelContext: ModelContext) {
+        let entryID = entry.id
+        pendingSaveTasks[entryID]?.cancel()
+        pendingSaveTasks[entryID] = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: SaveConstants.debounceNanoseconds)
+            await MainActor.run {
+                try? modelContext.save()
+                self?.pendingSaveTasks[entryID] = nil
+            }
         }
     }
 }
