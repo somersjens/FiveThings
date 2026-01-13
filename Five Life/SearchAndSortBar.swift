@@ -38,6 +38,22 @@ struct SearchAndSortBar: View {
             )
 
             Button {
+                finishedLimit = finishedLimit.next()
+            } label: {
+                Text(finishedLimit.displayText)
+                    .font(.system(size: 12, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.black)
+                    .frame(width: 40, height: 40)
+                    .background(.secondary.opacity(0.10))
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(settings.language == .dutch
+                                ? "Laatste \(finishedLimit.displayText) kaarten tonen"
+                                : "Show last \(finishedLimit.displayText) cards")
+
+            Button {
                 newestFirst.toggle()
             } label: {
                 Image(systemName: newestFirst ? "arrow.down" : "arrow.up")
@@ -50,22 +66,6 @@ struct SearchAndSortBar: View {
             .accessibilityLabel(settings.language == .dutch
                                 ? (newestFirst ? "Nieuw naar oud" : "Oud naar nieuw")
                                 : (newestFirst ? "New to old" : "Old to new"))
-
-            Button {
-                finishedLimit = finishedLimit.next()
-            } label: {
-                Text(finishedLimit.displayText)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                    .background(.secondary.opacity(0.10))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(settings.language == .dutch
-                                ? "Laatste \(finishedLimit.displayText) kaarten tonen"
-                                : "Show last \(finishedLimit.displayText) cards")
         }
     }
 }
