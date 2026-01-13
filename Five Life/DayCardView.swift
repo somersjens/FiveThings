@@ -17,6 +17,9 @@ struct DayCardView: View {
     @State private var dropTarget: DropTarget?
     @State private var rowHeights: [Int: CGFloat] = [:]
 
+    private let rowSpacing: CGFloat = 10
+    private let dropIndicatorHeight: CGFloat = 2
+
     @FocusState private var focusedIndex: Int?
 
     private var isEditable: Bool { !entry.isLocked }
@@ -69,10 +72,22 @@ struct DayCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header
+        let headerView = header
 
-            VStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
+            if isEditable {
+                headerView.onDrop(of: [UTType.text],
+                                  delegate: CardEdgeDropDelegate(edge: .top,
+                                                                 entry: entry,
+                                                                 dragIndex: $dragIndex,
+                                                                 dropTarget: $dropTarget,
+                                                                 vm: vm,
+                                                                 modelContext: modelContext))
+            } else {
+                headerView
+            }
+
+            VStack(spacing: rowSpacing) {
                 if hasOptionalRows && !entry.isLocked {
                     Text(settings.language == .dutch
                          ? "Optioneel (boven je huidige ingestelde aantal)"
@@ -85,6 +100,18 @@ struct DayCardView: View {
 
                 ForEach(0..<displayCount, id: \.self) { idx in
                     entryRow(idx)
+                }
+
+                if isEditable {
+                    Color.clear
+                        .frame(height: rowSpacing)
+                        .onDrop(of: [UTType.text],
+                                delegate: CardEdgeDropDelegate(edge: .bottom,
+                                                               entry: entry,
+                                                               dragIndex: $dragIndex,
+                                                               dropTarget: $dropTarget,
+                                                               vm: vm,
+                                                               modelContext: modelContext))
                 }
             }
 
@@ -262,9 +289,10 @@ struct DayCardView: View {
                 if dropTarget?.index == idx {
                     Rectangle()
                         .fill(Color.brandAccent)
-                        .frame(height: 3)
+                        .frame(height: dropIndicatorHeight)
                         .clipShape(Capsule())
                         .padding(.horizontal, 8)
+                        .offset(y: dropTarget?.position == .above ? -rowSpacing / 2 : rowSpacing / 2)
                         .transition(.opacity)
                 }
             }
@@ -436,11 +464,64 @@ private struct ItemDropDelegate: DropDelegate {
     }
 
     private func updateDropTarget(with info: DropInfo) {
-        guard rowHeight > 0 else { return }
-        let isBelow = info.location.y > rowHeight / 2
+        let effectiveHeight = max(rowHeight, 44)
+        let isBelow = info.location.y > effectiveHeight / 2
         let position: DropPosition = isBelow ? .below : .above
         if dropTarget?.index != destination || dropTarget?.position != position {
             dropTarget = DropTarget(index: destination, position: position)
+        }
+    }
+}
+
+private struct CardEdgeDropDelegate: DropDelegate {
+    enum Edge {
+        case top
+        case bottom
+    }
+
+    let edge: Edge
+    let entry: DayEntry
+    @Binding var dragIndex: Int?
+    @Binding var dropTarget: DropTarget?
+    let vm: ContentViewModel
+    let modelContext: ModelContext
+
+    func dropEntered(info: DropInfo) {
+        updateDropTarget()
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        updateDropTarget()
+        return DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        guard let source = dragIndex, !entry.items.isEmpty else {
+            dragIndex = nil
+            dropTarget = nil
+            return true
+        }
+        let target = edge == .top ? 0 : max(entry.items.count - 1, 0)
+        if source != target {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
+            }
+        }
+        dragIndex = nil
+        dropTarget = nil
+        return true
+    }
+
+    func dropExited(info: DropInfo) {
+        dropTarget = nil
+    }
+
+    private func updateDropTarget() {
+        guard !entry.items.isEmpty else { return }
+        let index = edge == .top ? 0 : max(entry.items.count - 1, 0)
+        let position: DropPosition = edge == .top ? .above : .below
+        if dropTarget?.index != index || dropTarget?.position != position {
+            dropTarget = DropTarget(index: index, position: position)
         }
     }
 }
