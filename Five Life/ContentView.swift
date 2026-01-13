@@ -258,7 +258,7 @@ struct ContentView: View {
                                     } label: {
                                         Image(systemName: "xmark")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Color.brandAccent)
                                             .padding(8)
                                             .background(.thinMaterial)
                                             .clipShape(Circle())

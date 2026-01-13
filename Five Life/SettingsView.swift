@@ -36,7 +36,7 @@ struct SettingsView: View {
                 .pickerStyle(.menu)
                 .labelsHidden()
                 .foregroundStyle(.black)
-                .tint(Color(.darkGray))
+                .tint(.brandAccent)
             }
             .padding(.vertical, 6)
 
@@ -55,7 +55,7 @@ struct SettingsView: View {
                 }
                 .labelsHidden()
                 .foregroundStyle(.black)
-                .tint(Color(.darkGray))
+                .tint(.brandAccent)
             }
             .padding(.vertical, 6)
 
@@ -92,14 +92,14 @@ struct SettingsView: View {
             }
             .padding(.vertical, 6)
         }
-        .tint(Color(.darkGray))
+        .tint(.brandAccent)
     }
 
     private var addDaySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Text(settings.language == .dutch ? "Voeg een dag toe" : "Add a day")
-                    .font(.headline)
+                    .font(.body)
 
                 addDayInputField
 
@@ -111,8 +111,9 @@ struct SettingsView: View {
                         .frame(width: 36, height: 36)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.gray.opacity(0.18))
+                                .fill(Color.brandAccent)
                         )
+                        .foregroundStyle(.white)
                 }
                 .accessibilityLabel(settings.language == .dutch ? "Dag toevoegen" : "Add day")
             }
@@ -171,6 +172,7 @@ struct SettingsView: View {
                                selection: $dailyReminderPickerDate,
                                displayedComponents: .hourAndMinute)
                         .labelsHidden()
+                        .datePickerStyle(.compact)
                         .onChange(of: dailyReminderPickerDate) { _, newValue in
                             settings.dailyReminderTime = ReminderTime.from(date: newValue)
                         }
@@ -190,6 +192,7 @@ struct SettingsView: View {
                                selection: $nextDayReminderPickerDate,
                                displayedComponents: .hourAndMinute)
                         .labelsHidden()
+                        .datePickerStyle(.compact)
                         .onChange(of: nextDayReminderPickerDate) { _, newValue in
                             settings.nextDayReminderTime = ReminderTime.from(date: newValue)
                         }
@@ -207,7 +210,7 @@ struct SettingsView: View {
                     .foregroundStyle(.black)
             }
         }
-        .tint(Color(.darkGray))
+        .tint(.brandAccent)
     }
 
     private var settingsForm: some View {
