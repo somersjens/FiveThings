@@ -19,6 +19,8 @@ struct ContentView: View {
     @State private var isUnlocking: Bool = false
     @State private var hasAppeared: Bool = false
     @State private var midnightTask: Task<Void, Never>?
+    @State private var cachedUnfinishedEntries: [DayEntry] = []
+    @State private var cachedFinishedEntries: [DayEntry] = []
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -179,9 +181,9 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 ScrollView(showsIndicators: false) {
-                    let unfinishedEntries = unfinished
-                    let finishedEntries = finished
-                    VStack(alignment: .leading, spacing: 14) {
+                    let unfinishedEntries = cachedUnfinishedEntries
+                    let finishedEntries = cachedFinishedEntries
+                    LazyVStack(alignment: .leading, spacing: 14) {
                         if showSettings {
                             VStack(alignment: .leading, spacing: 12) {
                                 HStack {
@@ -223,7 +225,7 @@ struct ContentView: View {
 
                         // Unfinished section
                         if !unfinishedEntries.isEmpty {
-                            VStack(alignment: .leading, spacing: 10) {
+                            LazyVStack(alignment: .leading, spacing: 10) {
                                 ForEach(unfinishedEntries) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
                                         .matchedGeometryEffect(id: entry.id, in: cardNamespace)
@@ -254,7 +256,7 @@ struct ContentView: View {
                                          finishedLimit: $vm.finishedLimit)
 
                         // Finished section
-                        VStack(alignment: .leading, spacing: 10) {
+                        LazyVStack(alignment: .leading, spacing: 10) {
                             if finishedEntries.isEmpty {
                                 Text(settings.language == .dutch
                                      ? "Geen kaarten gevonden."
@@ -332,6 +334,7 @@ struct ContentView: View {
                                                       shouldSchedule: shouldScheduleNext,
                                                       language: settings.language)
                 scheduleMidnightRefresh()
+                refreshEntryLists()
             }
             .onChange(of: entries.count) { _, _ in
                 // Keep “next day if needed” in sync when entries are created/locked/unlocked.
@@ -341,9 +344,34 @@ struct ContentView: View {
                                                           shouldSchedule: shouldScheduleNext,
                                                           language: settings.language)
                 }
+                refreshEntryLists()
+            }
+            .onChange(of: entries.map(\.isLocked)) { _, _ in
+                refreshEntryLists()
+            }
+            .onChange(of: entries.map(\.day)) { _, _ in
+                refreshEntryLists()
             }
             .onChange(of: settings.dailyItemCount) { _, _ in
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            }
+            .onChange(of: vm.searchText) { _, _ in
+                refreshEntryLists()
+            }
+            .onChange(of: vm.newestFirst) { _, _ in
+                refreshEntryLists()
+            }
+            .onChange(of: vm.finishedLimit) { _, _ in
+                refreshEntryLists()
+            }
+            .onChange(of: settings.language) { _, _ in
+                refreshEntryLists()
+            }
+            .onChange(of: settings.moonEnabled) { _, _ in
+                refreshEntryLists()
+            }
+            .onChange(of: settings.holidaysEnabled) { _, _ in
+                refreshEntryLists()
             }
             .onAppear {
                 if !hasAppeared {
@@ -441,5 +469,10 @@ struct ContentView: View {
                 isUnlocking = false
             }
         }
+    }
+
+    private func refreshEntryLists() {
+        cachedUnfinishedEntries = unfinished
+        cachedFinishedEntries = finished
     }
 }
