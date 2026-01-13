@@ -5,6 +5,7 @@ struct SearchAndSortBar: View {
     @ObservedObject var settings: SettingsStore
     @Binding var text: String
     @Binding var newestFirst: Bool
+    @Binding var finishedLimit: ContentViewModel.FinishedCardsLimit
 
     var body: some View {
         HStack(spacing: 10) {
@@ -49,6 +50,22 @@ struct SearchAndSortBar: View {
             .accessibilityLabel(settings.language == .dutch
                                 ? (newestFirst ? "Nieuw naar oud" : "Oud naar nieuw")
                                 : (newestFirst ? "New to old" : "Old to new"))
+
+            Button {
+                finishedLimit = finishedLimit.next()
+            } label: {
+                Text(finishedLimit.displayText)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(.secondary.opacity(0.10))
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(settings.language == .dutch
+                                ? "Laatste \(finishedLimit.displayText) kaarten tonen"
+                                : "Show last \(finishedLimit.displayText) cards")
         }
     }
 }

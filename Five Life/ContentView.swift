@@ -29,7 +29,8 @@ struct ContentView: View {
 
     private var finished: [DayEntry] {
         let base = entries.filter { $0.isLocked }
-        let sorted = base.sorted { vm.newestFirst ? ($0.day > $1.day) : ($0.day < $1.day) }
+        let limited = vm.limitedFinishedEntries(from: base)
+        let sorted = limited.sorted { vm.newestFirst ? ($0.day > $1.day) : ($0.day < $1.day) }
         let q = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else { return sorted }
         return sorted.filter { entry in
@@ -234,7 +235,10 @@ struct ContentView: View {
                             .padding(.vertical, 8)
 
                         // Search + sort (finished only)
-                        SearchAndSortBar(settings: settings, text: $vm.searchText, newestFirst: $vm.newestFirst)
+                        SearchAndSortBar(settings: settings,
+                                         text: $vm.searchText,
+                                         newestFirst: $vm.newestFirst,
+                                         finishedLimit: $vm.finishedLimit)
 
                         // Finished section
                         VStack(alignment: .leading, spacing: 10) {
@@ -255,6 +259,7 @@ struct ContentView: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: finished.map(\.id))
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.searchText)
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.finishedLimit)
 
                         // Share option bottom
                         VStack(spacing: 10) {

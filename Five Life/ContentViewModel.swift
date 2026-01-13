@@ -5,8 +5,36 @@ import SwiftData
 
 @MainActor
 final class ContentViewModel: ObservableObject {
+    enum FinishedCardsLimit: Int, CaseIterable {
+        case fourteen = 14
+        case thirty = 30
+        case ninety = 90
+        case oneEighty = 180
+        case threeSixtyFive = 365
+        case all = 0
+
+        var displayText: String {
+            switch self {
+            case .all:
+                return "All"
+            default:
+                return "\(rawValue)"
+            }
+        }
+
+        func next() -> FinishedCardsLimit {
+            let order: [FinishedCardsLimit] = [.fourteen, .thirty, .ninety, .oneEighty, .threeSixtyFive, .all]
+            guard let index = order.firstIndex(of: self) else {
+                return .fourteen
+            }
+            let nextIndex = order.index(after: index)
+            return nextIndex < order.endIndex ? order[nextIndex] : .fourteen
+        }
+    }
+
     @Published var searchText: String = ""
     @Published var newestFirst: Bool = true
+    @Published var finishedLimit: FinishedCardsLimit = .thirty
 
     func startOfDay(_ date: Date) -> Date {
         Calendar.current.startOfDay(for: date)
@@ -80,5 +108,15 @@ final class ContentViewModel: ObservableObject {
         // “If needed”: schedule if there exists any unlocked (unfinished) entry for *today* OR any prior day.
         // This is a practical interpretation given iOS notification constraints.
         allEntries.contains { !$0.isLocked }
+    }
+
+    func limitedFinishedEntries(from entries: [DayEntry]) -> [DayEntry] {
+        let sortedByNewest = entries.sorted { $0.day > $1.day }
+        switch finishedLimit {
+        case .all:
+            return sortedByNewest
+        default:
+            return Array(sortedByNewest.prefix(finishedLimit.rawValue))
+        }
     }
 }
