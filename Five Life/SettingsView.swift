@@ -51,6 +51,9 @@ struct SettingsView: View {
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
 
+            Toggle(settings.language == .dutch ? "Toon speciale feestdagen" : "Show special holidays",
+                   isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
+
             HStack {
                 Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
                 Spacer()

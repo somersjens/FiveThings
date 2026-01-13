@@ -35,7 +35,23 @@ struct DayCardView: View {
     }
 
     private var moonPhase: MoonPhaseKind? {
-        settings.moonEnabled ? MoonPhase.namedPhaseIfNear(entry.day) : nil
+        settings.moonEnabled ? MoonPhase.phase(on: entry.day) : nil
+    }
+
+    private var fullMoonTimeText: String? {
+        guard settings.moonEnabled, moonPhase == .fullMoon else { return nil }
+        let fullMoonDate = MoonPhase.fullMoonDate(near: entry.day)
+        guard Calendar.current.isDate(fullMoonDate, inSameDayAs: entry.day) else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = settings.locale
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter.string(from: fullMoonDate)
+    }
+
+    private var holidayNames: [String] {
+        guard settings.holidaysEnabled else { return [] }
+        return HolidayProvider.holidayNames(on: entry.day, language: settings.language)
     }
 
     private var requiredCount: Int {
@@ -170,13 +186,23 @@ struct DayCardView: View {
                 Text(dateString)
                     .font(.headline)
 
-                if let phase = moonPhase {
-                    HStack(spacing: 6) {
-                        Image(systemName: phase.sfSymbolName)
-                        Text(phase.localizedName(language: settings.language))
+                if holidayNames.isEmpty {
+                    if let phase = moonPhase {
+                        moonLine(phase)
+                    } else {
+                        Text(" ")
+                            .font(.subheadline)
+                            .foregroundStyle(.white)
                     }
-                    .font(.subheadline)
-                    .foregroundStyle(.black)
+                } else {
+                    ForEach(holidayNames.prefix(2), id: \.self) { holiday in
+                        Text(holiday)
+                            .font(.subheadline)
+                            .foregroundStyle(.black)
+                    }
+                    if let phase = moonPhase {
+                        moonLine(phase)
+                    }
                 }
             }
 
@@ -210,6 +236,18 @@ struct DayCardView: View {
                                 ? (settings.language == .dutch ? "Ontgrendelen" : "Unlock")
                                 : (settings.language == .dutch ? "Vergrendelen" : "Lock"))
         }
+    }
+
+    private func moonLine(_ phase: MoonPhaseKind) -> some View {
+        let timeText = fullMoonTimeText
+        return HStack(spacing: 6) {
+            Image(systemName: phase.sfSymbolName)
+            Text(timeText == nil
+                 ? phase.localizedName(language: settings.language)
+                 : "\(phase.localizedName(language: settings.language)) • \(timeText ?? "")")
+        }
+        .font(.subheadline)
+        .foregroundStyle(.black)
     }
 
     private func entryRow(_ idx: Int) -> some View {

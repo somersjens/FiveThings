@@ -61,9 +61,19 @@ struct ContentView: View {
             return true
         }
 
-        if settings.moonEnabled, let phase = MoonPhase.namedPhaseIfNear(entry.day) {
+        if settings.moonEnabled {
+            let phase = MoonPhase.phase(on: entry.day)
             let phaseName = phase.localizedName(language: settings.language)
             if phaseName.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+                return true
+            }
+        }
+
+        if settings.holidaysEnabled {
+            let holidayNames = HolidayProvider.holidayNames(on: entry.day, language: settings.language)
+            if holidayNames.contains(where: { name in
+                name.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+            }) {
                 return true
             }
         }
