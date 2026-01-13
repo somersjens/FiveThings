@@ -24,6 +24,13 @@ struct DayCardView: View {
 
     @FocusState private var focusedIndex: Int?
 
+    private static let fullMoonTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter
+    }()
+
     private var isEditable: Bool { !entry.isLocked }
 
     private var isToday: Bool {
@@ -42,11 +49,8 @@ struct DayCardView: View {
         guard settings.moonEnabled, moonPhase == .fullMoon else { return nil }
         let fullMoonDate = MoonPhase.fullMoonDate(near: entry.day)
         guard Calendar.current.isDate(fullMoonDate, inSameDayAs: entry.day) else { return nil }
-        let formatter = DateFormatter()
-        formatter.locale = settings.locale
-        formatter.timeStyle = .short
-        formatter.dateStyle = .none
-        return formatter.string(from: fullMoonDate)
+        DayCardView.fullMoonTimeFormatter.locale = settings.locale
+        return DayCardView.fullMoonTimeFormatter.string(from: fullMoonDate)
     }
 
     private var holidayNames: [String] {

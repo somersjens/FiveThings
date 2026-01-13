@@ -22,6 +22,13 @@ struct ContentView: View {
 
     @Environment(\.scenePhase) private var scenePhase
 
+    private static let numericDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "dd-MM-yyyy"
+        return formatter
+    }()
+
     private var unfinished: [DayEntry] {
         entries
             .filter { !$0.isLocked }
@@ -32,39 +39,35 @@ struct ContentView: View {
         let base = entries.filter { $0.isLocked }
         let limited = vm.limitedFinishedEntries(from: base)
         let sorted = limited.sorted { vm.newestFirst ? ($0.day > $1.day) : ($0.day < $1.day) }
-        let q = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !q.isEmpty else { return sorted }
+        let normalizedQuery = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedQuery.isEmpty else { return sorted }
         return sorted.filter { entry in
-            entryMatchesSearch(entry, query: q)
+            entryMatchesSearch(entry, normalizedQuery: normalizedQuery)
         }
     }
 
-    private func entryMatchesSearch(_ entry: DayEntry, query: String) -> Bool {
-        let needle = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !needle.isEmpty else { return true }
+    private func entryMatchesSearch(_ entry: DayEntry, normalizedQuery: String) -> Bool {
+        guard !normalizedQuery.isEmpty else { return true }
 
         if entry.items.joined(separator: " ")
-            .range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+            .range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
             return true
         }
 
         let dayString = DateFormatting.formattedDayString(entry.day, language: settings.language)
-        if dayString.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+        if dayString.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
             return true
         }
 
-        let numericFormatter = DateFormatter()
-        numericFormatter.locale = Locale(identifier: "en_US_POSIX")
-        numericFormatter.dateFormat = "dd-MM-yyyy"
-        let numericDate = numericFormatter.string(from: entry.day)
-        if numericDate.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+        let numericDate = ContentView.numericDateFormatter.string(from: entry.day)
+        if numericDate.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
             return true
         }
 
         if settings.moonEnabled {
             let phase = MoonPhase.phase(on: entry.day)
             let phaseName = phase.localizedName(language: settings.language)
-            if phaseName.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
+            if phaseName.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
                 return true
             }
         }
@@ -72,7 +75,7 @@ struct ContentView: View {
         if settings.holidaysEnabled {
             let holidayNames = HolidayProvider.holidayNames(on: entry.day, language: settings.language)
             if holidayNames.contains(where: { name in
-                name.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+                name.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil
             }) {
                 return true
             }
@@ -176,6 +179,8 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 ScrollView(showsIndicators: false) {
+                    let unfinishedEntries = unfinished
+                    let finishedEntries = finished
                     VStack(alignment: .leading, spacing: 14) {
                         if showSettings {
                             VStack(alignment: .leading, spacing: 12) {
@@ -217,15 +222,16 @@ struct ContentView: View {
                         }
 
                         // Unfinished section
-                        if !unfinished.isEmpty {
+                        if !unfinishedEntries.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
-                                ForEach(unfinished) { entry in
+                                ForEach(unfinishedEntries) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
                                         .matchedGeometryEffect(id: entry.id, in: cardNamespace)
                                         .transition(.opacity)
                                 }
                             }
-                            .animation(.spring(response: 0.5, dampingFraction: 0.85), value: unfinished.map(\.id))
+                            .animation(.spring(response: 0.5, dampingFraction: 0.85),
+                                       value: unfinishedEntries.map(\.id))
                         } else {
                             Text(settings.language == .dutch ? "Tot morgen!" : "See you tomorrow!")
                                 .font(.title3.weight(.semibold))
@@ -249,21 +255,22 @@ struct ContentView: View {
 
                         // Finished section
                         VStack(alignment: .leading, spacing: 10) {
-                            if finished.isEmpty {
+                            if finishedEntries.isEmpty {
                                 Text(settings.language == .dutch
                                      ? "Geen kaarten gevonden."
                                      : "No cards found.")
                                     .foregroundStyle(.black)
                                     .padding(.horizontal, 4)
                             } else {
-                                ForEach(finished) { entry in
+                                ForEach(finishedEntries) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
                                         .matchedGeometryEffect(id: entry.id, in: cardNamespace)
                                         .transition(.opacity)
                                 }
                             }
                         }
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: finished.map(\.id))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85),
+                                   value: finishedEntries.map(\.id))
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.searchText)
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.finishedLimit)
