@@ -167,7 +167,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 14) {
                         if showSettings {
                             VStack(alignment: .leading, spacing: 12) {
@@ -283,7 +283,6 @@ struct ContentView: View {
                     }
                     .padding(16)
                 }
-
             }
             .background(Color.brandBackground.ignoresSafeArea())
             .safeAreaInset(edge: .top) {
