@@ -96,6 +96,45 @@ struct ContentView: View {
         return "\(word) Life"
     }
 
+    private struct StatisticsSnapshot {
+        let streak: Int
+        let days: Int
+        let entries: Int
+    }
+
+    private var completedEntries: [DayEntry] {
+        entries.filter { $0.isLocked || $0.wasCompleted }
+    }
+
+    private var statisticsSnapshot: StatisticsSnapshot {
+        let completed = completedEntries
+        let totalDays = completed.count
+        let totalEntries = completed.reduce(0) { $0 + $1.itemCount }
+        let streak = calculateStreak(from: completed)
+        return StatisticsSnapshot(streak: streak, days: totalDays, entries: totalEntries)
+    }
+
+    private func calculateStreak(from entries: [DayEntry]) -> Int {
+        let calendar = Calendar.current
+        let uniqueDays = Array(Set(entries.map { calendar.startOfDay(for: $0.day) }))
+            .sorted(by: >)
+        guard let mostRecent = uniqueDays.first else { return 0 }
+        var streak = 1
+        var currentDay = mostRecent
+        for day in uniqueDays.dropFirst() {
+            guard let expected = calendar.date(byAdding: .day, value: -1, to: currentDay) else {
+                break
+            }
+            if calendar.isDate(day, inSameDayAs: expected) {
+                streak += 1
+                currentDay = day
+            } else {
+                break
+            }
+        }
+        return streak
+    }
+
     private func numberWord(for count: Int) -> String {
         switch count {
         case 1: return "One"
@@ -142,6 +181,26 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
+    }
+
+    private var statisticsRow: some View {
+        let stats = statisticsSnapshot
+        let streakLabel = settings.language == .dutch ? "Streak" : "Streak"
+        let daysLabel = settings.language == .dutch ? "Dagen" : "Days"
+        let entriesLabel = settings.language == .dutch ? "Items" : "Entries"
+        return HStack(spacing: 6) {
+            Text("\(streakLabel): \(stats.streak)")
+            Text("|")
+                .foregroundStyle(.secondary)
+            Text("\(daysLabel): \(stats.days)")
+            Text("|")
+                .foregroundStyle(.secondary)
+            Text("\(entriesLabel): \(stats.entries)")
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(.black)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.vertical, 4)
     }
 
     @ViewBuilder
@@ -248,6 +307,10 @@ struct ContentView: View {
                             .frame(height: 6)
                             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                             .padding(.vertical, 8)
+
+                        if settings.statisticsEnabled {
+                            statisticsRow
+                        }
 
                         // Search + sort (finished only)
                         SearchAndSortBar(settings: settings,
