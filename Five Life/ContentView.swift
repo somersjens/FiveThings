@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var isUnlocked: Bool = true
     @State private var isUnlocking: Bool = false
     @State private var hasAppeared: Bool = false
+    @State private var midnightTask: Task<Void, Never>?
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -317,6 +318,7 @@ struct ContentView: View {
                 await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                       shouldSchedule: shouldScheduleNext,
                                                       language: settings.language)
+                scheduleMidnightRefresh()
             }
             .onChange(of: entries.count) { _, _ in
                 // Keep “next day if needed” in sync when entries are created/locked/unlocked.
@@ -350,10 +352,47 @@ struct ContentView: View {
                     isUnlocked = false
                 }
                 if phase == .active {
+                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    scheduleMidnightRefresh()
                     updateUnlockStateIfNeeded()
+                } else {
+                    midnightTask?.cancel()
+                    midnightTask = nil
                 }
             }
         }
+    }
+
+    private func scheduleMidnightRefresh() {
+        midnightTask?.cancel()
+        midnightTask = Task {
+            while !Task.isCancelled {
+                let interval = secondsUntilNextDay()
+                let sleepTime = UInt64(interval * 1_000_000_000)
+                try? await Task.sleep(nanoseconds: sleepTime)
+                if Task.isCancelled {
+                    return
+                }
+                await MainActor.run {
+                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                }
+                let shouldScheduleNext = await MainActor.run {
+                    vm.shouldScheduleNextDayReminder(allEntries: entries)
+                }
+                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                      shouldSchedule: shouldScheduleNext,
+                                                      language: settings.language)
+            }
+        }
+    }
+
+    private func secondsUntilNextDay() -> TimeInterval {
+        let calendar = Calendar.current
+        let now = Date()
+        let todayStart = calendar.startOfDay(for: now)
+        let tomorrowStart = calendar.date(byAdding: .day, value: 1, to: todayStart) ?? todayStart.addingTimeInterval(86_400)
+        let interval = tomorrowStart.timeIntervalSince(now)
+        return max(interval, 1)
     }
 
     private func updateUnlockStateIfNeeded() {
