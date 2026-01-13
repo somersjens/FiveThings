@@ -47,35 +47,58 @@ enum MoonPhaseKind: String {
 }
 
 enum MoonPhase {
+    private static var phaseCache: [Date: MoonPhaseKind] = [:]
+    private static var fullMoonCache: [Date: Date] = [:]
+
     /// Simple local approximation (no network).
     static func phase(on date: Date) -> MoonPhaseKind {
-        let phase = phaseFraction(on: date)
-        switch phase {
-        case 0..<0.0625, 0.9375...1.0:
-            return .newMoon
-        case 0.0625..<0.1875:
-            return .waxingCrescent
-        case 0.1875..<0.3125:
-            return .firstQuarter
-        case 0.3125..<0.4375:
-            return .waxingGibbous
-        case 0.4375..<0.5625:
-            return .fullMoon
-        case 0.5625..<0.6875:
-            return .waningGibbous
-        case 0.6875..<0.8125:
-            return .thirdQuarter
-        default:
-            return .waningCrescent
+        let dayKey = cacheDayKey(for: date)
+        if let cached = phaseCache[dayKey] {
+            return cached
         }
+
+        let phaseValue = phaseFraction(on: date)
+        let phase: MoonPhaseKind
+        switch phaseValue {
+        case 0..<0.0625, 0.9375...1.0:
+            phase = .newMoon
+        case 0.0625..<0.1875:
+            phase = .waxingCrescent
+        case 0.1875..<0.3125:
+            phase = .firstQuarter
+        case 0.3125..<0.4375:
+            phase = .waxingGibbous
+        case 0.4375..<0.5625:
+            phase = .fullMoon
+        case 0.5625..<0.6875:
+            phase = .waningGibbous
+        case 0.6875..<0.8125:
+            phase = .thirdQuarter
+        default:
+            phase = .waningCrescent
+        }
+        phaseCache[dayKey] = phase
+        return phase
     }
 
     static func fullMoonDate(near date: Date) -> Date {
+        let dayKey = cacheDayKey(for: date)
+        if let cached = fullMoonCache[dayKey] {
+            return cached
+        }
         let phase = phaseFraction(on: date)
         var delta = 0.5 - phase
         if delta > 0.5 { delta -= 1.0 }
         if delta < -0.5 { delta += 1.0 }
-        return date.addingTimeInterval(delta * synodicMonth * secondsPerDay)
+        let fullMoon = date.addingTimeInterval(delta * synodicMonth * secondsPerDay)
+        fullMoonCache[dayKey] = fullMoon
+        return fullMoon
+    }
+
+    private static func cacheDayKey(for date: Date) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        return calendar.startOfDay(for: date)
     }
 
     private static func phaseFraction(on date: Date) -> Double {

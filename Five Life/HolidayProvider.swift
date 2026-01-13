@@ -7,10 +7,37 @@ struct HolidayItem {
 }
 
 enum HolidayProvider {
+    private struct HolidayCacheKey: Hashable {
+        let year: Int
+        let language: AppLanguage
+        let calendarIdentifier: Calendar.Identifier
+        let timeZoneIdentifier: String
+    }
+
+    private static var holidayCache: [HolidayCacheKey: [Date: [String]]] = [:]
+
     static func holidayNames(on date: Date,
                              language: AppLanguage,
                              calendar: Calendar = .current) -> [String] {
         let year = calendar.component(.year, from: date)
+        let key = HolidayCacheKey(year: year,
+                                  language: language,
+                                  calendarIdentifier: calendar.identifier,
+                                  timeZoneIdentifier: calendar.timeZone.identifier)
+        let dayKey = calendar.startOfDay(for: date)
+
+        if let cached = holidayCache[key] {
+            return cached[dayKey] ?? []
+        }
+
+        let holidayMap = buildHolidayMap(for: year, language: language, calendar: calendar)
+        holidayCache[key] = holidayMap
+        return holidayMap[dayKey] ?? []
+    }
+
+    private static func buildHolidayMap(for year: Int,
+                                        language: AppLanguage,
+                                        calendar: Calendar) -> [Date: [String]] {
         var items: [HolidayItem] = []
 
         switch language {
@@ -23,14 +50,16 @@ enum HolidayProvider {
 
         items.append(contentsOf: religiousHolidays(for: year, language: language, calendar: calendar))
 
-        var seen = Set<String>()
-        var results: [String] = []
-        for item in items where calendar.isDate(item.date, inSameDayAs: date) {
-            guard !seen.contains(item.name) else { continue }
-            seen.insert(item.name)
-            results.append(item.name)
+        var map: [Date: [String]] = [:]
+        for item in items {
+            let dayKey = calendar.startOfDay(for: item.date)
+            var names = map[dayKey] ?? []
+            if !names.contains(item.name) {
+                names.append(item.name)
+                map[dayKey] = names
+            }
         }
-        return results
+        return map
     }
 
     private static func englishHolidays(for year: Int, calendar: Calendar) -> [HolidayItem] {
