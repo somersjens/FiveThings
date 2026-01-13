@@ -382,21 +382,33 @@ struct DayCardView: View {
     }
 
     private func dragGesture(for idx: Int) -> some Gesture {
-        DragGesture(minimumDistance: 6)
+        LongPressGesture(minimumDuration: 0.5)
+            .sequenced(before: DragGesture(minimumDistance: 6))
             .onChanged { value in
-                if dragIndex == nil {
-                    dragIndex = idx
-                    isDragging = true
+                switch value {
+                case .first(true):
                     suppressFocus = true
                     focusedIndex = nil
+                case .second(true, let dragValue?):
+                    if dragIndex == nil {
+                        dragIndex = idx
+                        isDragging = true
+                    }
+                    guard dragIndex == idx else { return }
+                    dragOffset = dragValue.translation
+                    let currentY = (rowFrames[idx]?.midY ?? 0) + dragValue.translation.height
+                    updateDropTarget(currentY: currentY, source: idx)
+                default:
+                    break
                 }
-                guard dragIndex == idx else { return }
-                dragOffset = value.translation
-                let currentY = (rowFrames[idx]?.midY ?? 0) + value.translation.height
-                updateDropTarget(currentY: currentY, source: idx)
             }
-            .onEnded { _ in
-                completeDrag()
+            .onEnded { value in
+                switch value {
+                case .second(true, _):
+                    completeDrag()
+                default:
+                    suppressFocus = false
+                }
             }
     }
 
