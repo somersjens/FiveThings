@@ -17,9 +17,11 @@ struct SettingsView: View {
     @State private var addDayDigits: String = ""
     @State private var addDayMessage: String?
     @State private var addDayMessageIsError: Bool = true
+    @State private var addDayMessageTask: Task<Void, Never>?
+    @FocusState private var addDayFieldFocused: Bool
 
     private var basicSettingsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
                 Spacer()
@@ -34,8 +36,11 @@ struct SettingsView: View {
                 .pickerStyle(.menu)
                 .labelsHidden()
                 .foregroundStyle(.black)
-                .tint(.black)
+                .tint(Color(.darkGray))
             }
+            .padding(.vertical, 6)
+
+            Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
                 Text(settings.language == .dutch ? "Taal van de app" : "App language")
@@ -50,17 +55,29 @@ struct SettingsView: View {
                 }
                 .labelsHidden()
                 .foregroundStyle(.black)
-                .tint(.black)
+                .tint(Color(.darkGray))
             }
+            .padding(.vertical, 6)
+
+            Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
+                .padding(.vertical, 6)
+
+            Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon speciale feestdagen" : "Show special holidays",
                    isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
+                .padding(.vertical, 6)
+
+            Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon statistieken" : "Show statistics",
                    isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
+                .padding(.vertical, 6)
+
+            Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
                 Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
@@ -73,15 +90,17 @@ struct SettingsView: View {
                 ))
                 .labelsHidden()
             }
+            .padding(.vertical, 6)
         }
+        .tint(Color(.darkGray))
     }
 
     private var addDaySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(settings.language == .dutch ? "Voeg een dag toe" : "Add a day")
-                .font(.headline)
-
             HStack(spacing: 8) {
+                Text(settings.language == .dutch ? "Voeg een dag toe" : "Add a day")
+                    .font(.headline)
+
                 addDayInputField
 
                 Button {
@@ -92,40 +111,30 @@ struct SettingsView: View {
                         .frame(width: 36, height: 36)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(.secondary.opacity(0.12))
+                                .fill(Color.gray.opacity(0.18))
                         )
                 }
                 .accessibilityLabel(settings.language == .dutch ? "Dag toevoegen" : "Add day")
             }
 
-            Text(settings.language == .dutch
-                 ? "Vul DD-MM-JJJJ in."
-                 : "Enter DD-MM-YYYY (or MM-DD-YYYY).")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
             if let message = addDayMessage {
                 Text(message)
                     .font(.footnote)
                     .foregroundStyle(addDayMessageIsError ? .red : .green)
+                    .transition(.opacity)
             }
         }
     }
 
     private var addDayInputField: some View {
-        ZStack(alignment: .leading) {
-            Text(addDayAttributedPlaceholder)
-                .font(.body.monospacedDigit())
-
-            TextField("", text: addDayDigitsBinding)
-                .keyboardType(.numberPad)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .foregroundStyle(.clear)
-                .font(.body.monospacedDigit())
-                .tint(.primary)
-                .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
-        }
+        TextField("DD-MM-YYYY", text: addDayDigitsBinding)
+            .keyboardType(.numberPad)
+            .textInputAutocapitalization(.never)
+            .disableAutocorrection(true)
+            .font(.body.monospacedDigit())
+            .tint(Color(.darkGray))
+            .focused($addDayFieldFocused)
+            .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(
@@ -140,41 +149,20 @@ struct SettingsView: View {
 
     private var addDayDigitsBinding: Binding<String> {
         Binding(
-            get: { addDayDigits },
+            get: { formattedAddDayDigits(addDayDigits) },
             set: { newValue in
                 let filtered = newValue.filter(\.isWholeNumber)
                 addDayDigits = String(filtered.prefix(8))
                 addDayMessage = nil
+                if addDayDigits.count == 8 {
+                    addDayFieldFocused = false
+                }
             }
         )
     }
 
-    private var addDayAttributedPlaceholder: AttributedString {
-        let placeholder = "DD-MM-YYYY"
-        var attributed = AttributedString()
-        var digitIndex = addDayDigits.startIndex
-
-        for character in placeholder {
-            var segment = AttributedString(String(character))
-            if character == "D" || character == "M" || character == "Y" {
-                if digitIndex < addDayDigits.endIndex {
-                    segment = AttributedString(String(addDayDigits[digitIndex]))
-                    segment.foregroundColor = .primary
-                    digitIndex = addDayDigits.index(after: digitIndex)
-                } else {
-                    segment.foregroundColor = .secondary
-                }
-            } else {
-                segment.foregroundColor = .secondary
-            }
-            attributed.append(segment)
-        }
-
-        return attributed
-    }
-
     private var reminderSettingsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(settings.language == .dutch ? "Dagelijkse reminder" : "Daily reminder")
                 Spacer()
@@ -190,6 +178,9 @@ struct SettingsView: View {
                 Toggle("", isOn: $dailyReminderEnabled)
                     .labelsHidden()
             }
+            .padding(.vertical, 6)
+
+            Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
                 Text(settings.language == .dutch ? "Volgende dag als nodig" : "Next day if needed")
@@ -206,6 +197,7 @@ struct SettingsView: View {
                 Toggle("", isOn: $nextDayReminderEnabled)
                     .labelsHidden()
             }
+            .padding(.vertical, 6)
 
             if notifier.authorizationStatus == .denied {
                 Text(settings.language == .dutch
@@ -215,6 +207,7 @@ struct SettingsView: View {
                     .foregroundStyle(.black)
             }
         }
+        .tint(Color(.darkGray))
     }
 
     private var settingsForm: some View {
@@ -234,9 +227,11 @@ struct SettingsView: View {
     }
 
     private var inlineSettings: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             basicSettingsSection
+            Divider().overlay(Color.gray.opacity(0.3))
             reminderSettingsSection
+            Divider().overlay(Color.gray.opacity(0.3))
             addDaySection
         }
     }
@@ -287,18 +282,10 @@ struct SettingsView: View {
 
     private func handleAddDay() {
         guard addDayDigits.count == 8 else {
-            addDayMessage = settings.language == .dutch
-                ? "Vul een volledige datum in."
-                : "Enter a full date."
-            addDayMessageIsError = true
             return
         }
 
         guard let selectedDay = parseAddDayDate() else {
-            addDayMessage = settings.language == .dutch
-                ? "Ongeldige datum."
-                : "Invalid date."
-            addDayMessageIsError = true
             return
         }
 
@@ -306,20 +293,18 @@ struct SettingsView: View {
         let normalizedDay = calendar.startOfDay(for: selectedDay)
         let today = calendar.startOfDay(for: Date())
         if normalizedDay > today {
-            addDayMessage = settings.language == .dutch
+            showAddDayMessage(settings.language == .dutch
                 ? "Deze datum ligt in de toekomst."
-                : "That date is in the future."
-            addDayMessageIsError = true
+                : "That date is in the future.")
             return
         }
 
         let descriptor = FetchDescriptor<DayEntry>(predicate: #Predicate { $0.day == normalizedDay })
         let existing = (try? modelContext.fetch(descriptor))?.first
         if existing != nil {
-            addDayMessage = settings.language == .dutch
+            showAddDayMessage(settings.language == .dutch
                 ? "Deze dag bestaat al."
-                : "That day already exists."
-            addDayMessageIsError = true
+                : "That day already exists.")
             return
         }
 
@@ -328,10 +313,6 @@ struct SettingsView: View {
         try? modelContext.save()
 
         addDayDigits = ""
-        addDayMessage = settings.language == .dutch
-            ? "Dag toegevoegd."
-            : "Day added."
-        addDayMessageIsError = false
     }
 
     private func parseAddDayDate() -> Date? {
@@ -341,15 +322,33 @@ struct SettingsView: View {
             return nil
         }
 
-        if settings.language == .dutch {
-            return dateFrom(day: first, month: second, year: year)
-        }
-
-        if let monthFirst = dateFrom(day: second, month: first, year: year) {
-            return monthFirst
-        }
-
         return dateFrom(day: first, month: second, year: year)
+    }
+
+    private func formattedAddDayDigits(_ digits: String) -> String {
+        var formatted = ""
+        let characters = Array(digits)
+        for index in 0..<characters.count {
+            if index == 2 || index == 4 {
+                formatted.append("-")
+            }
+            formatted.append(characters[index])
+        }
+        return formatted
+    }
+
+    private func showAddDayMessage(_ message: String) {
+        addDayMessageTask?.cancel()
+        addDayMessageIsError = true
+        withAnimation(.easeInOut(duration: 0.2)) {
+            addDayMessage = message
+        }
+        addDayMessageTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(5))
+            withAnimation(.easeInOut(duration: 0.2)) {
+                addDayMessage = nil
+            }
+        }
     }
 
     private func intFromDigits(start: Int, length: Int) -> Int? {
