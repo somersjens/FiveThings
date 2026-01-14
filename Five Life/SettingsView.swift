@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var nextDayReminderPickerDate: Date = Date()
     @State private var faceIdLockEnabled: Bool = false
     @State private var addDayDigits: String = ""
+    @State private var addDayText: String = ""
     @State private var addDayMessage: String?
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
@@ -105,21 +106,25 @@ struct SettingsView: View {
                 Text(settings.language == .dutch ? "Voeg een dag toe" : "Add a day")
                     .font(.body)
 
-                addDayInputField
+                Spacer(minLength: 8)
 
-                Button {
-                    handleAddDay()
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .semibold))
-                        .frame(width: 36, height: 36)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.brandAccent)
-                        )
-                        .foregroundStyle(.white)
+                HStack(spacing: 8) {
+                    addDayInputField
+
+                    Button {
+                        handleAddDay()
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .frame(width: 32, height: 32)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(Color.brandAccent)
+                            )
+                            .foregroundStyle(.white)
+                    }
+                    .accessibilityLabel(settings.language == .dutch ? "Dag toevoegen" : "Add day")
                 }
-                .accessibilityLabel(settings.language == .dutch ? "Dag toevoegen" : "Add day")
             }
 
             if let message = addDayMessage {
@@ -132,16 +137,40 @@ struct SettingsView: View {
     }
 
     private var addDayInputField: some View {
-        TextField("DD-MM-YYYY", text: addDayDigitsBinding)
-            .keyboardType(.numberPad)
-            .textInputAutocapitalization(.never)
-            .disableAutocorrection(true)
-            .font(.body.monospacedDigit())
-            .tint(Color(.darkGray))
-            .focused($addDayFieldFocused)
-            .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        ZStack {
+            TextField("", text: $addDayText)
+                .keyboardType(.numberPad)
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .font(.body.monospacedDigit())
+                .foregroundStyle(.clear)
+                .tint(Color(.darkGray))
+                .multilineTextAlignment(.center)
+                .focused($addDayFieldFocused)
+                .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
+                .frame(maxWidth: .infinity, alignment: .center)
+                .onChange(of: addDayText) { _, newValue in
+                    let filtered = newValue.filter(\.isWholeNumber)
+                    let nextDigits = String(filtered.prefix(8))
+                    addDayDigits = nextDigits
+                    addDayMessage = nil
+                    let formatted = formattedAddDayDigits(nextDigits)
+                    if newValue != formatted {
+                        addDayText = formatted
+                    }
+                    if nextDigits.count == 8 {
+                        addDayFieldFocused = false
+                    }
+                }
+
+            Text(addDayDisplayText(addDayDigits))
+                .font(.body.monospacedDigit())
+                .allowsHitTesting(false)
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(width: 120, height: 26)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(Color(.systemBackground))
@@ -149,20 +178,6 @@ struct SettingsView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .strokeBorder(Color.gray.opacity(0.3), lineWidth: 1)
-        )
-    }
-
-    private var addDayDigitsBinding: Binding<String> {
-        Binding(
-            get: { formattedAddDayDigits(addDayDigits) },
-            set: { newValue in
-                let filtered = newValue.filter(\.isWholeNumber)
-                addDayDigits = String(filtered.prefix(8))
-                addDayMessage = nil
-                if addDayDigits.count == 8 {
-                    addDayFieldFocused = false
-                }
-            }
         )
     }
 
@@ -330,6 +345,7 @@ struct SettingsView: View {
         try? modelContext.save()
 
         addDayDigits = ""
+        addDayText = ""
     }
 
     private func parseAddDayDate() -> Date? {
@@ -351,7 +367,54 @@ struct SettingsView: View {
             }
             formatted.append(characters[index])
         }
+        if digits.count == 2 || digits.count == 4 {
+            formatted.append("-")
+        }
         return formatted
+    }
+
+    private func addDayDisplayText(_ digits: String) -> AttributedString {
+        let digitColor = Color(.black)
+        let placeholderColor = Color(.systemGray3)
+
+        let dayDigits = String(digits.prefix(2))
+        let monthDigits = digits.count > 2 ? String(digits.dropFirst(2).prefix(2)) : ""
+        let yearDigits = digits.count > 4 ? String(digits.dropFirst(4).prefix(4)) : ""
+
+        let dayPlaceholder = String(repeating: "D", count: max(0, 2 - dayDigits.count))
+        let monthPlaceholder = String(repeating: "M", count: max(0, 2 - monthDigits.count))
+        let yearPlaceholder = String(repeating: "Y", count: max(0, 4 - yearDigits.count))
+
+        var output = AttributedString("")
+        var dayValue = AttributedString(dayDigits)
+        dayValue.foregroundColor = digitColor
+        var dayFiller = AttributedString(dayPlaceholder)
+        dayFiller.foregroundColor = placeholderColor
+        var dashOne = AttributedString("-")
+        dashOne.foregroundColor = placeholderColor
+
+        var monthValue = AttributedString(monthDigits)
+        monthValue.foregroundColor = digitColor
+        var monthFiller = AttributedString(monthPlaceholder)
+        monthFiller.foregroundColor = placeholderColor
+        var dashTwo = AttributedString("-")
+        dashTwo.foregroundColor = placeholderColor
+
+        var yearValue = AttributedString(yearDigits)
+        yearValue.foregroundColor = digitColor
+        var yearFiller = AttributedString(yearPlaceholder)
+        yearFiller.foregroundColor = placeholderColor
+
+        output += dayValue
+        output += dayFiller
+        output += dashOne
+        output += monthValue
+        output += monthFiller
+        output += dashTwo
+        output += yearValue
+        output += yearFiller
+
+        return output
     }
 
     private func showAddDayMessage(_ message: String) {
