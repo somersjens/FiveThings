@@ -137,6 +137,7 @@ struct SettingsView: View {
                     .transition(.opacity)
             }
         }
+        .padding(.top, 8)
     }
 
     private var addDayInputField: some View {
