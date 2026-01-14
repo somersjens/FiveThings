@@ -308,7 +308,7 @@ struct ContentView: View {
                             .fill(Color.brandAccent)
                             .frame(height: 6)
                             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                            .padding(.vertical, 8)
+                            .padding(.top, 8)
 
                         if settings.statisticsEnabled {
                             statisticsRow
