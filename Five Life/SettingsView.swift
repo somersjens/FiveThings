@@ -8,6 +8,7 @@ struct SettingsView: View {
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
     @StateObject private var notifier = NotificationManager.shared
+    private let settingsRowHeight: CGFloat = 44
 
     @State private var dailyReminderEnabled: Bool = false
     @State private var nextDayReminderEnabled: Bool = false
@@ -38,7 +39,7 @@ struct SettingsView: View {
                 .foregroundStyle(.black)
                 .tint(.brandAccent)
             }
-            .padding(.vertical, 6)
+            .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -57,30 +58,33 @@ struct SettingsView: View {
                 .foregroundStyle(.black)
                 .tint(.brandAccent)
             }
-            .padding(.vertical, 6)
+            .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
-                .padding(.vertical, 6)
+                .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon speciale feestdagen" : "Show special holidays",
                    isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
-                .padding(.vertical, 6)
+                .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon statistieken" : "Show statistics",
                    isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
-                .padding(.vertical, 6)
+                .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
                 Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .layoutPriority(1)
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { faceIdLockEnabled },
@@ -90,7 +94,7 @@ struct SettingsView: View {
                 ))
                 .labelsHidden()
             }
-            .padding(.vertical, 6)
+            .frame(height: settingsRowHeight)
         }
         .tint(.brandAccent)
     }
@@ -166,6 +170,9 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(settings.language == .dutch ? "Dagelijkse reminder" : "Daily reminder")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .layoutPriority(1)
                 Spacer()
                 if dailyReminderEnabled {
                     DatePicker("",
@@ -180,12 +187,15 @@ struct SettingsView: View {
                 Toggle("", isOn: $dailyReminderEnabled)
                     .labelsHidden()
             }
-            .padding(.vertical, 6)
+            .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
                 Text(settings.language == .dutch ? "Volgende dag als nodig" : "Next day if needed")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .layoutPriority(1)
                 Spacer()
                 if nextDayReminderEnabled {
                     DatePicker("",
@@ -200,7 +210,7 @@ struct SettingsView: View {
                 Toggle("", isOn: $nextDayReminderEnabled)
                     .labelsHidden()
             }
-            .padding(.vertical, 6)
+            .frame(height: settingsRowHeight)
 
             if notifier.authorizationStatus == .denied {
                 Text(settings.language == .dutch
@@ -230,11 +240,15 @@ struct SettingsView: View {
     }
 
     private var inlineSettings: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
             basicSettingsSection
-            Divider().overlay(Color.gray.opacity(0.3))
+            Divider()
+                .overlay(Color.gray.opacity(0.3))
+                .frame(height: 1)
             reminderSettingsSection
-            Divider().overlay(Color.gray.opacity(0.3))
+            Divider()
+                .overlay(Color.gray.opacity(0.3))
+                .frame(height: 1)
             addDaySection
         }
     }
