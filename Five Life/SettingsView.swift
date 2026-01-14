@@ -22,50 +22,57 @@ struct SettingsView: View {
     @State private var addDayMessageTask: Task<Void, Never>?
     @FocusState private var addDayFieldFocused: Bool
 
-    private var basicSettingsSection: some View {
+    private var languageSection: some View {
+        HStack {
+            Text(settings.language == .dutch ? "Taal van de app" : "App language")
+            Spacer()
+            Menu {
+                Picker("", selection: Binding(
+                    get: { settings.language },
+                    set: { settings.language = $0 }
+                )) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .labelsHidden()
+            } label: {
+                settingsPickerLabel(text: settings.language.displayName)
+            }
+        }
+        .frame(height: settingsRowHeight)
+        .tint(.brandAccent)
+    }
+
+    private var itemsPerDaySection: some View {
+        HStack {
+            Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
+            Spacer()
+            HStack(spacing: 10) {
+                settingsStepperButton(
+                    systemName: "minus",
+                    isDisabled: settings.dailyItemCount <= 1
+                ) {
+                    settings.dailyItemCount = max(1, settings.dailyItemCount - 1)
+                }
+
+                Text("\(settings.dailyItemCount)")
+                    .font(.body.monospacedDigit())
+                    .foregroundStyle(.black)
+
+                settingsStepperButton(
+                    systemName: "plus",
+                    isDisabled: settings.dailyItemCount >= 10
+                ) {
+                    settings.dailyItemCount = min(10, settings.dailyItemCount + 1)
+                }
+            }
+        }
+        .frame(height: settingsRowHeight)
+    }
+
+    private var otherSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
-                Spacer()
-                Menu {
-                    Picker("", selection: Binding(
-                        get: { settings.dailyItemCount },
-                        set: { settings.dailyItemCount = max(1, min(10, $0)) }
-                    )) {
-                        ForEach(1...10, id: \.self) { count in
-                            Text("\(count)").tag(count)
-                        }
-                    }
-                    .labelsHidden()
-                } label: {
-                    settingsPickerLabel(text: "\(settings.dailyItemCount)")
-                }
-            }
-            .frame(height: settingsRowHeight)
-
-            Divider().overlay(Color.gray.opacity(0.3))
-
-            HStack {
-                Text(settings.language == .dutch ? "Taal van de app" : "App language")
-                Spacer()
-                Menu {
-                    Picker("", selection: Binding(
-                        get: { settings.language },
-                        set: { settings.language = $0 }
-                    )) {
-                        ForEach(AppLanguage.allCases) { lang in
-                            Text(lang.displayName).tag(lang)
-                        }
-                    }
-                    .labelsHidden()
-                } label: {
-                    settingsPickerLabel(text: settings.language.displayName)
-                }
-            }
-            .frame(height: settingsRowHeight)
-
-            Divider().overlay(Color.gray.opacity(0.3))
-
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
                 .frame(height: settingsRowHeight)
@@ -137,7 +144,7 @@ struct SettingsView: View {
                     .transition(.opacity)
             }
         }
-        .padding(.top, 8)
+        .padding(.vertical, 8)
     }
 
     private var addDayInputField: some View {
@@ -245,30 +252,46 @@ struct SettingsView: View {
     private var settingsForm: some View {
         Form {
             Section {
-                basicSettingsSection
-            }
-
-            Section {
-                reminderSettingsSection
+                languageSection
             }
 
             Section {
                 addDaySection
+            }
+
+            Section {
+                itemsPerDaySection
+            }
+
+            Section {
+                otherSettingsSection
+            }
+
+            Section {
+                reminderSettingsSection
             }
         }
     }
 
     private var inlineSettings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            basicSettingsSection
-            Divider()
-                .overlay(Color.gray.opacity(0.3))
-                .frame(height: 1)
-            reminderSettingsSection
+            languageSection
             Divider()
                 .overlay(Color.gray.opacity(0.3))
                 .frame(height: 1)
             addDaySection
+            Divider()
+                .overlay(Color.gray.opacity(0.3))
+                .frame(height: 1)
+            itemsPerDaySection
+            Divider()
+                .overlay(Color.gray.opacity(0.3))
+                .frame(height: 1)
+            otherSettingsSection
+            Divider()
+                .overlay(Color.gray.opacity(0.3))
+                .frame(height: 1)
+            reminderSettingsSection
         }
     }
 
@@ -429,6 +452,22 @@ struct SettingsView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.brandAccent)
         }
+    }
+
+    private func settingsStepperButton(systemName: String,
+                                       isDisabled: Bool,
+                                       action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .semibold))
+                .frame(width: 28, height: 28)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color(.systemGray5))
+                )
+        }
+        .disabled(isDisabled)
+        .foregroundStyle(isDisabled ? Color.gray.opacity(0.6) : Color.brandAccent)
     }
 
     private func showAddDayMessage(_ message: String) {

@@ -244,7 +244,7 @@ struct ContentView: View {
                     let finishedEntries = cachedFinishedEntries
                     LazyVStack(alignment: .leading, spacing: 14) {
                         if showSettings {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 HStack {
                                     Text(settings.language == .dutch ? "Instellingen" : "Settings")
                                         .font(.title3.weight(.semibold))
@@ -266,8 +266,10 @@ struct ContentView: View {
                                     .accessibilityLabel(settings.language == .dutch ? "Sluiten" : "Close")
                                 }
 
+                                Divider()
+                                    .overlay(Color.gray.opacity(0.3))
+
                                 SettingsView(settings: settings, showsNavigation: false)
-                                    .padding(.top, 4)
                             }
                             .padding(14)
                             .background(
