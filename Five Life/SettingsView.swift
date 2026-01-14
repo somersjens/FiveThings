@@ -27,18 +27,19 @@ struct SettingsView: View {
             HStack {
                 Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
                 Spacer()
-                Picker("", selection: Binding(
-                    get: { settings.dailyItemCount },
-                    set: { settings.dailyItemCount = max(1, min(10, $0)) }
-                )) {
-                    ForEach(1...10, id: \.self) { count in
-                        Text("\(count)").tag(count)
+                Menu {
+                    Picker("", selection: Binding(
+                        get: { settings.dailyItemCount },
+                        set: { settings.dailyItemCount = max(1, min(10, $0)) }
+                    )) {
+                        ForEach(1...10, id: \.self) { count in
+                            Text("\(count)").tag(count)
+                        }
                     }
+                    .labelsHidden()
+                } label: {
+                    settingsPickerLabel(text: "\(settings.dailyItemCount)")
                 }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .foregroundStyle(.black)
-                .tint(.brandAccent)
             }
             .frame(height: settingsRowHeight)
 
@@ -47,17 +48,19 @@ struct SettingsView: View {
             HStack {
                 Text(settings.language == .dutch ? "Taal van de app" : "App language")
                 Spacer()
-                Picker("", selection: Binding(
-                    get: { settings.language },
-                    set: { settings.language = $0 }
-                )) {
-                    ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang)
+                Menu {
+                    Picker("", selection: Binding(
+                        get: { settings.language },
+                        set: { settings.language = $0 }
+                    )) {
+                        ForEach(AppLanguage.allCases) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
                     }
+                    .labelsHidden()
+                } label: {
+                    settingsPickerLabel(text: settings.language.displayName)
                 }
-                .labelsHidden()
-                .foregroundStyle(.black)
-                .tint(.brandAccent)
             }
             .frame(height: settingsRowHeight)
 
@@ -415,6 +418,16 @@ struct SettingsView: View {
         output += yearFiller
 
         return output
+    }
+
+    private func settingsPickerLabel(text: String) -> some View {
+        HStack(spacing: 6) {
+            Text(text)
+                .foregroundStyle(.black)
+            Image(systemName: "chevron.down")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.brandAccent)
+        }
     }
 
     private func showAddDayMessage(_ message: String) {
