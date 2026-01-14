@@ -242,8 +242,12 @@ struct DayCardView: View {
             .opacity(isDragging && dragIndex == idx ? 0 : 1)
             .allowsHitTesting(!(isDragging && dragIndex == idx))
             .zIndex(dragIndex == idx ? 1 : 0)
-            .simultaneousGesture(dragGesture(for: idx))
-        return isEditable ? AnyView(interactiveRow) : AnyView(styledRow)
+            .simultaneousGesture(longPressGesture(for: idx))
+            .simultaneousGesture(activeDragGesture(for: idx))
+        if isEditable {
+            return AnyView(interactiveRow)
+        }
+        return AnyView(styledRow)
     }
 
     private func rowContainer(idx: Int,
@@ -359,33 +363,26 @@ struct DayCardView: View {
         }
     }
 
-    private func dragGesture(for idx: Int) -> some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .sequenced(before: DragGesture(minimumDistance: 6))
-            .onChanged { value in
-                switch value {
-                case .first(true):
-                    suppressFocus = true
-                    focusedIndex = nil
-                case .second(true, let dragValue?):
-                    if dragIndex == nil {
-                        dragIndex = idx
-                        isDragging = true
-                    }
-                    guard dragIndex == idx else { return }
-                    dragOffset = dragValue.translation
-                    let currentY = (rowFrames[idx]?.midY ?? 0) + dragValue.translation.height
-                    updateDropTarget(currentY: currentY, source: idx)
-                default:
-                    break
-                }
+    private func longPressGesture(for idx: Int) -> some Gesture {
+        LongPressGesture(minimumDuration: 0.6)
+            .onEnded { _ in
+                beginDrag(at: idx)
             }
-            .onEnded { value in
-                switch value {
-                case .second(true, _):
+    }
+
+    private func activeDragGesture(for idx: Int) -> some Gesture {
+        DragGesture(minimumDistance: 8)
+            .onChanged { dragValue in
+                guard dragIndex == idx, isDragging else { return }
+                dragOffset = dragValue.translation
+                let currentY = (rowFrames[idx]?.midY ?? 0) + dragValue.translation.height
+                updateDropTarget(currentY: currentY, source: idx)
+            }
+            .onEnded { _ in
+                if dragIndex == idx, isDragging {
                     completeDrag()
-                default:
-                    suppressFocus = false
+                } else {
+                    resetDragState()
                 }
             }
     }
@@ -414,13 +411,7 @@ struct DayCardView: View {
 
     private func completeDrag() {
         defer {
-            dragIndex = nil
-            dropTarget = nil
-            dragOffset = .zero
-            isDragging = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                suppressFocus = false
-            }
+            resetDragState()
         }
 
         suppressFocus = true
@@ -435,6 +426,25 @@ struct DayCardView: View {
         guard source != target else { return }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
             vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
+        }
+    }
+
+    private func beginDrag(at index: Int) {
+        guard dragIndex == nil else { return }
+        dragIndex = index
+        isDragging = true
+        suppressFocus = true
+        focusedIndex = nil
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func resetDragState() {
+        dragIndex = nil
+        dropTarget = nil
+        dragOffset = .zero
+        isDragging = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            suppressFocus = false
         }
     }
 
