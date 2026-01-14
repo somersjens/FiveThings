@@ -93,7 +93,7 @@ struct ContentView: View {
 
     private var lifeTitle: String {
         let word = numberWord(for: settings.dailyItemCount)
-        return "\(word) Life"
+        return "Happy \(word)"
     }
 
     private struct StatisticsSnapshot {
@@ -381,7 +381,9 @@ struct ContentView: View {
                 if !expanded {
                     // Apply notification changes after closing settings
                     Task {
-                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime, language: settings.language)
+                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                            language: settings.language,
+                                                            dailyCount: settings.dailyItemCount)
                         let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
                         await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                               shouldSchedule: shouldScheduleNext,
@@ -392,7 +394,9 @@ struct ContentView: View {
             .task {
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
                 await notifier.refreshAuthorizationStatus()
-                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime, language: settings.language)
+                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                    language: settings.language,
+                                                    dailyCount: settings.dailyItemCount)
 
                 let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
                 await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
@@ -419,6 +423,11 @@ struct ContentView: View {
             }
             .onChange(of: settings.dailyItemCount) { _, _ in
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                Task {
+                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                        language: settings.language,
+                                                        dailyCount: settings.dailyItemCount)
+                }
             }
             .onChange(of: vm.searchText) { _, _ in
                 refreshEntryLists()

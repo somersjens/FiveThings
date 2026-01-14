@@ -43,7 +43,7 @@ final class NotificationManager: ObservableObject {
         }
     }
 
-    func scheduleDailyReminder(time: ReminderTime?, language: AppLanguage) async {
+    func scheduleDailyReminder(time: ReminderTime?, language: AppLanguage, dailyCount: Int) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.daily])
 
@@ -53,7 +53,11 @@ final class NotificationManager: ObservableObject {
 
         let content = UNMutableNotificationContent()
         content.title = (language == .dutch) ? "Dagelijkse reminder" : "Daily reminder"
-        content.body = (language == .dutch) ? "Schrijf je positieve dingen van vandaag." : "Write your positive things for today."
+        let timeString = reminderTimeString(for: time)
+        let clampedCount = max(1, dailyCount)
+        content.body = (language == .dutch)
+            ? "Dit is je \(timeString) herinnering om \(clampedCount) dingen over vandaag op te schrijven"
+            : "This is your \(timeString) reminder to write \(clampedCount) things about today"
         content.sound = .default
 
         var triggerComps = time.asDateComponents()
@@ -75,9 +79,10 @@ final class NotificationManager: ObservableObject {
 
         let content = UNMutableNotificationContent()
         content.title = (language == .dutch) ? "Niet vergeten" : "Don’t forget"
+        let timeString = reminderTimeString(for: time)
         content.body = (language == .dutch)
-            ? "Je hebt nog een onvoltooide dagkaart. Werk ’m af."
-            : "You still have an unfinished day card. Finish it."
+            ? "Dit is je \(timeString) herinnering om over je dag gisteren te schrijven aangezien deze nog leeg is"
+            : "This is your \(timeString) reminder as yesterday’s card is waiting for you to be filled."
         content.sound = .default
 
         // Schedule for *tomorrow* at the chosen time
@@ -94,5 +99,17 @@ final class NotificationManager: ObservableObject {
 
         let req = UNNotificationRequest(identifier: NotificationIDs.nextDay, content: content, trigger: trigger)
         try? await center.add(req)
+    }
+
+    private func reminderTimeString(for time: ReminderTime) -> String {
+        var comps = DateComponents()
+        comps.hour = time.hour
+        comps.minute = time.minute
+        let calendar = Calendar.current
+        let date = calendar.date(from: comps) ?? Date()
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "H:mm"
+        return formatter.string(from: date)
     }
 }
