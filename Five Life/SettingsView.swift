@@ -140,7 +140,7 @@ struct SettingsView: View {
     }
 
     private var addDayInputField: some View {
-        ZStack {
+        ZStack(alignment: .leading) {
             TextField("", text: $addDayText)
                 .keyboardType(.numberPad)
                 .textInputAutocapitalization(.never)
@@ -148,10 +148,10 @@ struct SettingsView: View {
                 .font(.body.monospacedDigit())
                 .foregroundStyle(.clear)
                 .tint(Color(.darkGray))
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 .focused($addDayFieldFocused)
                 .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .onChange(of: addDayText) { _, newValue in
                     let filtered = newValue.filter(\.isWholeNumber)
                     let nextDigits = String(filtered.prefix(8))
@@ -169,7 +169,7 @@ struct SettingsView: View {
             Text(addDayDisplayText(addDayDigits))
                 .font(.body.monospacedDigit())
                 .allowsHitTesting(false)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(width: 120, height: 26)
         .padding(.vertical, 4)
