@@ -119,7 +119,7 @@ struct SettingsView: View {
                     } label: {
                         Image(systemName: "checkmark")
                             .font(.system(size: 16, weight: .semibold))
-                            .frame(width: 32, height: 32)
+                            .frame(width: 28, height: 28)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .fill(Color.brandAccent)
@@ -171,8 +171,8 @@ struct SettingsView: View {
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(width: 120, height: 26)
-        .padding(.vertical, 4)
+        .frame(width: 100, height: 21)
+        .padding(.vertical, 3)
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
