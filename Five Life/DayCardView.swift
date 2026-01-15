@@ -19,7 +19,7 @@ struct DayCardView: View {
     @State private var isDragging: Bool = false
     @State private var suppressFocus: Bool = false
     @State private var showScoreEditor: Bool = false
-    @State private var scoreDraft: Double = 5
+    @State private var scoreDraft: Double = 6
 
     private let rowSpacing: CGFloat = 10
 
@@ -194,7 +194,8 @@ struct DayCardView: View {
 
             if settings.scoreEnabled {
                 Button {
-                    scoreDraft = Double(entry.score ?? 5)
+                    guard !entry.isLocked else { return }
+                    scoreDraft = Double(entry.score ?? 6)
                     showScoreEditor = true
                 } label: {
                     Group {
@@ -213,6 +214,7 @@ struct DayCardView: View {
                     .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
+                .disabled(entry.isLocked)
                 .accessibilityLabel(entry.score == nil
                                     ? (settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
                                     : (settings.language == .dutch ? "Pas score aan" : "Adjust score"))
@@ -283,7 +285,9 @@ struct DayCardView: View {
                     Text(settings.language == .dutch ? "Leegmaken" : "Clear")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
+                .tint(Color(.systemGray))
+                .foregroundStyle(.white)
 
                 Button {
                     updateScore(Int(scoreDraft))
@@ -594,6 +598,7 @@ struct DayCardView: View {
     }
 
     private func updateScore(_ score: Int?) {
+        guard !entry.isLocked else { return }
         if let score {
             entry.score = max(1, min(10, score))
         } else {
