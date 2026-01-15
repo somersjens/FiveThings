@@ -47,7 +47,7 @@ struct SettingsView: View {
 
     private var itemsPerDaySection: some View {
         HStack {
-            Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
+            Text(settings.language == .dutch ? "Aantal per dag" : "Entries per day")
                 .font(.body.weight(.semibold))
             Spacer()
             HStack(spacing: 10) {
@@ -75,27 +75,6 @@ struct SettingsView: View {
 
     private var otherSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
-                   isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
-
-            Divider().overlay(Color.gray.opacity(0.3))
-
-            Toggle(settings.language == .dutch ? "Toon speciale feestdagen" : "Show special holidays",
-                   isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
-
-            Divider().overlay(Color.gray.opacity(0.3))
-
-            Toggle(settings.language == .dutch ? "Toon statistieken" : "Show statistics",
-                   isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
-
-            Divider().overlay(Color.gray.opacity(0.3))
-
             HStack {
                 Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
                     .font(.body.weight(.semibold))
@@ -112,6 +91,27 @@ struct SettingsView: View {
                 .labelsHidden()
             }
             .frame(height: settingsRowHeight)
+
+            Divider().overlay(Color.gray.opacity(0.3))
+
+            Toggle(settings.language == .dutch ? "Statistieken" : "Statistics",
+                   isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
+                .font(.body.weight(.semibold))
+                .frame(height: settingsRowHeight)
+
+            Divider().overlay(Color.gray.opacity(0.3))
+
+            Toggle(settings.language == .dutch ? "Feestdagen" : "Special holidays",
+                   isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
+                .font(.body.weight(.semibold))
+                .frame(height: settingsRowHeight)
+
+            Divider().overlay(Color.gray.opacity(0.3))
+
+            Toggle(settings.language == .dutch ? "Maan informatie" : "Moon info",
+                   isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
+                .font(.body.weight(.semibold))
+                .frame(height: settingsRowHeight)
         }
         .tint(.brandAccent)
     }
@@ -208,7 +208,7 @@ struct SettingsView: View {
     private var reminderSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(settings.language == .dutch ? "Dagelijkse reminder" : "Daily reminder")
+                Text(settings.language == .dutch ? "Avond reminder" : "Evening reminder")
                     .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -232,7 +232,7 @@ struct SettingsView: View {
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
-                Text(settings.language == .dutch ? "Volgende dag als nodig" : "Next day if needed")
+                Text(settings.language == .dutch ? "Volgende dag reminder" : "Next day reminder")
                     .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)

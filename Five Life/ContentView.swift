@@ -114,6 +114,56 @@ struct ContentView: View {
         return StatisticsSnapshot(streak: streak, days: totalDays, entries: totalEntries)
     }
 
+    private var reviewURL: URL {
+        URL(string: "https://example.com/review")!
+    }
+
+    private var shareURL: URL {
+        URL(string: "https://example.com/share")!
+    }
+
+    private var feedbackURL: URL {
+        URL(string: "https://example.com/feedback")!
+    }
+
+    private var footerLinks: some View {
+        VStack(spacing: 16) {
+            HStack(spacing: 12) {
+                Link(destination: reviewURL) {
+                    Text(settings.language == .dutch ? "Beoordeel" : "Review")
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                }
+                .buttonStyle(.plain)
+
+                Text("|")
+
+                Link(destination: shareURL) {
+                    Text(settings.language == .dutch ? "Deel de app" : "Share the app")
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                }
+                .buttonStyle(.plain)
+
+                Text("|")
+
+                Link(destination: feedbackURL) {
+                    Text(settings.language == .dutch ? "Feedback" : "Feedback")
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                }
+                .buttonStyle(.plain)
+            }
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+        }
+        .font(.footnote.weight(.semibold))
+        .foregroundStyle(.secondary)
+    }
+
     private func calculateStreak(from entries: [DayEntry]) -> Int {
         let calendar = Calendar.current
         let uniqueDays = Array(Set(entries.map { calendar.startOfDay(for: $0.day) }))
@@ -318,28 +368,10 @@ struct ContentView: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
                         .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.finishedLimit)
 
-                        // Share option bottom
+                        // Footer links
                         VStack(spacing: 10) {
                             Divider().opacity(0.6)
-                            ShareLink(
-                                item: "Check out this app! (App Store link placeholder)",
-                                subject: Text("Positive Things"),
-                                message: Text(settings.language == .dutch
-                                              ? "Dit helpt me elke dag 3–10 positieve dingen op te schrijven."
-                                              : "This helps me write 3–10 positive things every day.")
-                            ) {
-                                HStack {
-                                    Image(systemName: "square.and.arrow.up")
-                                    Text(settings.language == .dutch ? "Deel de app" : "Share the app")
-                                }
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .fill(.secondary.opacity(0.12))
-                                )
-                            }
+                            footerLinks
                         }
                         .padding(.top, 10)
                     }
