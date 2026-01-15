@@ -68,6 +68,7 @@ final class SettingsStore: ObservableObject {
     @AppStorage("holidaysEnabled") var holidaysEnabled: Bool = true
     @AppStorage("faceIdLockEnabled") var faceIdLockEnabled: Bool = false
     @AppStorage("statisticsEnabled") var statisticsEnabled: Bool = false
+    @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
 
     // Optional reminders stored as JSON Data in AppStorage
     @AppStorage("dailyReminderData") private var dailyReminderData: Data = Data()

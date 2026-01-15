@@ -18,6 +18,8 @@ struct DayCardView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging: Bool = false
     @State private var suppressFocus: Bool = false
+    @State private var showScoreEditor: Bool = false
+    @State private var scoreDraft: Double = 5
 
     private let rowSpacing: CGFloat = 10
 
@@ -190,6 +192,32 @@ struct DayCardView: View {
 
             Spacer()
 
+            if settings.scoreEnabled {
+                Button {
+                    scoreDraft = Double(entry.score ?? 5)
+                    showScoreEditor = true
+                } label: {
+                    Group {
+                        if let score = entry.score {
+                            Text("\(score)")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                        } else {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.yellow)
+                        }
+                    }
+                    .frame(width: 36, height: 36)
+                    .background(.thinMaterial)
+                    .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(entry.score == nil
+                                    ? (settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
+                                    : (settings.language == .dutch ? "Pas score aan" : "Adjust score"))
+            }
+
             Button {
                 if entry.isLocked {
                     vm.unlock(entry, settings: settings, modelContext: modelContext)
@@ -218,6 +246,9 @@ struct DayCardView: View {
                                 ? (settings.language == .dutch ? "Ontgrendelen" : "Unlock")
                                 : (settings.language == .dutch ? "Vergrendelen" : "Lock"))
         }
+        .sheet(isPresented: $showScoreEditor) {
+            scoreEditorSheet
+        }
     }
 
     private func moonLine(_ phase: MoonPhaseKind) -> some View {
@@ -230,6 +261,43 @@ struct DayCardView: View {
         }
         .font(.subheadline)
         .foregroundStyle(.black)
+    }
+
+    private var scoreEditorSheet: some View {
+        VStack(spacing: 16) {
+            Text(settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
+                .font(.headline)
+
+            Text("\(Int(scoreDraft))")
+                .font(.system(size: 32, weight: .bold))
+                .monospacedDigit()
+
+            Slider(value: $scoreDraft, in: 1...10, step: 1)
+                .tint(.brandAccent)
+
+            HStack(spacing: 12) {
+                Button {
+                    updateScore(nil)
+                    showScoreEditor = false
+                } label: {
+                    Text(settings.language == .dutch ? "Leegmaken" : "Clear")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    updateScore(Int(scoreDraft))
+                    showScoreEditor = false
+                } label: {
+                    Text(settings.language == .dutch ? "Opslaan" : "Save")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brandAccent)
+            }
+        }
+        .padding()
+        .presentationDetents([.height(260)])
     }
 
     private func entryRow(_ idx: Int) -> some View {
@@ -512,6 +580,16 @@ struct DayCardView: View {
             }
         }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+
+    private func updateScore(_ score: Int?) {
+        if let score {
+            entry.score = max(1, min(10, score))
+        } else {
+            entry.score = nil
+        }
+        entry.updatedAt = Date()
+        try? modelContext.save()
     }
 
     private func syncEntryCounts() {

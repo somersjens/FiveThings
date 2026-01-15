@@ -83,6 +83,14 @@ struct ContentView: View {
             }
         }
 
+        if settings.scoreEnabled,
+           let score = entry.score,
+           let queryScore = Int(normalizedQuery.trimmingCharacters(in: .whitespacesAndNewlines)),
+           (1...10).contains(queryScore),
+           score == queryScore {
+            return true
+        }
+
         return false
     }
 

@@ -94,6 +94,13 @@ struct SettingsView: View {
 
             Divider().overlay(Color.gray.opacity(0.3))
 
+            Toggle(settings.language == .dutch ? "Beoordeel je dag" : "Score your day",
+                   isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
+                .font(.body.weight(.semibold))
+                .frame(height: settingsRowHeight)
+
+            Divider().overlay(Color.gray.opacity(0.3))
+
             Toggle(settings.language == .dutch ? "Statistieken" : "Statistics",
                    isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
                 .font(.body.weight(.semibold))

@@ -13,6 +13,7 @@ final class DayEntry {
     @Attribute var items: [String]
     var isLocked: Bool
     var wasCompleted: Bool
+    var score: Int?
     var createdAt: Date
     var updatedAt: Date
 
@@ -23,6 +24,7 @@ final class DayEntry {
         self.items = Array(repeating: "", count: max(3, min(10, itemCount)))
         self.isLocked = false
         self.wasCompleted = false
+        self.score = nil
         self.createdAt = Date()
         self.updatedAt = Date()
     }
