@@ -245,30 +245,6 @@ struct ContentView: View {
                     LazyVStack(alignment: .leading, spacing: 14) {
                         if showSettings {
                             VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(settings.language == .dutch ? "Instellingen" : "Settings")
-                                        .font(.title3.weight(.semibold))
-
-                                    Spacer()
-
-                                    Button {
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                            showSettings.toggle()
-                                        }
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundStyle(Color.brandAccent)
-                                            .padding(8)
-                                            .background(.thinMaterial)
-                                            .clipShape(Circle())
-                                    }
-                                    .accessibilityLabel(settings.language == .dutch ? "Sluiten" : "Close")
-                                }
-
-                                Divider()
-                                    .overlay(Color.gray.opacity(0.3))
-
                                 SettingsView(settings: settings, showsNavigation: false)
                             }
                             .padding(14)

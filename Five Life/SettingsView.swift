@@ -25,6 +25,7 @@ struct SettingsView: View {
     private var languageSection: some View {
         HStack {
             Text(settings.language == .dutch ? "Taal van de app" : "App language")
+                .font(.body.weight(.semibold))
             Spacer()
             Menu {
                 Picker("", selection: Binding(
@@ -47,6 +48,7 @@ struct SettingsView: View {
     private var itemsPerDaySection: some View {
         HStack {
             Text(settings.language == .dutch ? "Aantal per dag" : "Items per day")
+                .font(.body.weight(.semibold))
             Spacer()
             HStack(spacing: 10) {
                 settingsStepperButton(
@@ -75,24 +77,28 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
             Toggle(settings.language == .dutch ? "Toon maaninfo" : "Show moon info",
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
+                .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon speciale feestdagen" : "Show special holidays",
                    isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
+                .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             Toggle(settings.language == .dutch ? "Toon statistieken" : "Show statistics",
                    isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
+                .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
                 Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
+                    .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -114,7 +120,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Text(settings.language == .dutch ? "Voeg een dag toe" : "Add a day")
-                    .font(.body)
+                    .font(.body.weight(.semibold))
 
                 Spacer(minLength: 8)
 
@@ -203,6 +209,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(settings.language == .dutch ? "Dagelijkse reminder" : "Daily reminder")
+                    .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -226,6 +233,7 @@ struct SettingsView: View {
 
             HStack {
                 Text(settings.language == .dutch ? "Volgende dag als nodig" : "Next day if needed")
+                    .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
