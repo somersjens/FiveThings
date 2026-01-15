@@ -160,9 +160,16 @@ struct SettingsView: View {
                 .focused($addDayFieldFocused)
                 .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .onChange(of: addDayText) { _, newValue in
+                .onChange(of: addDayText) { oldValue, newValue in
                     let filtered = newValue.filter(\.isWholeNumber)
-                    let nextDigits = String(filtered.prefix(8))
+                    var nextDigits = String(filtered.prefix(8))
+                    if newValue.count < oldValue.count,
+                       oldValue.hasSuffix("-"),
+                       !newValue.hasSuffix("-"),
+                       (nextDigits.count == 2 || nextDigits.count == 4),
+                       !nextDigits.isEmpty {
+                        nextDigits = String(nextDigits.dropLast())
+                    }
                     addDayDigits = nextDigits
                     addDayMessage = nil
                     let formatted = formattedAddDayDigits(nextDigits)
