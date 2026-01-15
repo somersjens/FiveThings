@@ -128,11 +128,10 @@ struct ContentView: View {
 
     private var footerLinks: some View {
         VStack(spacing: 16) {
-            HStack(spacing: 12) {
+            HStack(spacing: 4) {
                 Link(destination: reviewURL) {
-                    Text(settings.language == .dutch ? "Beoordeel" : "Review")
+                    Text(settings.language == .dutch ? "Schrijf een review" : "Write a review")
                         .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.plain)
@@ -140,9 +139,8 @@ struct ContentView: View {
                 Text("|")
 
                 Link(destination: shareURL) {
-                    Text(settings.language == .dutch ? "Deel de app" : "Share the app")
+                    Text(settings.language == .dutch ? "Deel met vrienden" : "Share the friends")
                         .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.plain)
@@ -150,9 +148,8 @@ struct ContentView: View {
                 Text("|")
 
                 Link(destination: feedbackURL) {
-                    Text(settings.language == .dutch ? "Feedback" : "Feedback")
+                    Text(settings.language == .dutch ? "Stuur feedback" : "Send feedback")
                         .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.plain)
