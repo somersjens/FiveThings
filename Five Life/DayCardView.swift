@@ -403,7 +403,7 @@ struct DayCardView: View {
                 .foregroundStyle(.black)
                 .focused($focusedIndex, equals: idx)
                 .disabled(isDragging || suppressFocus)
-                .submitLabel(idx == displayCount - 1 ? .done : .next)
+                .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
                 .onSubmit {
                     handleSubmit(at: idx)
                 }
@@ -554,8 +554,8 @@ struct DayCardView: View {
     private func handleSubmit(at index: Int) {
         guard isEditable else { return }
 
-        if index < displayCount - 1 {
-            focusedIndex = index + 1
+        if let nextIndex = nextEmptyEntryIndex(after: index) {
+            focusedIndex = nextIndex
             return
         }
 
@@ -567,6 +567,17 @@ struct DayCardView: View {
             }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
+    }
+
+    private func nextEmptyEntryIndex(after index: Int) -> Int? {
+        let trimmedItems = (0..<displayCount).map { entry.items[safe: $0] ?? "" }
+        let orderedIndices = Array((index + 1)..<displayCount) + Array(0..<index)
+        for idx in orderedIndices {
+            if trimmedItems[idx].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return idx
+            }
+        }
+        return nil
     }
 
     private func triggerLockFlow() {
