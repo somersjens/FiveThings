@@ -20,7 +20,9 @@ struct DayCardView: View {
     @State private var suppressFocus: Bool = false
     @State private var showScoreEditor: Bool = false
     @State private var scoreDraft: Double = 6
-    @State private var undoItemsSnapshot: [String]? = nil
+    @State private var undoHistory: [UndoSnapshot] = []
+    @State private var activeEditIndex: Int? = nil
+    @State private var hasCapturedEditSnapshot: Bool = false
 
     private let rowSpacing: CGFloat = 10
     private let headerIconSize: CGFloat = 36
@@ -163,6 +165,13 @@ struct DayCardView: View {
         .onChange(of: entry.isLocked) { _, locked in
             if !locked {
                 showSuccess = false
+            } else {
+                clearUndoHistory()
+            }
+        }
+        .onChange(of: focusedIndex) { _, newValue in
+            if let newValue {
+                trackEditSession(for: newValue)
             }
         }
     }
@@ -215,12 +224,7 @@ struct DayCardView: View {
 
             if !entry.isLocked {
                 Button {
-                    if let snapshot = undoItemsSnapshot {
-                        entry.items = snapshot
-                        entry.updatedAt = Date()
-                        try? modelContext.save()
-                        undoItemsSnapshot = nil
-                    }
+                    undoLastChange()
                 } label: {
                     Image(systemName: "arrow.uturn.left")
                         .font(.system(size: headerIconFontSize, weight: .semibold))
@@ -230,8 +234,8 @@ struct DayCardView: View {
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .disabled(undoItemsSnapshot == nil)
-                .opacity(undoItemsSnapshot == nil ? 0.4 : 1)
+                .disabled(undoHistory.isEmpty)
+                .opacity(undoHistory.isEmpty ? 0.4 : 1)
                 .accessibilityLabel(settings.language == .dutch ? "Laatste wijziging ongedaan maken" : "Undo last change")
             }
 
@@ -391,7 +395,7 @@ struct DayCardView: View {
             .overlay(alignment: .trailing) {
                 if showsRemove {
                     Button {
-                        undoItemsSnapshot = entry.items
+                        pushUndoSnapshot(force: true)
                         vm.removeItem(entry, index: idx, modelContext: modelContext)
                     } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -423,7 +427,9 @@ struct DayCardView: View {
                                 let hasNewline = newValue.contains("\n")
                                 let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
                                 if entry.items[idx] != sanitized {
-                                    undoItemsSnapshot = entry.items
+                                    trackEditSession(for: idx)
+                                    pushUndoSnapshot()
+                                    hasCapturedEditSnapshot = true
                                 }
                                 vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
                                 if hasNewline {
@@ -529,7 +535,7 @@ struct DayCardView: View {
         target = max(0, min(count - 1, target))
         guard source != target else { return }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-            undoItemsSnapshot = entry.items
+            pushUndoSnapshot(force: true)
             vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
         }
     }
@@ -606,6 +612,38 @@ struct DayCardView: View {
         }
     }
 
+    private func trackEditSession(for index: Int) {
+        guard activeEditIndex != index else { return }
+        activeEditIndex = index
+        hasCapturedEditSnapshot = false
+    }
+
+    private func pushUndoSnapshot(force: Bool = false) {
+        if !force, hasCapturedEditSnapshot {
+            return
+        }
+        let snapshot = UndoSnapshot(items: entry.items, focusedIndex: activeEditIndex ?? focusedIndex)
+        if undoHistory.last != snapshot {
+            undoHistory.append(snapshot)
+        }
+    }
+
+    private func undoLastChange() {
+        guard let snapshot = undoHistory.popLast() else { return }
+        entry.items = snapshot.items
+        entry.updatedAt = Date()
+        try? modelContext.save()
+        focusedIndex = snapshot.focusedIndex
+        activeEditIndex = snapshot.focusedIndex
+        hasCapturedEditSnapshot = false
+    }
+
+    private func clearUndoHistory() {
+        undoHistory.removeAll()
+        activeEditIndex = nil
+        hasCapturedEditSnapshot = false
+    }
+
     private func nextEmptyEntryIndex(after index: Int) -> Int? {
         let trimmedItems = (0..<displayCount).map { entry.items[safe: $0] ?? "" }
         let orderedIndices = Array((index + 1)..<displayCount) + Array(0..<index)
@@ -668,4 +706,9 @@ private enum DropPosition {
 private struct DropTarget: Equatable {
     let index: Int
     let position: DropPosition
+}
+
+private struct UndoSnapshot: Equatable {
+    let items: [String]
+    let focusedIndex: Int?
 }
