@@ -20,18 +20,18 @@ struct AccessScreenView: View {
         if settings.language == .dutch {
             return [
                 "Uit meerdere onderzoeken blijkt dat dagelijks *5 dingen* opschrijven je geluksgevoel kan versterken en een positievere mindset kan bevorderen.",
-                "In *Emmons & McCullough (2003)* scoorden deelnemers die (|tot vijf|) dankbare dingen noteerden hoger op welbevinden dan controlegroepen (|in één meting ≈ +12% van de schaalbreedte|).",
+                "In *Emmons & McCullough (2003)* scoorden deelnemers die |tot vijf| dankbare dingen noteerden hoger op welbevinden dan controlegroepen \n\n (|in één meting ≈ +12% van de schaalbreedte|).",
                 "Ook in Yale’s |The Science of Well-Being| (|Laurie Santos|) komt een *dankbaarheidsdagboek* terug als één van de “rewirements”: laagdrempelige oefeningen die kunnen bijdragen aan meer welzijn.",
-                "*Per dag:* \n \n• 30 minuten (|lichte|) *beweging*\n• 10 minuten *mediteren*\n• 5 *positieve* dingen opschrijven\n• 1 (|kleine|) *vriendelijke daad*\n• 1 |nieuwe| *sociale interactie*\n• 1 minuut bewust genieten",
+                "*Per dag:*\n\n• 30 minuten (|lichte|) *beweging*\n• 10 minuten *mediteren*\n• 5 *positieve* dingen opschrijven\n• 1 (|kleine|) *vriendelijke* daad\n• 1 |nieuwe| *sociale* interactie\n• 1 minuut *bewust* genieten",
                 "Deze app is gebouwd met respect voor je *privacy* en maakt het makkelijker om *waardevolle momenten* in je dag op te schrijven. Een bijdrage van €1,- aan de ontwikkeling is volledig *optioneel*."
             ]
         }
 
         return [
             "Multiple studies suggest that writing down *5 things* each day can boost your sense of happiness and encourage a more positive mindset.",
-            "In *Emmons & McCullough (2003)*, participants who wrote down (|up to five|) gratitude items scored higher on well-being than control groups (|in one measure ≈ +12% of the scale range|).",
+            "In *Emmons & McCullough (2003)*, participants who wrote down |up to five| gratitude items scored higher on well-being than control groups \n\n (|in one measure ≈ +12% of the scale range|).",
             "Yale’s |The Science of Well-Being| (|Laurie Santos|) also includes a *gratitude journal* as one of its “rewirements”: low-barrier exercises that can support well-being.",
-            "*Daily:* \n \n• 30 minutes of (|light|) *movement*\n• 10 minutes of *meditation*\n• Write down 5 *positive* things\n• 1 (|small|) *act of kindness*\n• 1 |new| *social interaction*\n• 1 minute of mindful enjoyment",
+            "*Daily:*\n\n• 30 minutes of (|light|) *movement*\n• 10 minutes of *meditation*\n• Write down 5 *positive* things\n• 1 (|small|) act of *kindness*\n• 1 |new| *social* interaction\n• 1 minute of *mindful* enjoyment",
             "This app is built with respect for your *privacy* and makes it easier to write down *valuable moments* from your day. A €1 contribution to support development is completely *optional*."
         ]
     }
@@ -143,11 +143,24 @@ struct AccessScreenView: View {
     }
 
     private func formattedCardText(_ text: String) -> AttributedString {
-        let markdown = text
-            .replacingOccurrences(of: "\n", with: "  \n")
-            .replacingOccurrences(of: "|", with: "_")
-            .replacingOccurrences(of: "*", with: "**")
-        return (try? AttributedString(markdown: markdown)) ?? AttributedString(text)
+        let paragraphs = text.components(separatedBy: "\n\n")
+        var result = AttributedString()
+
+        for (index, paragraph) in paragraphs.enumerated() {
+            let markdown = paragraph
+                .replacingOccurrences(of: "\n", with: "  \n")
+                .replacingOccurrences(of: "|", with: "_")
+                .replacingOccurrences(of: "*", with: "**")
+            let attributed = (try? AttributedString(markdown: markdown)) ?? AttributedString(paragraph)
+
+            if index > 0 {
+                result.append(AttributedString("\n\n"))
+            }
+
+            result.append(attributed)
+        }
+
+        return result
     }
 
     private var paymentButton: some View {
