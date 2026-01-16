@@ -20,8 +20,11 @@ struct DayCardView: View {
     @State private var suppressFocus: Bool = false
     @State private var showScoreEditor: Bool = false
     @State private var scoreDraft: Double = 6
+    @State private var undoItemsSnapshot: [String]? = nil
 
     private let rowSpacing: CGFloat = 10
+    private let headerIconSize: CGFloat = 36
+    private let headerIconFontSize: CGFloat = 16
 
     @FocusState private var focusedIndex: Int?
 
@@ -198,26 +201,38 @@ struct DayCardView: View {
                     scoreDraft = Double(entry.score ?? 6)
                     showScoreEditor = true
                 } label: {
-                    Group {
-                        if let score = entry.score {
-                            Text("\(score)")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-                        } else {
-                            Image(systemName: "star.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.yellow)
-                        }
-                    }
-                    .frame(width: 36, height: 36)
-                    .background(.thinMaterial)
-                    .clipShape(Circle())
+                    scoreBadge
+                        .frame(width: headerIconSize, height: headerIconSize)
+                        .background(.thinMaterial)
+                        .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .disabled(entry.isLocked)
                 .accessibilityLabel(entry.score == nil
                                     ? (settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
                                     : (settings.language == .dutch ? "Pas score aan" : "Adjust score"))
+            }
+
+            if !entry.isLocked {
+                Button {
+                    if let snapshot = undoItemsSnapshot {
+                        entry.items = snapshot
+                        entry.updatedAt = Date()
+                        try? modelContext.save()
+                        undoItemsSnapshot = nil
+                    }
+                } label: {
+                    Image(systemName: "arrow.uturn.left")
+                        .font(.system(size: headerIconFontSize, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: headerIconSize, height: headerIconSize)
+                        .background(.thinMaterial)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .disabled(undoItemsSnapshot == nil)
+                .opacity(undoItemsSnapshot == nil ? 0.4 : 1)
+                .accessibilityLabel(settings.language == .dutch ? "Laatste wijziging ongedaan maken" : "Undo last change")
             }
 
             Button {
@@ -238,8 +253,8 @@ struct DayCardView: View {
                 }
             } label: {
                 Image(systemName: entry.isLocked ? "lock.fill" : (shouldPulse ? "lock.open.fill" : "lock.open"))
-                    .font(.system(size: 18, weight: .semibold))
-                    .padding(10)
+                    .font(.system(size: headerIconFontSize, weight: .semibold))
+                    .frame(width: headerIconSize, height: headerIconSize)
                     .background(.thinMaterial)
                     .clipShape(Circle())
             }
@@ -250,6 +265,19 @@ struct DayCardView: View {
         }
         .sheet(isPresented: $showScoreEditor) {
             scoreEditorSheet
+        }
+    }
+
+    @ViewBuilder
+    private var scoreBadge: some View {
+        if let score = entry.score {
+            Text("\(score)")
+                .font(.system(size: headerIconFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+        } else {
+            Image(systemName: "star.fill")
+                .font(.system(size: headerIconFontSize, weight: .semibold))
+                .foregroundStyle(Color.brandAccent)
         }
     }
 
@@ -275,7 +303,7 @@ struct DayCardView: View {
                 .monospacedDigit()
 
             Slider(value: $scoreDraft, in: 1...10, step: 1)
-                .tint(.brandAccent)
+                .tint(Color.brandAccent)
 
             HStack(spacing: 12) {
                 Button {
@@ -297,7 +325,7 @@ struct DayCardView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(.brandAccent)
+                .tint(Color.brandAccent)
             }
         }
         .padding()
@@ -363,6 +391,7 @@ struct DayCardView: View {
             .overlay(alignment: .trailing) {
                 if showsRemove {
                     Button {
+                        undoItemsSnapshot = entry.items
                         vm.removeItem(entry, index: idx, modelContext: modelContext)
                     } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -393,6 +422,9 @@ struct DayCardView: View {
                             if idx < entry.items.count {
                                 let hasNewline = newValue.contains("\n")
                                 let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
+                                if entry.items[idx] != sanitized {
+                                    undoItemsSnapshot = entry.items
+                                }
                                 vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
                                 if hasNewline {
                                     handleSubmit(at: idx)
@@ -497,6 +529,7 @@ struct DayCardView: View {
         target = max(0, min(count - 1, target))
         guard source != target else { return }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            undoItemsSnapshot = entry.items
             vm.moveItem(entry, from: source, to: target, modelContext: modelContext)
         }
     }
