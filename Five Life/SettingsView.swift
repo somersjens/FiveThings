@@ -21,6 +21,8 @@ struct SettingsView: View {
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
     @FocusState private var addDayFieldFocused: Bool
+    private let defaultDailyReminderTime = ReminderTime(hour: 22, minute: 0)
+    private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
 
     private var languageSection: some View {
         HStack {
@@ -260,10 +262,11 @@ struct SettingsView: View {
             }
             .frame(height: settingsRowHeight)
 
-            if notifier.authorizationStatus == .denied {
+            if notifier.authorizationStatus == .denied,
+               (dailyReminderEnabled || nextDayReminderEnabled) {
                 Text(settings.language == .dutch
-                     ? "Notificaties zijn uitgeschakeld. Zet ze aan in Instellingen."
-                     : "Notifications are disabled. Enable them in Settings.")
+                     ? "Notificaties zijn uitgeschakeld. Zet ze aan in de iOS-instellingen als je reminders wilt."
+                     : "Notifications are disabled. Enable them in iOS Settings if you want reminders.")
                     .font(.footnote)
                     .foregroundStyle(.black)
             }
@@ -344,9 +347,13 @@ struct SettingsView: View {
 
             if let rt = settings.dailyReminderTime {
                 dailyReminderPickerDate = Calendar.current.date(from: rt.asDateComponents()) ?? Date()
+            } else {
+                dailyReminderPickerDate = defaultReminderDate(for: defaultDailyReminderTime)
             }
             if let rt = settings.nextDayReminderTime {
                 nextDayReminderPickerDate = Calendar.current.date(from: rt.asDateComponents()) ?? Date()
+            } else {
+                nextDayReminderPickerDate = defaultReminderDate(for: defaultNextDayReminderTime)
             }
 
             faceIdLockEnabled = settings.faceIdLockEnabled
@@ -354,11 +361,21 @@ struct SettingsView: View {
         .onChange(of: dailyReminderEnabled) { _, enabled in
             if !enabled { settings.dailyReminderTime = nil }
             else { settings.dailyReminderTime = ReminderTime.from(date: dailyReminderPickerDate) }
+            if enabled {
+                Task { await notifier.requestAuthorizationIfNeeded() }
+            }
         }
         .onChange(of: nextDayReminderEnabled) { _, enabled in
             if !enabled { settings.nextDayReminderTime = nil }
             else { settings.nextDayReminderTime = ReminderTime.from(date: nextDayReminderPickerDate) }
+            if enabled {
+                Task { await notifier.requestAuthorizationIfNeeded() }
+            }
         }
+    }
+
+    private func defaultReminderDate(for time: ReminderTime) -> Date {
+        Calendar.current.date(from: time.asDateComponents()) ?? Date()
     }
 
     private func handleAddDay() {

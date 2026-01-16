@@ -65,7 +65,7 @@ final class SettingsStore: ObservableObject {
     }
 
     @AppStorage("moonEnabled") var moonEnabled: Bool = false
-    @AppStorage("holidaysEnabled") var holidaysEnabled: Bool = true
+    @AppStorage("holidaysEnabled") var holidaysEnabled: Bool = false
     @AppStorage("faceIdLockEnabled") var faceIdLockEnabled: Bool = false
     @AppStorage("statisticsEnabled") var statisticsEnabled: Bool = false
     @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
