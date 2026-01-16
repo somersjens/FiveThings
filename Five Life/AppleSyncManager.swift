@@ -47,9 +47,9 @@ final class AppleSyncManager {
 
     func reconcileAfterSignIn(modelContext: ModelContext,
                               settings: SettingsStore,
-                              context: SignInContext) {
+                              context: SignInContext) async {
         let localEntries = fetchEntries(modelContext: modelContext)
-        if let snapshot = loadSnapshot(), !snapshot.entries.isEmpty {
+        if let snapshot = await loadSnapshotWithRetry(), !snapshot.entries.isEmpty {
             replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
             ensureTodayEntry(modelContext: modelContext, settings: settings)
             return
@@ -90,15 +90,90 @@ final class AppleSyncManager {
         guard let data = store.data(forKey: snapshotKey), !data.isEmpty else {
             return nil
         }
-        return try? JSONDecoder().decode(AppleSnapshot.self, from: data)
+        return try? configuredDecoder().decode(AppleSnapshot.self, from: data)
     }
 
     private func saveSnapshot(from entries: [DayEntry]) {
         let snapshots = entries.map { DayEntrySnapshot(from: $0) }
         let snapshot = AppleSnapshot(entries: snapshots, savedAt: Date())
-        guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        guard let data = try? configuredEncoder().encode(snapshot) else { return }
         store.set(data, forKey: snapshotKey)
         store.synchronize()
+    }
+
+    private func loadSnapshotWithRetry() async -> AppleSnapshot? {
+        if let snapshot = loadSnapshot() {
+            return snapshot
+        }
+        let delays: [TimeInterval] = [0.5, 1, 2, 4, 8]
+        for delay in delays {
+            await waitForExternalChangeOrDelay(delay)
+            if let snapshot = loadSnapshot() {
+                return snapshot
+            }
+        }
+        return nil
+    }
+
+    private func waitForExternalChangeOrDelay(_ delay: TimeInterval) async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                let nanoseconds = UInt64(delay * 1_000_000_000)
+                try? await Task.sleep(nanoseconds: nanoseconds)
+            }
+            group.addTask { [store] in
+                let stream = AsyncStream<Void> { continuation in
+                    let token = NotificationCenter.default.addObserver(
+                        forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+                        object: store,
+                        queue: .main
+                    ) { _ in
+                        continuation.yield()
+                        continuation.finish()
+                    }
+                    continuation.onTermination = { _ in
+                        NotificationCenter.default.removeObserver(token)
+                    }
+                }
+                for await _ in stream {
+                    break
+                }
+            }
+            await group.next()
+            group.cancelAll()
+        }
+    }
+
+    private func configuredEncoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            var container = encoder.singleValueContainer()
+            try container.encode(formatter.string(from: date))
+        }
+        return encoder
+    }
+
+    private func configuredDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            let container = try decoder.singleValueContainer()
+            if let string = try? container.decode(String.self),
+               let date = formatter.date(from: string) {
+                return date
+            }
+            if let timestamp = try? container.decode(Double.self) {
+                return Date(timeIntervalSinceReferenceDate: timestamp)
+            }
+            if let timestamp = try? container.decode(Int.self) {
+                return Date(timeIntervalSinceReferenceDate: Double(timestamp))
+            }
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date value")
+        }
+        return decoder
     }
 
     private func resetToFreshStart(modelContext: ModelContext, settings: SettingsStore) {

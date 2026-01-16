@@ -709,9 +709,9 @@ struct SettingsView: View {
             settings.appleUserIdentifier = credential.user
             settings.appleIdConnected = true
             appleIdConnected = true
-            AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext,
-                                                         settings: settings,
-                                                         context: .deferredConnect)
+            await AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext,
+                                                               settings: settings,
+                                                               context: .deferredConnect)
         } catch {
             settings.appleIdConnected = false
             appleIdConnected = false
