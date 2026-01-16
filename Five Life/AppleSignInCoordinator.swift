@@ -49,18 +49,18 @@ extension AppleSignInCoordinator: ASAuthorizationControllerPresentationContextPr
         let activeScenes = scenes.filter { $0.activationState == .foregroundActive }
         let candidateScenes = activeScenes.isEmpty ? scenes : activeScenes
 
-        if let keyWindow = candidateScenes.flatMap(\.windows).first(where: { $0.isKeyWindow }) {
+        guard let windowScene = candidateScenes.first ?? scenes.first else {
+            fatalError("Unable to locate a window scene for Apple sign-in presentation.")
+        }
+
+        if let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) {
             return keyWindow
         }
 
-        if let window = candidateScenes.first?.windows.first {
+        if let window = windowScene.windows.first {
             return window
         }
 
-        if let windowScene = candidateScenes.first ?? scenes.first {
-            return UIWindow(windowScene: windowScene)
-        }
-
-        return UIWindow(frame: .zero)
+        return UIWindow(windowScene: windowScene)
     }
 }
