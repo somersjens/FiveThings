@@ -224,6 +224,12 @@ struct DayCardView: View {
 
             if !entry.isLocked {
                 Button {
+                    if undoHistory.isEmpty {
+                        if isCardCompletelyEmpty {
+                            focusedIndex = nil
+                        }
+                        return
+                    }
                     undoLastChange()
                 } label: {
                     Image(systemName: "arrow.uturn.left")
@@ -234,7 +240,6 @@ struct DayCardView: View {
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .disabled(undoHistory.isEmpty)
                 .opacity(undoHistory.isEmpty ? 0.4 : 1)
                 .accessibilityLabel(settings.language == .dutch ? "Laatste wijziging ongedaan maken" : "Undo last change")
             }
@@ -653,6 +658,11 @@ struct DayCardView: View {
             }
         }
         return nil
+    }
+
+    private var isCardCompletelyEmpty: Bool {
+        (0..<displayCount)
+            .allSatisfy { (entry.items[safe: $0] ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     private func triggerLockFlow() {
