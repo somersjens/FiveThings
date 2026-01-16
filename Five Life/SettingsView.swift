@@ -23,7 +23,7 @@ struct SettingsView: View {
     @State private var addDayMessage: String?
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
-    @State private var addDayExistingEntry: DayEntry?
+    @State private var addDayHasExistingEntry = false
     @FocusState private var addDayFieldFocused: Bool
     @State private var isSigningInWithApple: Bool = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
@@ -168,7 +168,7 @@ struct SettingsView: View {
                     Button {
                         handleAddDay()
                     } label: {
-                        Image(systemName: addDayExistingEntry == nil ? "checkmark" : "xmark")
+                        Image(systemName: addDayHasExistingEntry ? "xmark" : "checkmark")
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 28, height: 28)
                             .background(
@@ -425,6 +425,8 @@ struct SettingsView: View {
         let existing = (try? modelContext.fetch(descriptor))?.first
         if existing != nil {
             if let existing {
+                addDayHasExistingEntry = false
+                _ = existing.items.count
                 modelContext.delete(existing)
                 try? modelContext.save()
                 showAddDayMessage(settings.language == .dutch
@@ -433,7 +435,6 @@ struct SettingsView: View {
             }
             addDayDigits = ""
             addDayText = ""
-            addDayExistingEntry = nil
             return
         }
 
@@ -446,7 +447,7 @@ struct SettingsView: View {
 
         addDayDigits = ""
         addDayText = ""
-        addDayExistingEntry = nil
+        addDayHasExistingEntry = false
     }
 
     private func parseAddDayDate() -> Date? {
@@ -521,12 +522,12 @@ struct SettingsView: View {
     private func updateAddDayExistingEntry() {
         guard addDayDigits.count == 8,
               let selectedDay = parseAddDayDate() else {
-            addDayExistingEntry = nil
+            addDayHasExistingEntry = false
             return
         }
         let normalizedDay = Calendar.current.startOfDay(for: selectedDay)
         let descriptor = FetchDescriptor<DayEntry>(predicate: #Predicate { $0.day == normalizedDay })
-        addDayExistingEntry = (try? modelContext.fetch(descriptor))?.first
+        addDayHasExistingEntry = ((try? modelContext.fetch(descriptor))?.first) != nil
     }
 
     private func settingsPickerLabel(text: String) -> some View {

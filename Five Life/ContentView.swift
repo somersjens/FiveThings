@@ -19,8 +19,8 @@ struct ContentView: View {
     @State private var isUnlocking: Bool = false
     @State private var hasAppeared: Bool = false
     @State private var midnightTask: Task<Void, Never>?
-    @State private var cachedUnfinishedEntries: [DayEntry] = []
-    @State private var cachedFinishedEntries: [DayEntry] = []
+    @State private var cachedUnfinishedEntryIDs: [UUID] = []
+    @State private var cachedFinishedEntryIDs: [UUID] = []
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -296,8 +296,12 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 ScrollView(showsIndicators: false) {
-                    let unfinishedEntries = cachedUnfinishedEntries
-                    let finishedEntries = cachedFinishedEntries
+                    let unfinishedEntries = cachedUnfinishedEntryIDs.compactMap { id in
+                        entries.first { $0.id == id }
+                    }
+                    let finishedEntries = cachedFinishedEntryIDs.compactMap { id in
+                        entries.first { $0.id == id }
+                    }
                     LazyVStack(alignment: .leading, spacing: 14) {
                         if showSettings {
                             VStack(alignment: .leading, spacing: 4) {
@@ -572,7 +576,7 @@ struct ContentView: View {
     }
 
     private func refreshEntryLists() {
-        cachedUnfinishedEntries = unfinished
-        cachedFinishedEntries = finished
+        cachedUnfinishedEntryIDs = unfinished.map(\.id)
+        cachedFinishedEntryIDs = finished.map(\.id)
     }
 }
