@@ -50,7 +50,7 @@ struct AccessScreenView: View {
                 VStack {
                     Spacer(minLength: 0)
                     VStack(spacing: 20) {
-                        Image("NoBackground")
+                        Image(accessIconName)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 96)
@@ -161,6 +161,11 @@ struct AccessScreenView: View {
         }
 
         return result
+    }
+
+    private var accessIconName: String {
+        let maxIndex = min(currentCardIndex + 1, 5)
+        return "Access_\(maxIndex)"
     }
 
     private var paymentButton: some View {
