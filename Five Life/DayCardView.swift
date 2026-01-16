@@ -38,6 +38,9 @@ struct DayCardView: View {
     }()
 
     private var isEditable: Bool { !entry.isLocked }
+    private var canDragEntries: Bool {
+        isEditable && entry.isComplete(requiredCount: requiredCount)
+    }
 
     private var isToday: Bool {
         Calendar.current.isDate(entry.day, inSameDayAs: Date())
@@ -351,8 +354,8 @@ struct DayCardView: View {
             .opacity(isDragging && dragIndex == idx ? 0 : 1)
             .allowsHitTesting(!(isDragging && dragIndex == idx))
             .zIndex(dragIndex == idx ? 1 : 0)
-            .simultaneousGesture(longPressGesture(for: idx))
-            .simultaneousGesture(activeDragGesture(for: idx))
+            .simultaneousGesture(canDragEntries ? longPressGesture(for: idx) : nil)
+            .simultaneousGesture(canDragEntries ? activeDragGesture(for: idx) : nil)
         if isEditable {
             return AnyView(interactiveRow)
         }
@@ -546,7 +549,7 @@ struct DayCardView: View {
     }
 
     private func beginDrag(at index: Int) {
-        guard dragIndex == nil else { return }
+        guard dragIndex == nil, canDragEntries else { return }
         dragIndex = index
         isDragging = true
         suppressFocus = true
