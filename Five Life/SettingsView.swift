@@ -3,6 +3,7 @@ import AuthenticationServices
 import LocalAuthentication
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
@@ -17,6 +18,8 @@ struct SettingsView: View {
     @State private var dailyReminderPickerDate: Date = Date()
     @State private var nextDayReminderPickerDate: Date = Date()
     @State private var faceIdLockEnabled: Bool = false
+    @State private var isFaceIdAuthenticating: Bool = false
+    @State private var showFaceIdSettingsAlert: Bool = false
     @State private var appleIdConnected: Bool = false
     @State private var addDayDigits: String = ""
     @State private var addDayText: String = ""
@@ -130,6 +133,7 @@ struct SettingsView: View {
                     }
                 ))
                 .labelsHidden()
+                .disabled(isFaceIdAuthenticating)
             }
             .frame(height: settingsRowHeight)
 
@@ -408,6 +412,19 @@ struct SettingsView: View {
             faceIdLockEnabled = settings.faceIdLockEnabled
             appleIdConnected = settings.appleIdConnected
         }
+        .alert(settings.language == .dutch ? "Face ID vereist" : "Face ID required",
+               isPresented: $showFaceIdSettingsAlert) {
+            Button(settings.language == .dutch ? "Ga naar Instellingen" : "Go to Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button(settings.language == .dutch ? "Sluiten" : "Close", role: .cancel) { }
+        } message: {
+            Text(settings.language == .dutch
+                ? "Activeer Face ID in iOS-instellingen om deze optie opnieuw te gebruiken."
+                : "Enable Face ID in iOS Settings to use this option again.")
+        }
         .onChange(of: dailyReminderEnabled) { _, enabled in
             if !enabled { settings.dailyReminderTime = nil }
             else { settings.dailyReminderTime = ReminderTime.from(date: dailyReminderPickerDate) }
@@ -633,11 +650,17 @@ struct SettingsView: View {
             return
         }
 
+        guard !isFaceIdAuthenticating else { return }
+        isFaceIdAuthenticating = true
+        faceIdLockEnabled = true
+
         let context = LAContext()
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
             settings.faceIdLockEnabled = false
             faceIdLockEnabled = false
+            isFaceIdAuthenticating = false
+            showFaceIdSettingsAlert = shouldShowFaceIdSettingsAlert(for: error)
             return
         }
 
@@ -645,12 +668,22 @@ struct SettingsView: View {
             ? "Activeer Face ID om je kaarten te vergrendelen."
             : "Enable Face ID to lock your cards."
 
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
             Task { @MainActor in
                 settings.faceIdLockEnabled = success
                 faceIdLockEnabled = success
+                isFaceIdAuthenticating = false
+                if !success {
+                    showFaceIdSettingsAlert = shouldShowFaceIdSettingsAlert(for: error as NSError?)
+                }
             }
         }
+    }
+
+    private func shouldShowFaceIdSettingsAlert(for error: NSError?) -> Bool {
+        guard let error else { return false }
+        let laError = LAError.Code(rawValue: error.code)
+        return laError == .biometryLockout || laError == .biometryNotEnrolled || laError == .biometryNotAvailable
     }
 
     private func handleAppleIdToggleChange(_ enabled: Bool) {
