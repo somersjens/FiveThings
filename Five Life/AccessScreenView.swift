@@ -8,40 +8,27 @@ struct AccessScreenView: View {
     @State private var currentCardIndex: Int = 0
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     @State private var isSigningInWithApple: Bool = false
+    private let maxContentWidth: CGFloat = 320
+    private let cardHeight: CGFloat = 234
+    private let cardFontSize: CGFloat = 18
 
     private var cards: [String] {
         if settings.language == .dutch {
             return [
-                "Uit meerdere onderzoeken blijkt dat dagelijks 5 dingen opschrijven je geluksgevoel kan versterken en een positievere mindset kan bevorderen.",
-                "In Emmons & McCullough (2003) scoorden deelnemers die (tot vijf) dankbare dingen noteerden hoger op welbevinden dan controlegroepen (in één meting ≈ +12% van de schaalbreedte).",
-                "Ook in Yale’s The Science of Well-Being (Laurie Santos) komt een dankbaarheidsdagboek terug als één van de “rewirements”: laagdrempelige oefeningen die kunnen bijdragen aan meer welzijn.",
-                """
-                Per dag:
-                • 30 minuten (lichte) beweging
-                • 10 minuten mediteren
-                • 5 dingen opschrijven waar je dankbaar voor bent
-                • 1 (kleine) vriendelijke daad voor iemand
-                • 1 sociale interactie met een nieuw persoon
-                • 1 minuut bewust genieten van één moment
-                """,
-                "Deze app is gebouwd met respect voor je privacy en maakt het makkelijker om waardevolle momenten in je dag op te schrijven. Een bijdrage van €1,- aan de ontwikkeling is volledig optioneel."
+                "Uit meerdere onderzoeken blijkt dat dagelijks *5 dingen* opschrijven je geluksgevoel kan versterken en een positievere mindset kan bevorderen.",
+                "In *Emmons & McCullough (2003)* scoorden deelnemers die (|tot vijf|) dankbare dingen noteerden hoger op welbevinden dan controlegroepen (|in één meting ≈ +12% van de schaalbreedte|).",
+                "Ook in Yale’s |The Science of Well-Being| (|Laurie Santos|) komt een *dankbaarheidsdagboek* terug als één van de “rewirements”: laagdrempelige oefeningen die kunnen bijdragen aan meer welzijn.",
+                "*Per dag:*\n• 30 minuten (|lichte|) *beweging*\n• 10 minuten *mediteren*\n• 5 *dingen opschrijven* waar je dankbaar voor bent\n• 1 (|kleine|) *vriendelijke daad* voor iemand\n• 1 *sociale interactie* met een (|nieuw|) persoon\n• 1 minuut bewust genieten van *één moment*",
+                "Deze app is gebouwd met respect voor je *privacy* en maakt het makkelijker om *waardevolle momenten* in je dag op te schrijven. Een bijdrage van €1,- aan de ontwikkeling is volledig *optioneel*."
             ]
         }
 
         return [
-            "Multiple studies suggest that writing down 5 things each day can boost your sense of happiness and encourage a more positive mindset.",
-            "In Emmons & McCullough (2003), participants who wrote down (up to five) gratitude items scored higher on well-being than control groups (in one measure ≈ +12% of the scale range).",
-            "Yale’s The Science of Well-Being (Laurie Santos) also includes a gratitude journal as one of its “rewirements”: low-barrier exercises that can support well-being.",
-            """
-            Daily:
-            • 30 minutes of (light) movement
-            • 10 minutes of meditation
-            • Write down 5 things you’re grateful for
-            • 1 (small) random act of kindness
-            • 1 social interaction with a new person
-            • 1 minute of mindful enjoyment of one moment
-            """,
-            "This app is built with respect for your privacy and makes it easier to write down valuable moments from your day. A €1 contribution to support development is completely optional."
+            "Multiple studies suggest that writing down *5 things* each day can boost your sense of happiness and encourage a more positive mindset.",
+            "In *Emmons & McCullough (2003)*, participants who wrote down (|up to five|) gratitude items scored higher on well-being than control groups (|in one measure ≈ +12% of the scale range|).",
+            "Yale’s |The Science of Well-Being| (|Laurie Santos|) also includes a *gratitude journal* as one of its “rewirements”: low-barrier exercises that can support well-being.",
+            "*Daily:*\n• 30 minutes of (|light|) *movement*\n• 10 minutes of *meditation*\n• 5 *written things* you’re grateful for\n• 1 (|small|) random *act of kindness*\n• 1 *social interaction* with a (|new|) person\n• 1 minute of mindful enjoyment of *one moment*",
+            "This app is built with respect for your *privacy* and makes it easier to write down *valuable moments* from your day. A €1 contribution to support development is completely *optional*."
         ]
     }
 
@@ -61,7 +48,7 @@ struct AccessScreenView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(height: 96)
-                        .padding(.top, 24)
+                        .padding(.top, 36)
                         .accessibilityHidden(true)
 
                     TabView(selection: $currentCardIndex) {
@@ -70,7 +57,7 @@ struct AccessScreenView: View {
                                 .tag(index)
                         }
                     }
-                    .frame(height: 300)
+                    .frame(height: cardHeight, alignment: .top)
                     .tabViewStyle(.page(indexDisplayMode: .never))
 
                     pageIndicators
@@ -108,30 +95,37 @@ struct AccessScreenView: View {
                                 .foregroundStyle(.black)
                         }
                     }
-                    .frame(maxWidth: 320)
-                    .padding(.bottom, 24)
+                    .frame(maxWidth: maxContentWidth)
+                    .padding(.bottom, 16)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 30)
             }
             .background(Color.brandBackground.ignoresSafeArea())
         }
     }
 
     private func cardView(text: String, width: CGFloat) -> some View {
-        let cardWidth = min(width * 0.86, 360)
-        return Text(text)
-            .font(.body)
+        let cardWidth = min(width * 0.86, maxContentWidth)
+        return Text(formattedCardText(text))
+            .font(.system(size: cardFontSize))
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
-            .frame(width: cardWidth, height: 260)
-            .padding(16)
+            .padding(24)
+            .frame(width: cardWidth, height: cardHeight, alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(.white.opacity(0.92))
                     .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
             )
             .padding(.horizontal, 8)
+    }
+
+    private func formattedCardText(_ text: String) -> AttributedString {
+        let markdown = text
+            .replacingOccurrences(of: "|", with: "_")
+            .replacingOccurrences(of: "*", with: "**")
+        return (try? AttributedString(markdown: markdown)) ?? AttributedString(text)
     }
 
     private var pageIndicators: some View {
