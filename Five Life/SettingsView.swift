@@ -1,4 +1,5 @@
 //NEW DOC  SettingsView.swift
+import AuthenticationServices
 import LocalAuthentication
 import SwiftUI
 import SwiftData
@@ -8,6 +9,7 @@ struct SettingsView: View {
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
     @StateObject private var notifier = NotificationManager.shared
+    @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     private let settingsRowHeight: CGFloat = 44
 
     @State private var dailyReminderEnabled: Bool = false
@@ -22,6 +24,8 @@ struct SettingsView: View {
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
     @FocusState private var addDayFieldFocused: Bool
+    @State private var isSigningInWithApple: Bool = false
+    @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     private let defaultDailyReminderTime = ReminderTime(hour: 22, minute: 0)
     private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
 
@@ -84,6 +88,9 @@ struct SettingsView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
+                    .onTapGesture(count: 5) {
+                        hasSeenAccessScreen = false
+                    }
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { appleIdConnected },
@@ -92,6 +99,7 @@ struct SettingsView: View {
                     }
                 ))
                 .labelsHidden()
+                .disabled(isSigningInWithApple)
             }
             .frame(height: settingsRowHeight)
 
@@ -602,7 +610,25 @@ struct SettingsView: View {
             return
         }
 
-        settings.appleIdConnected = true
-        appleIdConnected = true
+        Task {
+            await startAppleSignIn()
+        }
+    }
+
+    @MainActor
+    private func startAppleSignIn() async {
+        guard !isSigningInWithApple else { return }
+        isSigningInWithApple = true
+        defer { isSigningInWithApple = false }
+
+        do {
+            let credential = try await appleSignInCoordinator.signIn()
+            settings.appleUserIdentifier = credential.user
+            settings.appleIdConnected = true
+            appleIdConnected = true
+        } catch {
+            settings.appleIdConnected = false
+            appleIdConnected = false
+        }
     }
 }

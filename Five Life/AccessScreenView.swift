@@ -1,10 +1,13 @@
 //NEW DOC  AccessScreenView.swift
+import AuthenticationServices
 import SwiftUI
 
 struct AccessScreenView: View {
     @ObservedObject var settings: SettingsStore
     @Binding var hasSeenAccessScreen: Bool
     @State private var currentCardIndex: Int = 0
+    @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
+    @State private var isSigningInWithApple: Bool = false
 
     private var cards: [String] {
         if settings.language == .dutch {
@@ -74,8 +77,9 @@ struct AccessScreenView: View {
 
                     VStack(spacing: 12) {
                         Button {
-                            settings.appleIdConnected = true
-                            hasSeenAccessScreen = true
+                            Task {
+                                await handleAppleSignIn()
+                            }
                         } label: {
                             Text(connectButtonTitle)
                                 .font(.headline)
@@ -87,6 +91,7 @@ struct AccessScreenView: View {
                                 )
                                 .foregroundStyle(.white)
                         }
+                        .disabled(isSigningInWithApple)
 
                         Button {
                             settings.appleIdConnected = false
@@ -141,5 +146,21 @@ struct AccessScreenView: View {
         .accessibilityLabel(settings.language == .dutch
             ? "Pagina \(currentCardIndex + 1) van \(cards.count)"
             : "Page \(currentCardIndex + 1) of \(cards.count)")
+    }
+
+    @MainActor
+    private func handleAppleSignIn() async {
+        guard !isSigningInWithApple else { return }
+        isSigningInWithApple = true
+        defer { isSigningInWithApple = false }
+
+        do {
+            let credential = try await appleSignInCoordinator.signIn()
+            settings.appleUserIdentifier = credential.user
+            settings.appleIdConnected = true
+            hasSeenAccessScreen = true
+        } catch {
+            settings.appleIdConnected = false
+        }
     }
 }
