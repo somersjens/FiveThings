@@ -24,6 +24,8 @@ struct SettingsView: View {
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
     @State private var addDayHasExistingEntry = false
+    @State private var secretSaveMessage: String?
+    @State private var secretSaveMessageTask: Task<Void, Never>?
     @FocusState private var addDayFieldFocused: Bool
     @State private var isSigningInWithApple: Bool = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
@@ -116,6 +118,9 @@ struct SettingsView: View {
                         AppleSyncManager.shared.captureSnapshotNow(modelContext: modelContext,
                                                                    settings: settings,
                                                                    isConnected: settings.appleIdConnected)
+                        showSecretSaveMessage(settings.language == .dutch
+                            ? "Geheime opslag toegepast."
+                            : "Secret save applied.")
                     }
                 Spacer()
                 Toggle("", isOn: Binding(
@@ -155,6 +160,15 @@ struct SettingsView: View {
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
                 .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
+
+            if let message = secretSaveMessage {
+                Divider().overlay(Color.gray.opacity(0.3))
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.green)
+                    .padding(.top, 6)
+                    .transition(.opacity)
+            }
         }
         .tint(.brandAccent)
     }
@@ -571,6 +585,19 @@ struct SettingsView: View {
             try? await Task.sleep(for: .seconds(5))
             withAnimation(.easeInOut(duration: 0.2)) {
                 addDayMessage = nil
+            }
+        }
+    }
+
+    private func showSecretSaveMessage(_ message: String) {
+        secretSaveMessageTask?.cancel()
+        withAnimation(.easeInOut(duration: 0.2)) {
+            secretSaveMessage = message
+        }
+        secretSaveMessageTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))
+            withAnimation(.easeInOut(duration: 0.2)) {
+                secretSaveMessage = nil
             }
         }
     }

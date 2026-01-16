@@ -126,6 +126,7 @@ final class AppleSyncManager {
 
     private func deleteAllEntries(modelContext: ModelContext) {
         let entries = fetchEntries(modelContext: modelContext)
+        entries.forEach { _ = $0.items.count }
         entries.forEach { modelContext.delete($0) }
         try? modelContext.save()
     }
