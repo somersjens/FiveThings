@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var midnightTask: Task<Void, Never>?
     @State private var cachedUnfinishedEntries: [DayEntry] = []
     @State private var cachedFinishedEntries: [DayEntry] = []
+    @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -382,14 +383,25 @@ struct ContentView: View {
                     }
                     .padding(16)
                 }
+
+                if !hasSeenAccessScreen {
+                    AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
+                        .transition(.opacity)
+                }
             }
             .background(Color.brandBackground.ignoresSafeArea())
             .safeAreaInset(edge: .top) {
-                headerView
+                if hasSeenAccessScreen {
+                    headerView
+                }
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .overlay(lockOverlay)
+            .overlay {
+                if hasSeenAccessScreen {
+                    lockOverlay
+                }
+            }
             .onChange(of: showSettings) { _, expanded in
                 if !expanded {
                     // Apply notification changes after closing settings

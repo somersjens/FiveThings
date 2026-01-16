@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var dailyReminderPickerDate: Date = Date()
     @State private var nextDayReminderPickerDate: Date = Date()
     @State private var faceIdLockEnabled: Bool = false
+    @State private var appleIdConnected: Bool = false
     @State private var addDayDigits: String = ""
     @State private var addDayText: String = ""
     @State private var addDayMessage: String?
@@ -77,6 +78,25 @@ struct SettingsView: View {
 
     private var otherSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(settings.language == .dutch ? "Connect met je Apple ID" : "Connect with Apple ID")
+                    .font(.body.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .layoutPriority(1)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { appleIdConnected },
+                    set: { newValue in
+                        handleAppleIdToggleChange(newValue)
+                    }
+                ))
+                .labelsHidden()
+            }
+            .frame(height: settingsRowHeight)
+
+            Divider().overlay(Color.gray.opacity(0.3))
+
             HStack {
                 Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
                     .font(.body.weight(.semibold))
@@ -357,6 +377,7 @@ struct SettingsView: View {
             }
 
             faceIdLockEnabled = settings.faceIdLockEnabled
+            appleIdConnected = settings.appleIdConnected
         }
         .onChange(of: dailyReminderEnabled) { _, enabled in
             if !enabled { settings.dailyReminderTime = nil }
@@ -572,5 +593,16 @@ struct SettingsView: View {
                 faceIdLockEnabled = success
             }
         }
+    }
+
+    private func handleAppleIdToggleChange(_ enabled: Bool) {
+        if !enabled {
+            settings.appleIdConnected = false
+            appleIdConnected = false
+            return
+        }
+
+        settings.appleIdConnected = true
+        appleIdConnected = true
     }
 }
