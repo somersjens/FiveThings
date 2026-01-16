@@ -295,30 +295,35 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ScrollView(showsIndicators: false) {
-                    let unfinishedEntries = cachedUnfinishedEntryIDs.compactMap { id in
-                        entries.first { $0.id == id }
-                    }
-                    let finishedEntries = cachedFinishedEntryIDs.compactMap { id in
-                        entries.first { $0.id == id }
-                    }
-                    LazyVStack(alignment: .leading, spacing: 14) {
-                        if showSettings {
-                            VStack(alignment: .leading, spacing: 4) {
-                                SettingsView(settings: settings, showsNavigation: false)
-                            }
-                            .padding(14)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(Color(.systemGray6))
-                                    .shadow(radius: 6, y: 2)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .strokeBorder(Color.gray.opacity(0.4), lineWidth: 3)
-                            )
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        let unfinishedEntries = cachedUnfinishedEntryIDs.compactMap { id in
+                            entries.first { $0.id == id }
                         }
+                        let finishedEntries = cachedFinishedEntryIDs.compactMap { id in
+                            entries.first { $0.id == id }
+                        }
+                        LazyVStack(alignment: .leading, spacing: 14) {
+                            Color.clear
+                                .frame(height: 0)
+                                .id("settingsTop")
+
+                            if showSettings {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    SettingsView(settings: settings, showsNavigation: false)
+                                }
+                                .padding(14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .fill(Color(.systemGray6))
+                                        .shadow(radius: 6, y: 2)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .strokeBorder(Color.gray.opacity(0.4), lineWidth: 3)
+                                )
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                            }
 
                         // Unfinished section
                         if !unfinishedEntries.isEmpty {
@@ -385,7 +390,26 @@ struct ContentView: View {
                         }
                         .padding(.top, 10)
                     }
-                    .padding(16)
+                        .padding(16)
+                    }
+                    .onChange(of: showSettings) { _, expanded in
+                        if expanded {
+                            withAnimation(.easeInOut(duration: 0.6)) {
+                                proxy.scrollTo("settingsTop", anchor: .top)
+                            }
+                        } else {
+                            // Apply notification changes after closing settings
+                            Task {
+                                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                                    language: settings.language,
+                                                                    dailyCount: settings.dailyItemCount)
+                                let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                                      shouldSchedule: shouldScheduleNext,
+                                                                      language: settings.language)
+                            }
+                        }
+                    }
                 }
 
                 if !hasSeenAccessScreen {
@@ -404,20 +428,6 @@ struct ContentView: View {
             .overlay {
                 if hasSeenAccessScreen {
                     lockOverlay
-                }
-            }
-            .onChange(of: showSettings) { _, expanded in
-                if !expanded {
-                    // Apply notification changes after closing settings
-                    Task {
-                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                            language: settings.language,
-                                                            dailyCount: settings.dailyItemCount)
-                        let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                        await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                              shouldSchedule: shouldScheduleNext,
-                                                              language: settings.language)
-                    }
                 }
             }
             .task {
