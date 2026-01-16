@@ -7,7 +7,7 @@ final class DayEntry {
     var id: UUID
     /// Normalized start-of-day date (local calendar)
     var day: Date
-    /// How many items this day expects (3...10)
+    /// How many items this day expects (1...10)
     var itemCount: Int
     /// Stored as an attribute so we can keep it simple and local.
     @Attribute var items: [String]
@@ -21,7 +21,7 @@ final class DayEntry {
         self.id = UUID()
         self.day = day
         self.itemCount = itemCount
-        self.items = Array(repeating: "", count: max(3, min(10, itemCount)))
+        self.items = Array(repeating: "", count: max(1, min(10, itemCount)))
         self.isLocked = false
         self.wasCompleted = false
         self.score = nil
@@ -34,13 +34,13 @@ final class DayEntry {
     }
 
     func isComplete(requiredCount: Int) -> Bool {
-        let clamped = max(3, min(10, requiredCount))
+        let clamped = max(1, min(10, requiredCount))
         guard items.count >= clamped else { return false }
         return items.prefix(clamped).allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     func resizeItemsIfNeeded(to newCount: Int) {
-        let clamped = max(3, min(10, newCount))
+        let clamped = max(1, min(10, newCount))
         var didChange = false
         if clamped != itemCount {
             itemCount = clamped
@@ -65,14 +65,14 @@ final class DayEntry {
     }
 
     func ensureItemsCount(atLeast count: Int) {
-        let clamped = max(3, min(10, count))
+        let clamped = max(1, min(10, count))
         guard items.count < clamped else { return }
         items.append(contentsOf: Array(repeating: "", count: clamped - items.count))
         updatedAt = Date()
     }
 
     func pruneEmptyOptionalItems(keepingAtLeast count: Int) {
-        let clamped = max(3, min(10, count))
+        let clamped = max(1, min(10, count))
         var didTrim = false
         while items.count > clamped,
               let last = items.last,
