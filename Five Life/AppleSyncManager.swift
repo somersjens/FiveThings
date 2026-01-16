@@ -33,6 +33,11 @@ struct AppleSnapshot: Codable {
 
 @MainActor
 final class AppleSyncManager {
+    enum SignInContext {
+        case initialConnect
+        case deferredConnect
+    }
+
     static let shared = AppleSyncManager()
 
     private let store = NSUbiquitousKeyValueStore.default
@@ -40,23 +45,43 @@ final class AppleSyncManager {
 
     private init() {}
 
-    func reconcileAfterSignIn(modelContext: ModelContext, settings: SettingsStore) {
+    func reconcileAfterSignIn(modelContext: ModelContext,
+                              settings: SettingsStore,
+                              context: SignInContext) {
         let localEntries = fetchEntries(modelContext: modelContext)
-        if let snapshot = loadSnapshot() {
+        if let snapshot = loadSnapshot(), !snapshot.entries.isEmpty {
             replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
             ensureTodayEntry(modelContext: modelContext, settings: settings)
             return
         }
 
-        if localEntries.isEmpty {
+        switch context {
+        case .initialConnect:
             resetToFreshStart(modelContext: modelContext, settings: settings)
-        } else {
-            saveSnapshot(from: localEntries)
+        case .deferredConnect:
+            if hasMeaningfulLocalData(localEntries, settings: settings) {
+                ensureTodayEntry(modelContext: modelContext, settings: settings)
+                let refreshedEntries = fetchEntries(modelContext: modelContext)
+                saveSnapshot(from: refreshedEntries)
+            } else {
+                resetToFreshStart(modelContext: modelContext, settings: settings)
+            }
         }
     }
 
-    func captureMidnightSnapshotIfNeeded(isConnected: Bool, entries: [DayEntry]) {
+    func captureMidnightSnapshotIfNeeded(modelContext: ModelContext,
+                                         settings: SettingsStore,
+                                         isConnected: Bool) {
         guard isConnected else { return }
+        ensureTodayEntry(modelContext: modelContext, settings: settings)
+        let entries = fetchEntries(modelContext: modelContext)
+        saveSnapshot(from: entries)
+    }
+
+    func captureSnapshotNow(modelContext: ModelContext, settings: SettingsStore, isConnected: Bool) {
+        guard isConnected else { return }
+        ensureTodayEntry(modelContext: modelContext, settings: settings)
+        let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
     }
 
@@ -108,6 +133,29 @@ final class AppleSyncManager {
     private func fetchEntries(modelContext: ModelContext) -> [DayEntry] {
         let descriptor = FetchDescriptor<DayEntry>()
         return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    private func hasMeaningfulLocalData(_ entries: [DayEntry], settings: SettingsStore) -> Bool {
+        guard !entries.isEmpty else { return false }
+        if entries.count > 1 {
+            return true
+        }
+
+        guard let entry = entries.first else { return false }
+        if entry.isLocked || entry.wasCompleted || entry.score != nil {
+            return true
+        }
+
+        if entry.items.contains(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+            return true
+        }
+
+        let today = Calendar.current.startOfDay(for: Date())
+        if !Calendar.current.isDate(entry.day, inSameDayAs: today) {
+            return true
+        }
+
+        return entry.itemCount != settings.dailyItemCount
     }
 
     private func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) {

@@ -216,7 +216,9 @@ struct AccessScreenView: View {
             let credential = try await appleSignInCoordinator.signIn()
             settings.appleUserIdentifier = credential.user
             settings.appleIdConnected = true
-            AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext, settings: settings)
+            AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext,
+                                                         settings: settings,
+                                                         context: .initialConnect)
             hasSeenAccessScreen = true
         } catch {
             settings.appleIdConnected = false

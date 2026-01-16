@@ -112,6 +112,11 @@ struct SettingsView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
+                    .onTapGesture(count: 5) {
+                        AppleSyncManager.shared.captureSnapshotNow(modelContext: modelContext,
+                                                                   settings: settings,
+                                                                   isConnected: settings.appleIdConnected)
+                    }
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { faceIdLockEnabled },
@@ -644,6 +649,9 @@ struct SettingsView: View {
             settings.appleUserIdentifier = credential.user
             settings.appleIdConnected = true
             appleIdConnected = true
+            AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext,
+                                                         settings: settings,
+                                                         context: .deferredConnect)
         } catch {
             settings.appleIdConnected = false
             appleIdConnected = false
