@@ -520,6 +520,10 @@ struct ContentView: View {
                 }
                 await MainActor.run {
                     vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    AppleSyncManager.shared.captureMidnightSnapshotIfNeeded(
+                        isConnected: settings.appleIdConnected,
+                        entries: entries
+                    )
                 }
                 let shouldScheduleNext = await MainActor.run {
                     vm.shouldScheduleNextDayReminder(allEntries: entries)

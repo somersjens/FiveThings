@@ -2,10 +2,12 @@
 import AuthenticationServices
 import StoreKit
 import SwiftUI
+import SwiftData
 
 struct AccessScreenView: View {
     @ObservedObject var settings: SettingsStore
     @Binding var hasSeenAccessScreen: Bool
+    @Environment(\.modelContext) private var modelContext
     @State private var currentCardIndex: Int = 0
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     @State private var isSigningInWithApple: Bool = false
@@ -214,6 +216,7 @@ struct AccessScreenView: View {
             let credential = try await appleSignInCoordinator.signIn()
             settings.appleUserIdentifier = credential.user
             settings.appleIdConnected = true
+            AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext, settings: settings)
             hasSeenAccessScreen = true
         } catch {
             settings.appleIdConnected = false
