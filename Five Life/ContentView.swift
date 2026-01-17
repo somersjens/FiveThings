@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var cachedFinishedEntryIDs: [UUID] = []
     @State private var showExportOptions: Bool = false
     @State private var shareSheetItem: ShareSheetItem?
+    @State private var showDeleteAllOption: Bool = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -328,6 +329,11 @@ struct ContentView: View {
                                     HStack {
                                         Text(settings.language == .dutch ? "Instellingen" : "Settings")
                                             .font(.title3.weight(.semibold))
+                                            .onTapGesture(count: 10) {
+                                                withAnimation(.easeInOut(duration: 0.2)) {
+                                                    showDeleteAllOption = true
+                                                }
+                                            }
                                         Spacer()
                                         Image(systemName: "gearshape.fill")
                                             .font(.system(size: 18, weight: .semibold))
@@ -343,7 +349,9 @@ struct ContentView: View {
                                     .padding(.top, 4)
 
                                     VStack(spacing: 16) {
-                                        SettingsView(settings: settings, showsNavigation: false)
+                                        SettingsView(settings: settings,
+                                                     showDeleteAllOption: $showDeleteAllOption,
+                                                     showsNavigation: false)
 
                                         Button {
                                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {

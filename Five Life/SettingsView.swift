@@ -7,6 +7,7 @@ import UIKit
 
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
+    @Binding var showDeleteAllOption: Bool
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
     @StateObject private var notifier = NotificationManager.shared
@@ -56,6 +57,37 @@ struct SettingsView: View {
         }
         .frame(height: settingsRowHeight)
         .tint(.brandAccent)
+    }
+
+    private var deleteAllEntriesSection: some View {
+        HStack {
+            Text(settings.language == .dutch ? "Verwijderd alles" : "Delete all entries")
+                .font(.body.weight(.semibold))
+            Spacer()
+            HStack(spacing: 8) {
+                deleteAllActionButton(
+                    title: settings.language == .dutch ? "Nee" : "No",
+                    background: Color(.systemGray5),
+                    foreground: .primary
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showDeleteAllOption = false
+                    }
+                }
+
+                deleteAllActionButton(
+                    title: settings.language == .dutch ? "Ja" : "Yes",
+                    background: Color.red.opacity(0.15),
+                    foreground: .red
+                ) {
+                    deleteAllEntries()
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showDeleteAllOption = false
+                    }
+                }
+            }
+        }
+        .frame(height: settingsRowHeight)
     }
 
     private var itemsPerDaySection: some View {
@@ -329,6 +361,12 @@ struct SettingsView: View {
 
     private var settingsForm: some View {
         Form {
+            if showDeleteAllOption {
+                Section {
+                    deleteAllEntriesSection
+                }
+            }
+
             Section {
                 languageSection
             }
@@ -353,6 +391,12 @@ struct SettingsView: View {
 
     private var inlineSettings: some View {
         VStack(alignment: .leading, spacing: 0) {
+            if showDeleteAllOption {
+                deleteAllEntriesSection
+                Divider()
+                    .overlay(Color.gray.opacity(0.3))
+                    .frame(height: 1)
+            }
             languageSection
             Divider()
                 .overlay(Color.gray.opacity(0.3))
@@ -576,6 +620,24 @@ struct SettingsView: View {
         }
     }
 
+    private func deleteAllActionButton(title: String,
+                                       background: Color,
+                                       foreground: Color,
+                                       action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.footnote.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(background)
+                )
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(foreground)
+    }
+
     private func settingsStepperButton(systemName: String,
                                        isDisabled: Bool,
                                        action: @escaping () -> Void) -> some View {
@@ -617,6 +679,15 @@ struct SettingsView: View {
                 secretSaveMessage = nil
             }
         }
+    }
+
+    private func deleteAllEntries() {
+        let descriptor = FetchDescriptor<DayEntry>()
+        let entriesToDelete = (try? modelContext.fetch(descriptor)) ?? []
+        entriesToDelete.forEach { entry in
+            modelContext.delete(entry)
+        }
+        try? modelContext.save()
     }
 
     private func intFromDigits(start: Int, length: Int) -> Int? {
