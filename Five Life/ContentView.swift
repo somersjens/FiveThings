@@ -21,6 +21,8 @@ struct ContentView: View {
     @State private var midnightTask: Task<Void, Never>?
     @State private var cachedUnfinishedEntryIDs: [UUID] = []
     @State private var cachedFinishedEntryIDs: [UUID] = []
+    @State private var showExportOptions: Bool = false
+    @State private var shareSheetItem: ShareSheetItem?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -46,6 +48,19 @@ struct ContentView: View {
         guard !normalizedQuery.isEmpty else { return sorted }
         return sorted.filter { entry in
             entryMatchesSearch(entry, normalizedQuery: normalizedQuery)
+        }
+    }
+
+    private var exportEntries: [DayEntry] {
+        let sorted = entries.sorted { lhs, rhs in
+            vm.newestFirst ? (lhs.day > rhs.day) : (lhs.day < rhs.day)
+        }
+
+        switch vm.finishedLimit {
+        case .all:
+            return sorted
+        default:
+            return Array(sorted.prefix(vm.finishedLimit.rawValue))
         }
     }
 
@@ -331,7 +346,9 @@ struct ContentView: View {
                                         SettingsView(settings: settings, showsNavigation: false)
 
                                         Button {
-                                            // TODO: Export action
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                showExportOptions.toggle()
+                                            }
                                         } label: {
                                             Text(settings.language == .dutch
                                                  ? "Exporteren naar PDF/CSV"
@@ -347,6 +364,40 @@ struct ContentView: View {
                                         .buttonStyle(.plain)
                                         .frame(maxWidth: 260)
                                         .padding(.bottom, 6)
+
+                                        if showExportOptions {
+                                            HStack(spacing: 12) {
+                                                Button {
+                                                    handleExport(format: .pdf)
+                                                } label: {
+                                                    Text("PDF")
+                                                        .font(.headline)
+                                                        .foregroundStyle(.primary)
+                                                        .frame(width: 80, height: 36)
+                                                        .background(
+                                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                                .fill(Color.brandAccent.opacity(0.2))
+                                                        )
+                                                }
+                                                .buttonStyle(.plain)
+
+                                                Button {
+                                                    handleExport(format: .csv)
+                                                } label: {
+                                                    Text("CSV")
+                                                        .font(.headline)
+                                                        .foregroundStyle(.primary)
+                                                        .frame(width: 80, height: 36)
+                                                        .background(
+                                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                                .fill(Color.brandAccent.opacity(0.2))
+                                                        )
+                                                }
+                                                .buttonStyle(.plain)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .center)
+                                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                                        }
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.horizontal, 14)
@@ -439,12 +490,24 @@ struct ContentView: View {
                     }
                         .padding(16)
                     }
+                    .onTapGesture {
+                        if showExportOptions {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                showExportOptions = false
+                            }
+                        }
+                    }
                     .onChange(of: showSettings) { _, expanded in
                         if expanded {
                             withAnimation(.easeInOut(duration: 0.6)) {
                                 proxy.scrollTo("settingsTop", anchor: .top)
                             }
                         } else {
+                            if showExportOptions {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    showExportOptions = false
+                                }
+                            }
                             // Apply notification changes after closing settings
                             Task {
                                 await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
@@ -472,6 +535,9 @@ struct ContentView: View {
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(item: $shareSheetItem) { item in
+                ShareSheet(items: item.items)
+            }
             .overlay {
                 if hasSeenAccessScreen {
                     lockOverlay
@@ -590,6 +656,21 @@ struct ContentView: View {
                                                       shouldSchedule: shouldScheduleNext,
                                                       language: settings.language)
             }
+        }
+    }
+
+    private func handleExport(format: ExportFormat) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            showExportOptions = false
+        }
+
+        do {
+            let url = try ExportService.export(entries: exportEntries,
+                                                language: settings.language,
+                                                format: format)
+            shareSheetItem = ShareSheetItem(items: [url])
+        } catch {
+            return
         }
     }
 
