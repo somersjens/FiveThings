@@ -49,20 +49,28 @@ final class AppleSyncManager {
                               settings: SettingsStore,
                               context: SignInContext) async {
         let localEntries = fetchEntries(modelContext: modelContext)
-        if let snapshot = await loadSnapshotWithRetry(), !snapshot.entries.isEmpty {
-            replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
-            ensureTodayEntry(modelContext: modelContext, settings: settings)
-            return
-        }
-
         switch context {
         case .initialConnect:
+            if let snapshot = await loadSnapshotWithRetry(), !snapshot.entries.isEmpty {
+                replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
+                ensureTodayEntry(modelContext: modelContext, settings: settings)
+                return
+            }
             resetToFreshStart(modelContext: modelContext, settings: settings)
         case .deferredConnect:
+            let snapshot = await loadSnapshotWithRetry()
+            if let snapshot, !snapshot.entries.isEmpty {
+                let appleLineCount = storedLineCount(for: snapshot.entries)
+                let localLineCount = storedLineCount(for: localEntries)
+                if appleLineCount > localLineCount {
+                    replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
+                    ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    return
+                }
+            }
+
             if hasMeaningfulLocalData(localEntries, settings: settings) {
                 ensureTodayEntry(modelContext: modelContext, settings: settings)
-                let refreshedEntries = fetchEntries(modelContext: modelContext)
-                saveSnapshot(from: refreshedEntries)
             } else {
                 resetToFreshStart(modelContext: modelContext, settings: settings)
             }
@@ -232,6 +240,18 @@ final class AppleSyncManager {
         }
 
         return entry.itemCount != settings.dailyItemCount
+    }
+
+    private func storedLineCount(for entries: [DayEntrySnapshot]) -> Int {
+        entries.reduce(0) { total, entry in
+            total + entry.items.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count
+        }
+    }
+
+    private func storedLineCount(for entries: [DayEntry]) -> Int {
+        entries.reduce(0) { total, entry in
+            total + entry.items.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count
+        }
     }
 
     private func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) {
