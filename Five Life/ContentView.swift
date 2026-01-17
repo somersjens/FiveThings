@@ -260,19 +260,35 @@ struct ContentView: View {
         let streakLabel = settings.language == .dutch ? "Streak" : "Streak"
         let daysLabel = settings.language == .dutch ? "Dagen" : "Days"
         let entriesLabel = settings.language == .dutch ? "Items" : "Entries"
-        return HStack(spacing: 6) {
-            Text("\(streakLabel): \(stats.streak)")
-            Text("|")
-                .foregroundStyle(.secondary)
-            Text("\(daysLabel): \(stats.days)")
-            Text("|")
-                .foregroundStyle(.secondary)
-            Text("\(entriesLabel): \(stats.entries)")
+        return HStack(spacing: 10) {
+            statisticsBox(title: streakLabel, value: stats.streak)
+            statisticsBox(title: daysLabel, value: stats.days)
+            statisticsBox(title: entriesLabel, value: stats.entries)
         }
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(.black)
-        .frame(maxWidth: .infinity, alignment: .center)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+    }
+
+    private func statisticsBox(title: String, value: Int) -> some View {
+        VStack(spacing: 4) {
+            Text("\(value)")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .monospacedDigit()
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.secondary.opacity(0.10))
+        )
     }
 
     @ViewBuilder
