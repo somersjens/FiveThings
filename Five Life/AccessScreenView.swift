@@ -43,7 +43,7 @@ struct AccessScreenView: View {
     }
 
     private var continueButtonTitle: String {
-        settings.language == .dutch ? "Gebruik de app zonder…" : "Use the app without…"
+        settings.language == .dutch ? "Gebruik de app zonder" : "Use the app without"
     }
 
     var body: some View {

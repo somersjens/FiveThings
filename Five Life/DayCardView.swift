@@ -310,12 +310,20 @@ struct DayCardView: View {
             Text(settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
                 .font(.headline)
 
-            Text("\(Int(scoreDraft))")
+            Text("\(Int(scoreDraft.rounded()))")
                 .font(.system(size: 32, weight: .bold))
                 .monospacedDigit()
 
-            Slider(value: $scoreDraft, in: 1...10, step: 1)
-                .tint(Color.brandAccent)
+            GeometryReader { proxy in
+                HStack {
+                    Spacer()
+                    Slider(value: $scoreDraft, in: 1...10)
+                        .tint(Color.brandAccent)
+                        .frame(width: proxy.size.width * 0.8)
+                    Spacer()
+                }
+            }
+            .frame(height: 44)
 
             HStack(spacing: 12) {
                 Button {
@@ -330,7 +338,7 @@ struct DayCardView: View {
                 .foregroundStyle(.white)
 
                 Button {
-                    updateScore(Int(scoreDraft))
+                    updateScore(Int(scoreDraft.rounded()))
                     showScoreEditor = false
                 } label: {
                     Text(settings.language == .dutch ? "Opslaan" : "Save")
