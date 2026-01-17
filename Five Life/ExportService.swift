@@ -361,7 +361,7 @@ enum ExportService {
             if filterContext.finishedLimit == .all {
                 limitText = "alle informatie"
             } else {
-                let positionText = filterContext.newestFirst ? "laatste" : "eerste"
+                let positionText = "laatste"
                 limitText = "de \(positionText) \(filterContext.finishedLimit.rawValue) dagen"
             }
             return "PDF gegenereerd op \(dateString): \(limitText) in \(orderText) volgorde (filter instellingen) - pagina \(page)/\(totalPages)"
@@ -370,7 +370,7 @@ enum ExportService {
             if filterContext.finishedLimit == .all {
                 limitText = "all entries"
             } else {
-                let positionText = filterContext.newestFirst ? "last" : "first"
+                let positionText = "last"
                 limitText = "the \(positionText) \(filterContext.finishedLimit.rawValue) entries"
             }
             return "PDF generated on \(dateString): \(limitText) in \(orderText) order (filter settings) - page \(page)/\(totalPages)"
