@@ -13,11 +13,38 @@ struct DayEntrySnapshot: Codable {
     var createdAt: Date
     var updatedAt: Date
 
+    init(id: UUID,
+         day: Date,
+         itemCount: Int,
+         items: [String],
+         isLocked: Bool,
+         wasCompleted: Bool,
+         score: Int?,
+         createdAt: Date,
+         updatedAt: Date) {
+        self.id = id
+        self.day = day
+        self.itemCount = itemCount
+        self.items = items
+        self.isLocked = isLocked
+        self.wasCompleted = wasCompleted
+        self.score = score
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
     init(from entry: DayEntry) {
         id = entry.id
         day = entry.day
-        itemCount = entry.itemCount
-        items = entry.items
+        let clampedCount = max(1, min(10, entry.itemCount))
+        itemCount = clampedCount
+        if entry.items.count > clampedCount {
+            items = Array(entry.items.prefix(clampedCount))
+        } else if entry.items.count < clampedCount {
+            items = entry.items + Array(repeating: "", count: clampedCount - entry.items.count)
+        } else {
+            items = entry.items
+        }
         isLocked = entry.isLocked
         wasCompleted = entry.wasCompleted
         score = entry.score
@@ -194,17 +221,39 @@ final class AppleSyncManager {
     private func replaceLocalEntries(with snapshots: [DayEntrySnapshot], modelContext: ModelContext) {
         deleteAllEntries(modelContext: modelContext)
         snapshots.forEach { snapshot in
-            let entry = DayEntry(day: snapshot.day, itemCount: snapshot.itemCount)
-            entry.id = snapshot.id
-            entry.items = snapshot.items
-            entry.isLocked = snapshot.isLocked
-            entry.wasCompleted = snapshot.wasCompleted
-            entry.score = snapshot.score
-            entry.createdAt = snapshot.createdAt
-            entry.updatedAt = snapshot.updatedAt
+            let sanitizedSnapshot = sanitizeSnapshot(snapshot)
+            let entry = DayEntry(day: sanitizedSnapshot.day, itemCount: sanitizedSnapshot.itemCount)
+            entry.id = sanitizedSnapshot.id
+            entry.items = sanitizedSnapshot.items
+            entry.isLocked = sanitizedSnapshot.isLocked
+            entry.wasCompleted = sanitizedSnapshot.wasCompleted
+            entry.score = sanitizedSnapshot.score
+            entry.createdAt = sanitizedSnapshot.createdAt
+            entry.updatedAt = sanitizedSnapshot.updatedAt
             modelContext.insert(entry)
         }
         try? modelContext.save()
+    }
+
+    private func sanitizeSnapshot(_ snapshot: DayEntrySnapshot) -> DayEntrySnapshot {
+        let clampedCount = max(1, min(10, snapshot.itemCount))
+        var sanitizedItems = snapshot.items
+        if sanitizedItems.count > clampedCount {
+            sanitizedItems = Array(sanitizedItems.prefix(clampedCount))
+        } else if sanitizedItems.count < clampedCount {
+            sanitizedItems.append(contentsOf: Array(repeating: "", count: clampedCount - sanitizedItems.count))
+        }
+        return DayEntrySnapshot(
+            id: snapshot.id,
+            day: snapshot.day,
+            itemCount: clampedCount,
+            items: sanitizedItems,
+            isLocked: snapshot.isLocked,
+            wasCompleted: snapshot.wasCompleted,
+            score: snapshot.score,
+            createdAt: snapshot.createdAt,
+            updatedAt: snapshot.updatedAt
+        )
     }
 
     private func deleteAllEntries(modelContext: ModelContext) {
