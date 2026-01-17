@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var showExportOptions: Bool = false
     @State private var shareSheetItem: ShareSheetItem?
     @State private var showDeleteAllOption: Bool = false
+    @State private var settingsScrollTask: Task<Void, Never>?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -120,6 +121,9 @@ struct ContentView: View {
         let word = numberWord(for: settings.dailyItemCount)
         return "Happy \(word)"
     }
+
+    private let settingsTopID = "settingsTop"
+    private let settingsScrollDuration: Double = 0.48
 
     private struct StatisticsSnapshot {
         let streak: Int
@@ -337,8 +341,8 @@ struct ContentView: View {
                         }
                         LazyVStack(alignment: .leading, spacing: 14) {
                             Color.clear
-                                .frame(height: 0)
-                                .id("settingsTop")
+                                .frame(height: 1)
+                                .id(settingsTopID)
 
                             if showSettings {
                                 VStack(alignment: .leading, spacing: 8) {
@@ -523,9 +527,7 @@ struct ContentView: View {
                     }
                     .onChange(of: showSettings) { _, expanded in
                         if expanded {
-                            withAnimation(.easeInOut(duration: 0.6)) {
-                                proxy.scrollTo("settingsTop", anchor: .top)
-                            }
+                            scrollSettingsIntoView(using: proxy)
                         } else {
                             if showExportOptions {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -542,6 +544,16 @@ struct ContentView: View {
                                                                       shouldSchedule: shouldScheduleNext,
                                                                       language: settings.language)
                             }
+                        }
+                    }
+                    .onChange(of: showDeleteAllOption) { _, _ in
+                        if showSettings {
+                            scrollSettingsIntoView(using: proxy)
+                        }
+                    }
+                    .onChange(of: showExportOptions) { _, _ in
+                        if showSettings {
+                            scrollSettingsIntoView(using: proxy)
                         }
                     }
                 }
@@ -749,5 +761,19 @@ struct ContentView: View {
     private func refreshEntryLists() {
         cachedUnfinishedEntryIDs = unfinished.map(\.id)
         cachedFinishedEntryIDs = finished.map(\.id)
+    }
+
+    private func scrollSettingsIntoView(using proxy: ScrollViewProxy) {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = Task { @MainActor in
+            let animation = Animation.easeInOut(duration: settingsScrollDuration)
+            withAnimation(animation) {
+                proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+            try? await Task.sleep(for: .milliseconds(80))
+            withAnimation(animation) {
+                proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+        }
     }
 }
