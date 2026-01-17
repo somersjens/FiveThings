@@ -420,8 +420,8 @@ struct DayCardView: View {
         let showsOptionalPlaceholder = hasOptionalRows && !entry.isLocked && idx >= requiredCount
         let placeholderText = showsOptionalPlaceholder
             ? (settings.language == .dutch
-               ? "Optioneel (boven eerder dagelijks aantal)"
-               : "Optional (above previous daily amount)")
+               ? "Optioneel (boven oud aantal)"
+               : "Optional (above old amount)")
             : (settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…")
         return HStack(alignment: .top, spacing: 10) {
             Text("\(idx + 1).")

@@ -13,6 +13,7 @@ final class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
 
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
+    private let notificationSound = UNNotificationSound(named: UNNotificationSoundName("Pling.wav"))
 
     private init() { }
 
@@ -58,7 +59,7 @@ final class NotificationManager: ObservableObject {
         content.body = (language == .dutch)
             ? "Dit is je \(timeString) herinnering om \(clampedCount) dingen over vandaag op te schrijven"
             : "This is your \(timeString) reminder to write \(clampedCount) things about today"
-        content.sound = .default
+        content.sound = notificationSound
 
         var triggerComps = time.asDateComponents()
         triggerComps.calendar = .current
@@ -83,7 +84,7 @@ final class NotificationManager: ObservableObject {
         content.body = (language == .dutch)
             ? "Dit is je \(timeString) herinnering om over je dag gisteren te schrijven aangezien deze nog leeg is"
             : "This is your \(timeString) reminder as yesterday’s card is waiting for you to be filled."
-        content.sound = .default
+        content.sound = notificationSound
 
         // Schedule for *tomorrow* at the chosen time
         let calendar = Calendar.current
