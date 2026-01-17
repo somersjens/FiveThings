@@ -107,16 +107,6 @@ struct DayCardView: View {
             header
 
             VStack(spacing: rowSpacing) {
-                if hasOptionalRows && !entry.isLocked {
-                    Text(settings.language == .dutch
-                         ? "Optioneel (boven je huidige ingestelde aantal)"
-                         : "Optional (above your current set amount)")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 4)
-                }
-
                 ForEach(0..<displayCount, id: \.self) { idx in
                     entryRow(idx)
                 }
@@ -427,7 +417,13 @@ struct DayCardView: View {
     }
 
     private func rowContent(idx: Int) -> some View {
-        HStack(alignment: .top, spacing: 10) {
+        let showsOptionalPlaceholder = hasOptionalRows && !entry.isLocked && idx >= requiredCount
+        let placeholderText = showsOptionalPlaceholder
+            ? (settings.language == .dutch
+               ? "Optioneel (boven eerder dagelijks aantal)"
+               : "Optional (above previous daily amount)")
+            : (settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…")
+        return HStack(alignment: .top, spacing: 10) {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 28, alignment: .leading)
@@ -435,7 +431,7 @@ struct DayCardView: View {
 
             if isEditable {
                 TextField(
-                    settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…",
+                    placeholderText,
                     text: Binding(
                         get: { entry.items[safe: idx] ?? "" },
                         set: { newValue in
