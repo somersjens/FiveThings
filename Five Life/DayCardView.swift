@@ -91,6 +91,10 @@ struct DayCardView: View {
         displayCount > requiredCount
     }
 
+    private var canRemoveOptionalRows: Bool {
+        entry.itemCount > settings.dailyItemCount
+    }
+
     private var shouldPulse: Bool {
         !entry.isLocked && entry.isComplete(requiredCount: requiredCount) && !showSuccess
     }
@@ -343,7 +347,7 @@ struct DayCardView: View {
     }
 
     private func entryRow(_ idx: Int) -> some View {
-        let showsRemove = isEditable && idx >= requiredCount
+        let showsRemove = isEditable && canRemoveOptionalRows && idx >= requiredCount
         let styledRow = rowContainer(idx: idx,
                                      showsRemove: showsRemove,
                                      applyInsertionPadding: true,
@@ -474,7 +478,7 @@ struct DayCardView: View {
         GeometryReader { _ in
             if let dragIndex, let frame = rowFrames[dragIndex], isDragging {
                 rowContainer(idx: dragIndex,
-                             showsRemove: isEditable && dragIndex >= requiredCount,
+                             showsRemove: isEditable && canRemoveOptionalRows && dragIndex >= requiredCount,
                              applyInsertionPadding: false,
                              trackSize: false)
                     .frame(width: frame.width, height: frame.height, alignment: .leading)
