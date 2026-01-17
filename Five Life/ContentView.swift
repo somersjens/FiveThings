@@ -317,10 +317,15 @@ struct ContentView: View {
                                         Image(systemName: "gearshape.fill")
                                             .font(.system(size: 18, weight: .semibold))
                                             .foregroundStyle(Color(.systemGray))
+                                            .onTapGesture {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                    showSettings = false
+                                                }
+                                            }
                                     }
                                     .frame(height: 44)
                                     .padding(.horizontal, 28)
-                                    .padding(.top, 18)
+                                    .padding(.top, 4)
 
                                     VStack(spacing: 16) {
                                         SettingsView(settings: settings, showsNavigation: false)
