@@ -161,7 +161,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
 
-                Text("|")
+                Text(" | ")
 
                 Link(destination: shareURL) {
                     Text(settings.language == .dutch ? "Deel met vrienden" : "Share the friends")
@@ -170,7 +170,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
 
-                Text("|")
+                Text(" | ")
 
                 Link(destination: feedbackURL) {
                     Text(settings.language == .dutch ? "Stuur feedback" : "Send feedback")
@@ -182,7 +182,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
         }
-        .font(.footnote.weight(.semibold))
+        .font(.footnote)
         .foregroundStyle(.secondary)
     }
 
