@@ -309,18 +309,60 @@ struct ContentView: View {
                                 .id("settingsTop")
 
                             if showSettings {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    SettingsView(settings: settings, showsNavigation: false)
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text(settings.language == .dutch ? "Instellingen" : "Settings")
+                                            .font(.title3.weight(.semibold))
+                                        Spacer()
+                                        Image(systemName: "gearshape.fill")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(Color(.systemGray))
+                                    }
+                                    .frame(height: 44)
+                                    .padding(.horizontal, 28)
+                                    .padding(.top, 18)
+
+                                    VStack(spacing: 16) {
+                                        SettingsView(settings: settings, showsNavigation: false)
+
+                                        Button {
+                                            // TODO: Export action
+                                        } label: {
+                                            Text(settings.language == .dutch
+                                                 ? "Exporteren naar PDF/CSV"
+                                                 : "Export to PDF/CSV")
+                                                .font(.headline)
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 10)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                                        .fill(Color.brandAccent.opacity(0.2))
+                                                )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .frame(maxWidth: 260)
+                                        .padding(.bottom, 6)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 14)
+                                    .padding(.top, 8)
+                                    .padding(.bottom, 14)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .fill(Color(.systemBackground))
+                                    )
+                                    .padding(.horizontal, 14)
+                                    .padding(.bottom, 14)
                                 }
-                                .padding(14)
+                                .padding(.top, 8)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
                                         .fill(Color(.systemGray6))
                                         .shadow(radius: 6, y: 2)
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                        .strokeBorder(Color.gray.opacity(0.4), lineWidth: 3)
+                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                        .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
                                 )
                                 .transition(.move(edge: .top).combined(with: .opacity))
                             }
