@@ -667,7 +667,11 @@ struct ContentView: View {
         do {
             let url = try ExportService.export(entries: exportEntries,
                                                 language: settings.language,
-                                                format: format)
+                                                format: format,
+                                                filterContext: ExportService.ExportFilterContext(
+                                                    finishedLimit: vm.finishedLimit,
+                                                    newestFirst: vm.newestFirst
+                                                ))
             shareSheetItem = ShareSheetItem(items: [url])
         } catch {
             return

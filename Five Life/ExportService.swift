@@ -26,8 +26,22 @@ enum ExportService {
         formatter.dateFormat = "dd-MM-yyyy"
         return formatter
     }()
+    private static let pdfHeaderDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "dd-MM-yyyy"
+        return formatter
+    }()
 
-    static func export(entries: [DayEntry], language: AppLanguage, format: ExportFormat) throws -> URL {
+    struct ExportFilterContext {
+        let finishedLimit: ContentViewModel.FinishedCardsLimit
+        let newestFirst: Bool
+    }
+
+    static func export(entries: [DayEntry],
+                       language: AppLanguage,
+                       format: ExportFormat,
+                       filterContext: ExportFilterContext) throws -> URL {
         let destination = makeTemporaryURL(withExtension: format.fileExtension)
         switch format {
         case .csv:
@@ -37,7 +51,9 @@ enum ExportService {
             }
             try data.write(to: destination, options: .atomic)
         case .pdf:
-            let pdfData = pdfContent(entries: entries, language: language)
+            let pdfData = pdfContent(entries: entries,
+                                     language: language,
+                                     filterContext: filterContext)
             try pdfData.write(to: destination, options: .atomic)
         }
         return destination
@@ -62,15 +78,25 @@ enum ExportService {
         return lines.joined(separator: "\n")
     }
 
-    private static func pdfContent(entries: [DayEntry], language: AppLanguage) -> Data {
+    private static func pdfContent(entries: [DayEntry],
+                                   language: AppLanguage,
+                                   filterContext: ExportFilterContext) -> Data {
         let pageRect = CGRect(x: 0, y: 0, width: 595.2, height: 841.8)
         let margin: CGFloat = 36
         let columnSpacing: CGFloat = 24
         let columnWidth = (pageRect.width - (margin * 2) - columnSpacing) / 2
         let topY = margin
+        let headerBottomSpacing: CGFloat = 12
+        let headerMaxWidth = pageRect.width - (margin * 2)
+        let generationDate = Date()
 
+        let pdfHeaderFont = UIFont.systemFont(ofSize: 9, weight: .semibold)
         let headerFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
         let bodyFont = UIFont.systemFont(ofSize: 12, weight: .regular)
+        let pdfHeaderAttributes: [NSAttributedString.Key: Any] = [
+            .font: pdfHeaderFont,
+            .foregroundColor: UIColor.darkGray
+        ]
         let headerAttributes: [NSAttributedString.Key: Any] = [
             .font: headerFont,
             .foregroundColor: UIColor.black
@@ -82,8 +108,18 @@ enum ExportService {
 
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
         return renderer.pdfData { context in
+            let totalPages = pdfTotalPages(entries: entries,
+                                           language: language,
+                                           filterContext: filterContext,
+                                           headerAttributes: pdfHeaderAttributes,
+                                           headerWidth: headerMaxWidth,
+                                           headerBottomSpacing: headerBottomSpacing,
+                                           margin: margin,
+                                           columnWidth: columnWidth,
+                                           pageRect: pageRect)
             var currentColumn = 0
             var currentY = topY
+            var currentPage = 1
 
             func columnX(_ column: Int) -> CGFloat {
                 margin + CGFloat(column) * (columnWidth + columnSpacing)
@@ -99,10 +135,38 @@ enum ExportService {
                 return ceil(bounding.height)
             }
 
+            func headerText(page: Int) -> String {
+                pdfHeaderText(language: language,
+                              generationDate: generationDate,
+                              filterContext: filterContext,
+                              page: page,
+                              totalPages: totalPages)
+            }
+
+            func headerHeight(for page: Int) -> CGFloat {
+                let text = headerText(page: page)
+                let bounding = (text as NSString).boundingRect(
+                    with: CGSize(width: headerMaxWidth, height: .greatestFiniteMagnitude),
+                    options: [.usesLineFragmentOrigin, .usesFontLeading],
+                    attributes: pdfHeaderAttributes,
+                    context: nil
+                )
+                return ceil(bounding.height)
+            }
+
+            func drawHeader(page: Int) -> CGFloat {
+                let text = headerText(page: page)
+                let height = headerHeight(for: page)
+                let headerRect = CGRect(x: margin, y: topY, width: headerMaxWidth, height: height)
+                (text as NSString).draw(in: headerRect, withAttributes: pdfHeaderAttributes)
+                return height
+            }
+
             func beginNewPage() {
                 context.beginPage()
                 currentColumn = 0
-                currentY = topY
+                let headerHeight = drawHeader(page: currentPage)
+                currentY = topY + headerHeight + headerBottomSpacing
             }
 
             beginNewPage()
@@ -118,7 +182,7 @@ enum ExportService {
 
                 let items = sanitizedItems(from: entry).map { "- \(capitalizedFirstLetter($0))" }
 
-                let headerHeight = heightForText(headerText, attributes: headerAttributes)
+                let entryHeaderHeight = heightForText(headerText, attributes: headerAttributes)
                 let headerSpacing: CGFloat = 4
                 let itemSpacing: CGFloat = 2
                 let blockSpacing: CGFloat = 10
@@ -131,7 +195,7 @@ enum ExportService {
                     }
                 }
 
-                let blockHeight = headerHeight
+                let blockHeight = entryHeaderHeight
                     + (items.isEmpty ? 0 : headerSpacing + itemsHeight)
                     + blockSpacing
 
@@ -139,8 +203,9 @@ enum ExportService {
                 if blockHeight > remainingHeight {
                     if currentColumn == 0 {
                         currentColumn = 1
-                        currentY = topY
+                        currentY = topY + headerHeight(for: currentPage) + headerBottomSpacing
                     } else {
+                        currentPage += 1
                         beginNewPage()
                     }
                 }
@@ -148,9 +213,9 @@ enum ExportService {
                 let x = columnX(currentColumn)
                 var drawY = currentY
 
-                let headerRect = CGRect(x: x, y: drawY, width: columnWidth, height: headerHeight)
+                let headerRect = CGRect(x: x, y: drawY, width: columnWidth, height: entryHeaderHeight)
                 (headerText as NSString).draw(in: headerRect, withAttributes: headerAttributes)
-                drawY += headerHeight
+                drawY += entryHeaderHeight
 
                 if !items.isEmpty {
                     drawY += headerSpacing
@@ -164,6 +229,151 @@ enum ExportService {
 
                 currentY = drawY + blockSpacing
             }
+        }
+    }
+
+    private static func pdfTotalPages(entries: [DayEntry],
+                                      language: AppLanguage,
+                                      filterContext: ExportFilterContext,
+                                      headerAttributes: [NSAttributedString.Key: Any],
+                                      headerWidth: CGFloat,
+                                      headerBottomSpacing: CGFloat,
+                                      margin: CGFloat,
+                                      columnWidth: CGFloat,
+                                      pageRect: CGRect) -> Int {
+        let entryHeaderFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        let entryBodyFont = UIFont.systemFont(ofSize: 12, weight: .regular)
+        let entryHeaderAttributes: [NSAttributedString.Key: Any] = [
+            .font: entryHeaderFont,
+            .foregroundColor: UIColor.black
+        ]
+        let entryBodyAttributes: [NSAttributedString.Key: Any] = [
+            .font: entryBodyFont,
+            .foregroundColor: UIColor.black
+        ]
+
+        func heightForText(_ text: String, attributes: [NSAttributedString.Key: Any]) -> CGFloat {
+            let bounding = (text as NSString).boundingRect(
+                with: CGSize(width: columnWidth, height: .greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                attributes: attributes,
+                context: nil
+            )
+            return ceil(bounding.height)
+        }
+
+        func headerHeight(for totalPages: Int) -> CGFloat {
+            let sampleHeader = pdfHeaderText(language: language,
+                                             generationDate: Date(),
+                                             filterContext: filterContext,
+                                             page: 1,
+                                             totalPages: totalPages)
+            let bounding = (sampleHeader as NSString).boundingRect(
+                with: CGSize(width: headerWidth, height: .greatestFiniteMagnitude),
+                options: [.usesLineFragmentOrigin, .usesFontLeading],
+                attributes: headerAttributes,
+                context: nil
+            )
+            return ceil(bounding.height)
+        }
+
+        func layoutPageCount(totalPagesEstimate: Int) -> Int {
+            let pageHeaderHeight = headerHeight(for: totalPagesEstimate)
+            let topY = margin + pageHeaderHeight + headerBottomSpacing
+
+            var pageCount = 1
+            var currentColumn = 0
+            var currentY = topY
+
+            for entry in entries {
+                let dateString = DateFormatting.formattedDayString(entry.day, language: language)
+                let headerText: String
+                if let score = entry.score {
+                    headerText = "\(dateString) (score \(score))"
+                } else {
+                    headerText = dateString
+                }
+
+                let items = sanitizedItems(from: entry).map { "- \(capitalizedFirstLetter($0))" }
+
+                let entryHeaderHeight = heightForText(headerText, attributes: entryHeaderAttributes)
+                let headerSpacing: CGFloat = 4
+                let itemSpacing: CGFloat = 2
+                let blockSpacing: CGFloat = 10
+
+                var itemsHeight: CGFloat = 0
+                for (index, item) in items.enumerated() {
+                    itemsHeight += heightForText(item, attributes: entryBodyAttributes)
+                    if index != items.count - 1 {
+                        itemsHeight += itemSpacing
+                    }
+                }
+
+                let blockHeight = entryHeaderHeight
+                    + (items.isEmpty ? 0 : headerSpacing + itemsHeight)
+                    + blockSpacing
+
+                let remainingHeight = pageRect.height - margin - currentY
+                if blockHeight > remainingHeight {
+                    if currentColumn == 0 {
+                        currentColumn = 1
+                        currentY = topY
+                    } else {
+                        pageCount += 1
+                        currentColumn = 0
+                        currentY = topY
+                    }
+                }
+
+                let itemBlockHeight = entryHeaderHeight
+                    + (items.isEmpty ? 0 : headerSpacing + itemsHeight)
+                    + blockSpacing
+                currentY += itemBlockHeight
+            }
+
+            return pageCount
+        }
+
+        var lastCount = 0
+        var pageCount = 1
+        var attempts = 0
+        while pageCount != lastCount, attempts < 5 {
+            lastCount = pageCount
+            pageCount = layoutPageCount(totalPagesEstimate: pageCount)
+            attempts += 1
+        }
+
+        return pageCount
+    }
+
+    private static func pdfHeaderText(language: AppLanguage,
+                                      generationDate: Date,
+                                      filterContext: ExportFilterContext,
+                                      page: Int,
+                                      totalPages: Int) -> String {
+        let dateString = pdfHeaderDateFormatter.string(from: generationDate)
+        let orderText: String
+        let limitText: String
+
+        switch language {
+        case .dutch:
+            orderText = filterContext.newestFirst ? "aflopende" : "oplopende"
+            if filterContext.finishedLimit == .all {
+                limitText = "alle informatie"
+            } else {
+                let positionText = filterContext.newestFirst ? "laatste" : "eerste"
+                limitText = "de \(positionText) \(filterContext.finishedLimit.rawValue) dagen"
+            }
+            return "PDF gegenereerd op \(dateString): \(limitText) in \(orderText) volgorde (filter instellingen) - pagina \(page)/\(totalPages)"
+        case .english:
+            orderText = filterContext.newestFirst ? "descending" : "ascending"
+            if filterContext.finishedLimit == .all {
+                limitText = "all entries"
+            } else {
+                let positionText = filterContext.newestFirst ? "last" : "first"
+                limitText = "the \(positionText) \(filterContext.finishedLimit.rawValue) entries"
+            }
+            return "PDF generated on \(dateString): \(limitText) in \(orderText) order (filter settings) - page \(page)/\(totalPages)"
         }
     }
 
