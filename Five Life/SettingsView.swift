@@ -684,6 +684,7 @@ struct SettingsView: View {
     private func deleteAllEntries() {
         let descriptor = FetchDescriptor<DayEntry>()
         let entriesToDelete = (try? modelContext.fetch(descriptor)) ?? []
+        entriesToDelete.forEach { _ = $0.items.count }
         entriesToDelete.forEach { entry in
             modelContext.delete(entry)
         }
