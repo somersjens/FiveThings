@@ -12,8 +12,6 @@ struct ContentView: View {
 
     @Query(sort: \DayEntry.day, order: .reverse) private var entries: [DayEntry]
 
-    @Namespace private var cardNamespace
-
     @State private var showSettings: Bool = false
     @State private var showSecretMenu: Bool = false
     @State private var isUnlocked: Bool = true
@@ -43,7 +41,7 @@ struct ContentView: View {
     }
 
     private func isFinishedEntry(_ entry: DayEntry) -> Bool {
-        entry.isLocked || entry.isComplete(requiredCount: requiredCount(for: entry))
+        entry.isLocked
     }
 
     private var unfinished: [DayEntry] {
@@ -467,11 +465,10 @@ struct ContentView: View {
                             LazyVStack(alignment: .leading, spacing: 10) {
                                 ForEach(unfinishedEntries) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
-                                        .matchedGeometryEffect(id: entry.id, in: cardNamespace)
                                         .transition(.opacity)
                                 }
                             }
-                            .animation(.spring(response: 0.5, dampingFraction: 0.85),
+                            .animation(.easeInOut(duration: 0.25),
                                        value: unfinishedEntries.map(\.id))
                         } else {
                             Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
@@ -507,16 +504,15 @@ struct ContentView: View {
                             } else {
                                 ForEach(finishedEntries) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
-                                        .matchedGeometryEffect(id: entry.id, in: cardNamespace)
                                         .transition(.opacity)
                                 }
                             }
                         }
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85),
+                        .animation(.easeInOut(duration: 0.25),
                                    value: finishedEntries.map(\.id))
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.searchText)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.newestFirst)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: vm.finishedLimit)
+                        .animation(.easeInOut(duration: 0.25), value: vm.searchText)
+                        .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
+                        .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
 
                         // Footer links
                         VStack(spacing: 10) {
