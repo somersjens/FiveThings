@@ -508,7 +508,7 @@ struct ContentView: View {
                         LazyVStack(alignment: .leading, spacing: 10) {
                             if finishedEntries.isEmpty {
                                 Text(L10n.string("cards.none", language: settings.language))
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(.primary)
                                     .padding(.horizontal, 4)
                             } else {
                                 ForEach(finishedEntries) { entry in

@@ -160,7 +160,7 @@ struct SettingsView: View {
 
                 Text("\(settings.dailyItemCount)")
                     .font(.body.monospacedDigit())
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
 
                 settingsStepperButton(
                     systemName: "plus",
@@ -462,7 +462,7 @@ struct SettingsView: View {
                (dailyReminderEnabled || nextDayReminderEnabled) {
                 Text(L10n.string("settings.notifications.disabled", language: settings.language))
                     .font(.footnote)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
             }
         }
         .tint(.brandAccent)
@@ -814,7 +814,7 @@ struct SettingsView: View {
     private func settingsPickerLabel(text: String) -> some View {
         HStack(spacing: 6) {
             Text(text)
-                .foregroundStyle(.black)
+                .foregroundStyle(.primary)
             Image(systemName: "chevron.down")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.brandAccent)
@@ -857,7 +857,7 @@ struct SettingsView: View {
             .fixedSize(horizontal: false, vertical: true)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white)
+                    .fill(Color(.systemBackground))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)

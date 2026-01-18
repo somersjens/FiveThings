@@ -15,20 +15,20 @@ struct SearchAndSortBar: View {
         HStack(spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
 
                 TextField(L10n.string("search.placeholder", language: settings.language),
                           text: $text)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
 
                 if !text.isEmpty {
                     Button {
                         text = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.primary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(L10n.string("search.clear", language: settings.language))
@@ -47,7 +47,7 @@ struct SearchAndSortBar: View {
                 Text(finishedLimit.displayText(language: settings.language))
                     .font(.system(size: filterFontSize * responsiveTypeScale, weight: .semibold))
                     .monospacedDigit()
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
                     .frame(width: controlSize * responsiveTypeScale,
                            height: controlSize * responsiveTypeScale)
                     .background(.secondary.opacity(0.10))

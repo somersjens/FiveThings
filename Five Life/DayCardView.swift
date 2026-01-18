@@ -138,7 +138,7 @@ struct DayCardView: View {
             if showIncompleteHint {
                 Text(L10n.string("daycard.complete.to.lock", language: settings.language))
                     .font(.footnote)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
                     .transition(.opacity)
             }
         }
@@ -191,7 +191,7 @@ struct DayCardView: View {
                     ForEach(holidayNames.prefix(2), id: \.self) { holiday in
                         Text(holiday)
                             .font(.subheadline)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.primary)
                     }
                     if let phase = moonPhase {
                         moonLine(phase)
@@ -298,7 +298,7 @@ struct DayCardView: View {
                  : "\(phase.localizedName(language: settings.language)) • \(timeText ?? "")")
         }
         .font(.subheadline)
-        .foregroundStyle(.black)
+        .foregroundStyle(.primary)
     }
 
     private var scoreEditorSheet: some View {
@@ -432,7 +432,7 @@ struct DayCardView: View {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 28, alignment: .leading)
-                .foregroundStyle(.black)
+                .foregroundStyle(.primary)
 
             if isEditable {
                 editableTextField(placeholderText: placeholderText, idx: idx)
@@ -470,7 +470,7 @@ struct DayCardView: View {
         .lineLimit(1...4)
         .lineSpacing(0)
         .fixedSize(horizontal: false, vertical: true)
-        .foregroundStyle(.black)
+        .foregroundStyle(.primary)
         .multilineTextAlignment(.leading)
         .focused($focusedIndex, equals: idx)
         .disabled(isDragging || suppressFocus)
@@ -491,7 +491,7 @@ struct DayCardView: View {
             .lineLimit(1...4)
             .lineSpacing(0)
             .fixedSize(horizontal: false, vertical: true)
-            .foregroundStyle(.black)
+            .foregroundStyle(.primary)
             .multilineTextAlignment(.leading)
             .disabled(true)
             .allowsHitTesting(false)

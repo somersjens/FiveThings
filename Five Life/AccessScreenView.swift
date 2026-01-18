@@ -91,7 +91,7 @@ struct AccessScreenView: View {
                                     .padding(.vertical, 12 * accessScale)
                                     .background(
                                         RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
-                                            .fill(.white.opacity(0.85))
+                                            .fill(Color.brandSecondarySurface)
                                     )
                                     .foregroundStyle(Color.brandAccent)
                             }
@@ -120,7 +120,7 @@ struct AccessScreenView: View {
         let cardWidth = min(width * 0.86 * accessScale, maxContentWidth * responsiveTypeScale * accessScale)
         return Text(formattedCardText(text))
             .font(.system(size: cardFontSize * responsiveTypeScale))
-            .foregroundStyle(.black)
+            .foregroundStyle(.primary)
             .multilineTextAlignment(.leading)
             .padding(24 * accessScale)
             .frame(width: cardWidth,
@@ -128,7 +128,7 @@ struct AccessScreenView: View {
                    alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 20 * accessScale, style: .continuous)
-                    .fill(.white.opacity(0.92))
+                    .fill(Color.brandSurface)
                     .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
             )
             .overlay(alignment: .bottomTrailing) {
