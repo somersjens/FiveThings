@@ -39,6 +39,8 @@ struct SettingsView: View {
     private let secretRowHeightMultiplier: CGFloat = 1.5
     @State private var isDeleteAllConfirming: Bool = false
     @State private var activeInfo: SettingsInfo?
+    @State private var infoFrames: [SettingsInfo: CGRect] = [:]
+    @State private var infoPopoverSize: CGSize = .zero
 
     private enum SettingsInfo {
         case language
@@ -52,6 +54,22 @@ struct SettingsView: View {
         case moonInfo
         case reminderEvening
         case reminderNextDay
+    }
+
+    private struct SettingsInfoFramePreferenceKey: PreferenceKey {
+        static var defaultValue: [SettingsInfo: CGRect] = [:]
+
+        static func reduce(value: inout [SettingsInfo: CGRect], nextValue: () -> [SettingsInfo: CGRect]) {
+            value.merge(nextValue(), uniquingKeysWith: { $1 })
+        }
+    }
+
+    private struct SettingsInfoPopoverSizePreferenceKey: PreferenceKey {
+        static var defaultValue: CGSize = .zero
+
+        static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+            value = nextValue()
+        }
     }
 
     private var languageSection: some View {
@@ -503,7 +521,7 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
             if showsNavigation {
                 NavigationStack {
                     settingsForm
@@ -527,9 +545,21 @@ struct SettingsView: View {
                             }
                         }
                 }
+                .zIndex(0)
             } else {
                 inlineSettings
+                    .zIndex(0)
             }
+
+            infoOverlay
+                .zIndex(100)
+        }
+        .coordinateSpace(name: "settingsView")
+        .onPreferenceChange(SettingsInfoFramePreferenceKey.self) { frames in
+            infoFrames = frames
+        }
+        .onPreferenceChange(SettingsInfoPopoverSizePreferenceKey.self) { newSize in
+            infoPopoverSize = newSize
         }
         .task {
             await notifier.refreshAuthorizationStatus()
@@ -602,6 +632,39 @@ struct SettingsView: View {
                 handleImportFile(url: url)
             case .failure:
                 importErrorMessage = L10n.string("settings.import.error.format", language: settings.language)
+            }
+        }
+    }
+
+    private var infoOverlay: some View {
+        GeometryReader { proxy in
+            if let info = activeInfo, let anchor = infoFrames[info] {
+                let horizontalPadding: CGFloat = 16
+                let verticalSpacing: CGFloat = 6
+                let maxWidth: CGFloat = 320
+                let availableWidth = min(maxWidth, proxy.size.width - (horizontalPadding * 2))
+                let clampedX = min(
+                    max(anchor.minX, horizontalPadding),
+                    proxy.size.width - horizontalPadding - availableWidth
+                )
+                let proposedY = anchor.maxY + verticalSpacing
+                let maxY = proxy.size.height - infoPopoverSize.height - 12
+                let clampedY = min(proposedY, max(12, maxY))
+
+                ZStack(alignment: .topLeading) {
+                    Color.black.opacity(0.001)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.18)) {
+                                activeInfo = nil
+                            }
+                        }
+
+                    infoPopover(text: infoPopoverText(for: info))
+                        .frame(width: availableWidth, alignment: .leading)
+                        .offset(x: clampedX, y: clampedY)
+                        .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .topLeading)))
+                }
             }
         }
     }
@@ -750,10 +813,12 @@ struct SettingsView: View {
 
     private func infoTitle(_ title: String, info: SettingsInfo) -> some View {
         Button {
-            if activeInfo == info {
-                activeInfo = nil
-            } else {
-                activeInfo = info
+            withAnimation(.easeInOut(duration: 0.18)) {
+                if activeInfo == info {
+                    activeInfo = nil
+                } else {
+                    activeInfo = info
+                }
             }
         } label: {
             Text(title)
@@ -761,37 +826,44 @@ struct SettingsView: View {
                 .foregroundStyle(.primary)
         }
         .buttonStyle(.plain)
-        .popover(isPresented: Binding(
-            get: { activeInfo == info },
-            set: { isPresented in
-                if !isPresented {
-                    activeInfo = nil
-                }
-            })
-        ) {
-            infoPopover(text: infoPopoverText(for: info))
-        }
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: SettingsInfoFramePreferenceKey.self,
+                    value: [info: proxy.frame(in: .named("settingsView"))]
+                )
+            }
+        )
     }
 
     private func infoPopover(text: String) -> some View {
         Text(text)
-            .font(.footnote)
+            .font(.body)
             .foregroundStyle(.primary)
             .multilineTextAlignment(.leading)
-            .padding(12)
-            .frame(maxWidth: 260, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: 320, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(.systemBackground))
+                    .fill(Color.white)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.gray.opacity(0.25), lineWidth: 1)
+                    .strokeBorder(Color.brandAccent, lineWidth: 2.5)
             )
-            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-            .padding(6)
+            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+            .padding(8)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: SettingsInfoPopoverSizePreferenceKey.self, value: proxy.size)
+                }
+            )
             .onTapGesture {
-                activeInfo = nil
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    activeInfo = nil
+                }
             }
     }
 
