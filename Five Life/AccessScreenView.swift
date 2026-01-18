@@ -19,6 +19,7 @@ struct AccessScreenView: View {
     @ScaledMetric(relativeTo: .body) private var cardFontSize: CGFloat = 18
     @ScaledMetric(relativeTo: .headline) private var paymentIconSize: CGFloat = 16
     @ScaledMetric(relativeTo: .headline) private var paymentButtonSize: CGFloat = 32
+    private let accessScale: CGFloat = 1.1
     private let inAppPaymentProductID = "five_things_tip_1_euro"
 
     private var cards: [String] {
@@ -44,11 +45,11 @@ struct AccessScreenView: View {
             ScrollView(showsIndicators: false) {
                 VStack {
                     Spacer(minLength: 0)
-                    VStack(spacing: 20) {
+                    VStack(spacing: 20 * accessScale) {
                         Image(accessIconName)
                             .resizable()
                             .scaledToFit()
-                            .frame(height: 96)
+                            .frame(height: 96 * accessScale)
                             .accessibilityHidden(true)
 
                         TabView(selection: $currentCardIndex) {
@@ -57,12 +58,12 @@ struct AccessScreenView: View {
                                     .tag(index)
                             }
                         }
-                        .frame(height: cardHeight * responsiveTypeScale, alignment: .top)
+                        .frame(height: cardHeight * responsiveTypeScale * accessScale, alignment: .top)
                         .tabViewStyle(.page(indexDisplayMode: .never))
 
                         pageIndicators
 
-                        VStack(spacing: 12) {
+                        VStack(spacing: 12 * accessScale) {
                             Button {
                                 Task {
                                     await handleAppleSignIn()
@@ -71,9 +72,9 @@ struct AccessScreenView: View {
                                 Text(connectButtonTitle)
                                     .font(.headline)
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
+                                    .padding(.vertical, 12 * accessScale)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
                                             .fill(Color.brandAccent)
                                     )
                                     .foregroundStyle(.white)
@@ -87,21 +88,21 @@ struct AccessScreenView: View {
                                 Text(continueButtonTitle)
                                     .font(.headline)
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
+                                    .padding(.vertical, 12 * accessScale)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
                                             .fill(.white.opacity(0.85))
                                     )
                                     .foregroundStyle(Color.brandAccent)
                             }
                         }
-                        .frame(maxWidth: maxContentWidth)
+                        .frame(maxWidth: maxContentWidth * accessScale)
                     }
                     Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: geometry.size.height)
-                .padding(.horizontal, 30)
+                .padding(.horizontal, 30 * accessScale)
             }
             .background(Color.brandBackground.ignoresSafeArea())
             .alert(L10n.string("access.payment.title", language: settings.language), isPresented: Binding(
@@ -116,27 +117,27 @@ struct AccessScreenView: View {
     }
 
     private func cardView(text: String, index: Int, width: CGFloat) -> some View {
-        let cardWidth = min(width * 0.86, maxContentWidth * responsiveTypeScale)
+        let cardWidth = min(width * 0.86 * accessScale, maxContentWidth * responsiveTypeScale * accessScale)
         return Text(formattedCardText(text))
             .font(.system(size: cardFontSize * responsiveTypeScale))
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
-            .padding(24)
+            .padding(24 * accessScale)
             .frame(width: cardWidth,
-                   height: cardHeight * responsiveTypeScale,
+                   height: cardHeight * responsiveTypeScale * accessScale,
                    alignment: .topLeading)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 20 * accessScale, style: .continuous)
                     .fill(.white.opacity(0.92))
                     .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
             )
             .overlay(alignment: .bottomTrailing) {
                 if index == 4 {
                     paymentButton
-                        .padding(12)
+                        .padding(12 * accessScale)
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 8 * accessScale)
     }
 
     private func formattedCardText(_ text: String) -> AttributedString {
@@ -177,10 +178,10 @@ struct AccessScreenView: View {
             }
         } label: {
             Image(systemName: "creditcard.fill")
-                .font(.system(size: paymentIconSize * responsiveTypeScale, weight: .semibold))
+                .font(.system(size: paymentIconSize * responsiveTypeScale * accessScale, weight: .semibold))
                 .foregroundStyle(.white)
-                .frame(width: paymentButtonSize * responsiveTypeScale,
-                       height: paymentButtonSize * responsiveTypeScale)
+                .frame(width: paymentButtonSize * responsiveTypeScale * accessScale,
+                       height: paymentButtonSize * responsiveTypeScale * accessScale)
                 .background(
                     Circle()
                         .fill(Color.brandAccent)
@@ -192,11 +193,11 @@ struct AccessScreenView: View {
     }
 
     private var pageIndicators: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 8 * accessScale) {
             ForEach(0..<cards.count, id: \.self) { index in
                 Circle()
                     .fill(index == currentCardIndex ? Color.brandAccent : Color.brandAccent.opacity(0.3))
-                    .frame(width: 8, height: 8)
+                    .frame(width: 8 * accessScale, height: 8 * accessScale)
             }
         }
         .accessibilityElement(children: .ignore)
