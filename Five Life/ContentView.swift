@@ -165,15 +165,15 @@ struct ContentView: View {
     }
 
     private var reviewURL: URL {
-        URL(string: "https://example.com/review")!
+        URL(string: "https://apps.apple.com/app/id6757681706?action=write-review")!
     }
 
     private var shareURL: URL {
-        URL(string: "https://example.com/share")!
+        URL(string: "https://apps.apple.com/app/id6757681706")!
     }
 
     private var feedbackURL: URL {
-        URL(string: "https://example.com/feedback")!
+        URL(string: "mailto:jens@hakketjak.nl")!
     }
 
     private var footerLinks: some View {
