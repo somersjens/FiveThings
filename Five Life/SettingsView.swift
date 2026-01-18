@@ -1204,6 +1204,8 @@ struct SettingsView: View {
                     entry.items[index] = text
                 }
             }
+            entry.isLocked = true
+            entry.wasCompleted = true
             entry.score = uniformScore
             return entry
         }
