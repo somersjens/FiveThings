@@ -15,6 +15,7 @@ struct ContentView: View {
     @Namespace private var cardNamespace
 
     @State private var showSettings: Bool = false
+    @State private var showSecretMenu: Bool = false
     @State private var isUnlocked: Bool = true
     @State private var isUnlocking: Bool = false
     @State private var hasAppeared: Bool = false
@@ -23,7 +24,6 @@ struct ContentView: View {
     @State private var cachedFinishedEntryIDs: [UUID] = []
     @State private var showExportOptions: Bool = false
     @State private var shareSheetItem: ShareSheetItem?
-    @State private var showDeleteAllOption: Bool = false
     @State private var settingsScrollTask: Task<Void, Never>?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
@@ -349,9 +349,9 @@ struct ContentView: View {
                                     HStack {
                                         Text(L10n.string("settings.title", language: settings.language))
                                             .font(.title3.weight(.semibold))
-                                            .onTapGesture(count: 10) {
+                                            .onTapGesture(count: 5) {
                                                 withAnimation(.easeInOut(duration: 0.2)) {
-                                                    showDeleteAllOption = true
+                                                    showSecretMenu = true
                                                 }
                                             }
                                         Spacer()
@@ -370,7 +370,7 @@ struct ContentView: View {
 
                                     VStack(spacing: 16) {
                                         SettingsView(settings: settings,
-                                                     showDeleteAllOption: $showDeleteAllOption,
+                                                     showSecretMenu: $showSecretMenu,
                                                      showsNavigation: false)
 
                                         Button {
@@ -525,6 +525,7 @@ struct ContentView: View {
                         if expanded {
                             scrollSettingsIntoView(using: proxy)
                         } else {
+                            showSecretMenu = false
                             if showExportOptions {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     showExportOptions = false
@@ -542,7 +543,7 @@ struct ContentView: View {
                             }
                         }
                     }
-                    .onChange(of: showDeleteAllOption) { _, _ in
+                    .onChange(of: showSecretMenu) { _, _ in
                         if showSettings {
                             scrollSettingsIntoView(using: proxy)
                         }

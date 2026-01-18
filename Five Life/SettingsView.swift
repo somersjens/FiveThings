@@ -4,10 +4,11 @@ import LocalAuthentication
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
-    @Binding var showDeleteAllOption: Bool
+    @Binding var showSecretMenu: Bool
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
     @StateObject private var notifier = NotificationManager.shared
@@ -28,10 +29,10 @@ struct SettingsView: View {
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
     @State private var addDayHasExistingEntry = false
-    @State private var secretSaveMessage: String?
-    @State private var secretSaveMessageTask: Task<Void, Never>?
     @FocusState private var addDayFieldFocused: Bool
     @State private var isSigningInWithApple: Bool = false
+    @State private var showImportPicker: Bool = false
+    @State private var importErrorMessage: String?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     private let defaultDailyReminderTime = ReminderTime(hour: 22, minute: 0)
     private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
@@ -70,9 +71,7 @@ struct SettingsView: View {
                     background: Color(.systemGray5),
                     foreground: .primary
                 ) {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showDeleteAllOption = false
-                    }
+                    closeSecretMenu()
                 }
 
                 deleteAllActionButton(
@@ -81,9 +80,7 @@ struct SettingsView: View {
                     foreground: .red
                 ) {
                     deleteAllEntries()
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showDeleteAllOption = false
-                    }
+                    closeSecretMenu()
                 }
             }
         }
@@ -126,9 +123,6 @@ struct SettingsView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
-                    .onTapGesture(count: 5) {
-                        hasSeenAccessScreen = false
-                    }
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { appleIdConnected },
@@ -149,13 +143,6 @@ struct SettingsView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
-                    .onTapGesture(count: 5) {
-                        AppleSyncManager.shared.captureSnapshotNow(modelContext: modelContext,
-                                                                   settings: settings,
-                                                                   isConnected: settings.appleIdConnected)
-                        showSecretSaveMessage(L10n.string("settings.secret.save.applied",
-                                                          language: settings.language))
-                    }
                 Spacer()
                 Toggle("", isOn: Binding(
                     get: { faceIdLockEnabled },
@@ -196,16 +183,65 @@ struct SettingsView: View {
                 .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
-            if let message = secretSaveMessage {
-                Divider().overlay(Color.gray.opacity(0.3))
-                Text(message)
-                    .font(.footnote)
-                    .foregroundStyle(.green)
-                    .padding(.top, 6)
-                    .transition(.opacity)
-            }
         }
         .tint(.brandAccent)
+    }
+
+    private var secretMenuSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            deleteAllEntriesSection
+            Divider().overlay(Color.gray.opacity(0.3))
+            secretActionRow(
+                title: L10n.string("settings.secret.snapshot", language: settings.language),
+                yesAction: {
+                    AppleSyncManager.shared.captureSnapshotNow(modelContext: modelContext,
+                                                               settings: settings,
+                                                               isConnected: settings.appleIdConnected)
+                    closeSecretMenu()
+                }
+            )
+            Divider().overlay(Color.gray.opacity(0.3))
+            secretActionRow(
+                title: L10n.string("settings.secret.access", language: settings.language),
+                yesAction: {
+                    hasSeenAccessScreen = false
+                    closeSecretMenu()
+                }
+            )
+            Divider().overlay(Color.gray.opacity(0.3))
+            secretActionRow(
+                title: L10n.string("settings.secret.import", language: settings.language),
+                yesAction: {
+                    showImportPicker = true
+                    closeSecretMenu()
+                }
+            )
+        }
+    }
+
+    private func secretActionRow(title: String, yesAction: @escaping () -> Void) -> some View {
+        HStack {
+            Text(title)
+                .font(.body.weight(.semibold))
+            Spacer()
+            HStack(spacing: 8) {
+                deleteAllActionButton(
+                    title: L10n.string("common.no", language: settings.language),
+                    background: Color(.systemGray5),
+                    foreground: .primary
+                ) {
+                    closeSecretMenu()
+                }
+                deleteAllActionButton(
+                    title: L10n.string("common.yes", language: settings.language),
+                    background: Color.brandAccent.opacity(0.2),
+                    foreground: .primary
+                ) {
+                    yesAction()
+                }
+            }
+        }
+        .frame(height: settingsRowHeight)
     }
 
     private var addDaySection: some View {
@@ -368,9 +404,9 @@ struct SettingsView: View {
 
     private var settingsForm: some View {
         Form {
-            if showDeleteAllOption {
+            if showSecretMenu {
                 Section {
-                    deleteAllEntriesSection
+                    secretMenuSection
                 }
             }
 
@@ -398,8 +434,8 @@ struct SettingsView: View {
 
     private var inlineSettings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if showDeleteAllOption {
-                deleteAllEntriesSection
+            if showSecretMenu {
+                secretMenuSection
                 Divider()
                     .overlay(Color.gray.opacity(0.3))
                     .frame(height: 1)
@@ -474,6 +510,17 @@ struct SettingsView: View {
         } message: {
             Text(L10n.string("settings.faceid.required.message", language: settings.language))
         }
+        .alert(L10n.string("settings.import.error.title", language: settings.language),
+               isPresented: Binding(
+                get: { importErrorMessage != nil },
+                set: { newValue in
+                    if !newValue { importErrorMessage = nil }
+                }
+               )) {
+            Button(L10n.string("common.close", language: settings.language), role: .cancel) { }
+        } message: {
+            Text(importErrorMessage ?? "")
+        }
         .onChange(of: dailyReminderEnabled) { _, enabled in
             if !enabled { settings.dailyReminderTime = nil }
             else { settings.dailyReminderTime = ReminderTime.from(date: dailyReminderPickerDate) }
@@ -486,6 +533,17 @@ struct SettingsView: View {
             else { settings.nextDayReminderTime = ReminderTime.from(date: nextDayReminderPickerDate) }
             if enabled {
                 Task { await notifier.requestAuthorizationIfNeeded() }
+            }
+        }
+        .fileImporter(isPresented: $showImportPicker,
+                      allowedContentTypes: [.commaSeparatedText],
+                      allowsMultipleSelection: false) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                handleImportFile(url: url)
+            case .failure:
+                importErrorMessage = L10n.string("settings.import.error.format", language: settings.language)
             }
         }
     }
@@ -669,19 +727,6 @@ struct SettingsView: View {
         }
     }
 
-    private func showSecretSaveMessage(_ message: String) {
-        secretSaveMessageTask?.cancel()
-        withAnimation(.easeInOut(duration: 0.2)) {
-            secretSaveMessage = message
-        }
-        secretSaveMessageTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(3))
-            withAnimation(.easeInOut(duration: 0.2)) {
-                secretSaveMessage = nil
-            }
-        }
-    }
-
     private func deleteAllEntries() {
         let descriptor = FetchDescriptor<DayEntry>()
         let entriesToDelete = (try? modelContext.fetch(descriptor)) ?? []
@@ -787,5 +832,236 @@ struct SettingsView: View {
             settings.appleIdConnected = false
             appleIdConnected = false
         }
+    }
+
+    private func closeSecretMenu() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            showSecretMenu = false
+        }
+    }
+
+    private func handleImportFile(url: URL) {
+        let canAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if canAccess {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        guard let data = try? Data(contentsOf: url),
+              let contents = String(data: data, encoding: .utf8) else {
+            importErrorMessage = L10n.string("settings.import.error.format", language: settings.language)
+            return
+        }
+
+        switch parseImportContents(contents) {
+        case .success(let result):
+            deleteAllEntries()
+            result.entries.forEach { modelContext.insert($0) }
+            try? modelContext.save()
+        case .failure(let error):
+            if case .issues(let issues) = error {
+                importErrorMessage = importErrorMessage(for: issues)
+            } else {
+                importErrorMessage = L10n.string("settings.import.error.format", language: settings.language)
+            }
+        }
+    }
+
+    private struct ImportResult {
+        let entries: [DayEntry]
+        let score: Int?
+    }
+
+    private enum ImportIssue: Hashable {
+        case fileFormat
+        case date
+        case number
+        case entry
+        case score
+    }
+
+    private enum ImportError: Error {
+        case issues(Set<ImportIssue>)
+    }
+
+    private func parseImportContents(_ contents: String) -> Result<ImportResult, ImportError> {
+        let rawLines = contents
+            .split(whereSeparator: \.isNewline)
+            .map { String($0) }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+        guard !rawLines.isEmpty else {
+            return .failure(.issues([.fileFormat]))
+        }
+
+        var lines = rawLines
+        if let first = lines.first {
+            let fields = parseCSVLine(first)
+            if fields.first?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "date" {
+                lines.removeFirst()
+            }
+        }
+
+        guard !lines.isEmpty else {
+            return .failure(.issues([.fileFormat]))
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "dd-MM-yyyy"
+
+        var issues: Set<ImportIssue> = []
+        var entriesByDate: [Date: [Int: String]] = [:]
+        var maxNumberByDate: [Date: Int] = [:]
+        var scores: [Int] = []
+        var hasScoreColumn = false
+        var validRowCount = 0
+
+        for line in lines {
+            let fields = parseCSVLine(line)
+            guard fields.count == 3 || fields.count == 4 else {
+                issues.insert(.fileFormat)
+                continue
+            }
+
+            let dateText = fields[0].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let date = dateFormatter.date(from: dateText) else {
+                issues.insert(.date)
+                continue
+            }
+            let normalizedDate = Calendar.current.startOfDay(for: date)
+
+            let numberText = fields[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let number = Int(numberText), (1...10).contains(number) else {
+                issues.insert(.number)
+                continue
+            }
+
+            let entryText = fields[2].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !entryText.isEmpty else {
+                issues.insert(.entry)
+                continue
+            }
+
+            var scoreValue: Int?
+            if fields.count == 4 {
+                hasScoreColumn = true
+                let scoreText = fields[3].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !scoreText.isEmpty, let parsed = Int(scoreText) else {
+                    issues.insert(.score)
+                    continue
+                }
+                scoreValue = parsed
+            }
+
+            var existing = entriesByDate[normalizedDate, default: [:]]
+            existing[number] = entryText
+            entriesByDate[normalizedDate] = existing
+            maxNumberByDate[normalizedDate] = max(maxNumberByDate[normalizedDate] ?? 0, number)
+
+            if let scoreValue {
+                scores.append(scoreValue)
+            }
+            validRowCount += 1
+        }
+
+        if hasScoreColumn {
+            if scores.isEmpty || scores.count != validRowCount {
+                issues.insert(.score)
+            } else if Set(scores).count > 1 {
+                issues.insert(.score)
+            }
+        }
+
+        guard issues.isEmpty else {
+            return .failure(.issues(issues))
+        }
+
+        let uniformScore = scores.first
+        let entries = entriesByDate.map { date, itemsByNumber in
+            let maxNumber = maxNumberByDate[date] ?? 1
+            let entry = DayEntry(day: date, itemCount: maxNumber)
+            for (number, text) in itemsByNumber {
+                let index = number - 1
+                if index >= 0, index < entry.items.count {
+                    entry.items[index] = text
+                }
+            }
+            entry.score = uniformScore
+            return entry
+        }
+
+        return .success(ImportResult(entries: entries, score: uniformScore))
+    }
+
+    private func parseCSVLine(_ line: String) -> [String] {
+        var fields: [String] = []
+        var current = ""
+        var inQuotes = false
+        var iterator = line.makeIterator()
+        var previousWasQuote = false
+
+        while let char = iterator.next() {
+            if inQuotes {
+                if char == "\"" {
+                    if let next = iterator.next() {
+                        if next == "\"" {
+                            current.append("\"")
+                            previousWasQuote = false
+                        } else if next == "," {
+                            inQuotes = false
+                            fields.append(current)
+                            current = ""
+                            previousWasQuote = false
+                        } else {
+                            inQuotes = false
+                            current.append(next)
+                            previousWasQuote = false
+                        }
+                    } else {
+                        inQuotes = false
+                        previousWasQuote = true
+                    }
+                } else {
+                    current.append(char)
+                    previousWasQuote = false
+                }
+            } else {
+                if char == "\"" {
+                    inQuotes = true
+                } else if char == "," {
+                    fields.append(current)
+                    current = ""
+                } else {
+                    current.append(char)
+                }
+            }
+        }
+
+        if previousWasQuote || !current.isEmpty || line.hasSuffix(",") {
+            fields.append(current)
+        }
+        return fields
+    }
+
+    private func importErrorMessage(for issues: Set<ImportIssue>) -> String {
+        var parts: [String] = []
+        if issues.contains(.fileFormat) {
+            parts.append(L10n.string("settings.import.error.format", language: settings.language))
+        }
+        if issues.contains(.date) {
+            parts.append(L10n.string("settings.import.error.date", language: settings.language))
+        }
+        if issues.contains(.number) {
+            parts.append(L10n.string("settings.import.error.number", language: settings.language))
+        }
+        if issues.contains(.entry) {
+            parts.append(L10n.string("settings.import.error.entry", language: settings.language))
+        }
+        if issues.contains(.score) {
+            parts.append(L10n.string("settings.import.error.score", language: settings.language))
+        }
+        return parts.joined(separator: "\n")
     }
 }

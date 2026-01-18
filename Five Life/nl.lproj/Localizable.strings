@@ -121,6 +121,15 @@
 "settings.show" = "Instellingen tonen";
 "settings.statistics" = "Statistieken";
 "settings.title" = "Instellingen";
+"settings.secret.snapshot" = "Middernacht snapshot nu";
+"settings.secret.access" = "Terug naar welkom";
+"settings.secret.import" = "Data importeren";
+"settings.import.error.title" = "Import fout";
+"settings.import.error.format" = "Bestandsformaat wordt niet ondersteund.";
+"settings.import.error.date" = "Datumkolom is ongeldig.";
+"settings.import.error.number" = "Nummerkolom is ongeldig.";
+"settings.import.error.entry" = "Invoerkolom is ongeldig.";
+"settings.import.error.score" = "Scorekolom is ongeldig.";
 "stats.days" = "Dagen";
 "stats.entries" = "Items";
 "stats.streak" = "Streak";

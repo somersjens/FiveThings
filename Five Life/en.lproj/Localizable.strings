@@ -121,6 +121,15 @@
 "settings.show" = "Show settings";
 "settings.statistics" = "Statistics";
 "settings.title" = "Settings";
+"settings.secret.snapshot" = "Take snapshot now";
+"settings.secret.access" = "Return to access";
+"settings.secret.import" = "Import data";
+"settings.import.error.title" = "Import error";
+"settings.import.error.format" = "File format is not supported.";
+"settings.import.error.date" = "Date column is invalid.";
+"settings.import.error.number" = "Number column is invalid.";
+"settings.import.error.entry" = "Entry column is invalid.";
+"settings.import.error.score" = "Score column is invalid.";
 "stats.days" = "Days";
 "stats.entries" = "Entries";
 "stats.streak" = "Streak";
