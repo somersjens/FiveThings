@@ -5,6 +5,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
 
     @StateObject private var settings = SettingsStore()
     @StateObject private var vm = ContentViewModel()
@@ -37,6 +38,14 @@ struct ContentView: View {
         formatter.dateFormat = "dd-MM-yyyy"
         return formatter
     }()
+
+    private var settingsCardOuterBackground: Color {
+        colorScheme == .dark ? .black : Color(.systemGray6)
+    }
+
+    private var settingsCardInnerBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
 
     private func requiredCount(for entry: DayEntry) -> Int {
         if entry.isLocked { return entry.itemCount }
@@ -448,7 +457,7 @@ struct ContentView: View {
                                     .padding(.bottom, 14)
                                     .background(
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(Color(.systemBackground))
+                                            .fill(settingsCardInnerBackground)
                                     )
                                     .padding(.horizontal, 14)
                                     .padding(.bottom, 14)
@@ -456,7 +465,7 @@ struct ContentView: View {
                                 .padding(.top, 8)
                                 .background(
                                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .fill(Color(.systemGray6))
+                                        .fill(settingsCardOuterBackground)
                                         .shadow(radius: 6, y: 2)
                                 )
                                 .overlay(
