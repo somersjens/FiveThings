@@ -143,7 +143,12 @@ struct AccessScreenView: View {
                 .replacingOccurrences(of: "\n", with: "  \n")
                 .replacingOccurrences(of: "|", with: "_")
                 .replacingOccurrences(of: "*", with: "**")
-            let attributed = (try? AttributedString(markdown: markdown)) ?? AttributedString(paragraph)
+            var attributed = (try? AttributedString(markdown: markdown)) ?? AttributedString(paragraph)
+            for run in attributed.runs {
+                if run.inlinePresentationIntent?.contains(.stronglyEmphasized) == true {
+                    attributed[run.range].foregroundColor = Color.brandAccent
+                }
+            }
 
             if index > 0 {
                 result.append(AttributedString("\n\n"))
