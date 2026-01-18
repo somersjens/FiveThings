@@ -1,6 +1,7 @@
 //NEW DOC  DayCardView.swift
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct DayCardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -27,6 +28,10 @@ struct DayCardView: View {
     private let rowSpacing: CGFloat = 10
     private let headerIconSize: CGFloat = 31
     private let headerIconFontSize: CGFloat = 14
+    private let rowTrailingControlPadding: CGFloat = 28
+    private var entryRowMinHeight: CGFloat {
+        UIFontMetrics(forTextStyle: .body).scaledValue(for: 34)
+    }
 
     @FocusState private var focusedIndex: Int?
 
@@ -359,7 +364,8 @@ struct DayCardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .padding(.trailing, showsRemove ? 28 : 0)
+            .padding(.trailing, rowTrailingControlPadding)
+            .frame(minHeight: entryRowMinHeight, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color(.systemGray6))
@@ -419,44 +425,68 @@ struct DayCardView: View {
                 .foregroundStyle(.black)
 
             if isEditable {
-                TextField(
-                    placeholderText,
-                    text: Binding(
-                        get: { entry.items[safe: idx] ?? "" },
-                        set: { newValue in
-                            if idx < entry.items.count {
-                                let hasNewline = newValue.contains("\n")
-                                let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
-                                if entry.items[idx] != sanitized {
-                                    trackEditSession(for: idx)
-                                    pushUndoSnapshot()
-                                    hasCapturedEditSnapshot = true
-                                }
-                                vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
-                                if hasNewline {
-                                    handleSubmit(at: idx)
-                                }
-                            }
-                        }
-                    ),
-                    axis: .vertical
-                )
-                .textFieldStyle(.plain)
-                .lineLimit(1...4)
-                .foregroundStyle(.black)
-                .focused($focusedIndex, equals: idx)
-                .disabled(isDragging || suppressFocus)
-                .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
-                .onSubmit {
-                    handleSubmit(at: idx)
-                }
+                editableTextField(placeholderText: placeholderText, idx: idx)
             } else {
-                Text(highlightedText(entry.items[safe: idx] ?? ""))
-                    .foregroundStyle(.black)
-                    .lineLimit(4)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                lockedTextField(placeholderText: placeholderText, idx: idx)
             }
         }
+    }
+
+    private func editableTextField(placeholderText: String, idx: Int) -> some View {
+        TextField(
+            placeholderText,
+            text: Binding(
+                get: { entry.items[safe: idx] ?? "" },
+                set: { newValue in
+                    if idx < entry.items.count {
+                        let hasNewline = newValue.contains("\n")
+                        let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
+                        if entry.items[idx] != sanitized {
+                            trackEditSession(for: idx)
+                            pushUndoSnapshot()
+                            hasCapturedEditSnapshot = true
+                        }
+                        vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
+                        if hasNewline {
+                            handleSubmit(at: idx)
+                        }
+                    }
+                }
+            ),
+            axis: .vertical
+        )
+        .textFieldStyle(.plain)
+        .font(.body)
+        .lineLimit(1...4)
+        .lineSpacing(0)
+        .fixedSize(horizontal: false, vertical: true)
+        .foregroundStyle(.black)
+        .multilineTextAlignment(.leading)
+        .focused($focusedIndex, equals: idx)
+        .disabled(isDragging || suppressFocus)
+        .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
+        .onSubmit {
+            handleSubmit(at: idx)
+        }
+    }
+
+    private func lockedTextField(placeholderText: String, idx: Int) -> some View {
+        let textBinding = Binding(
+            get: { entry.items[safe: idx] ?? "" },
+            set: { _ in }
+        )
+        return TextField(placeholderText, text: textBinding, axis: .vertical)
+            .textFieldStyle(.plain)
+            .font(.body)
+            .lineLimit(1...4)
+            .lineSpacing(0)
+            .fixedSize(horizontal: false, vertical: true)
+            .foregroundStyle(.black)
+            .multilineTextAlignment(.leading)
+            .disabled(true)
+            .allowsHitTesting(false)
+            .opacity(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var dragOverlay: some View {
@@ -558,26 +588,6 @@ struct DayCardView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             suppressFocus = false
         }
-    }
-
-    private func highlightedText(_ text: String) -> AttributedString {
-        let query = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return AttributedString(text) }
-
-        var attributed = AttributedString(text)
-        var searchRange = text.startIndex..<text.endIndex
-
-        while let foundRange = text.range(of: query,
-                                          options: [.caseInsensitive, .diacriticInsensitive],
-                                          range: searchRange) {
-            if let lowerBound = AttributedString.Index(foundRange.lowerBound, within: attributed),
-               let upperBound = AttributedString.Index(foundRange.upperBound, within: attributed) {
-                attributed[lowerBound..<upperBound].font = .body.weight(.bold)
-            }
-            searchRange = foundRange.upperBound..<text.endIndex
-        }
-
-        return attributed
     }
 
     private func dragInsertionPadding(for idx: Int) -> EdgeInsets {
