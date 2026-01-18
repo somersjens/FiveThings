@@ -27,6 +27,10 @@ struct ContentView: View {
 
     @Environment(\.scenePhase) private var scenePhase
 
+    @ScaledMetric(relativeTo: .headline) private var statsValueFontSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .title) private var lockIconSize: CGFloat = 48
+    @ScaledMetric(relativeTo: .headline) private var settingsGearSize: CGFloat = 18
+
     private static let numericDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -267,25 +271,27 @@ struct ContentView: View {
         .accessibilityLabel(L10n.string("settings.show", language: settings.language))
     }
 
-    private var statisticsRow: some View {
+    private func statisticsRow(scale: CGFloat) -> some View {
         let stats = statisticsSnapshot
         let streakLabel = L10n.string("stats.streak", language: settings.language)
         let daysLabel = L10n.string("stats.days", language: settings.language)
         let entriesLabel = L10n.string("stats.entries", language: settings.language)
         return HStack(spacing: 10) {
-            statisticsBox(title: streakLabel, value: stats.streak)
-            statisticsBox(title: daysLabel, value: stats.days)
-            statisticsBox(title: entriesLabel, value: stats.entries)
+            statisticsBox(title: streakLabel, value: stats.streak, scale: scale)
+            statisticsBox(title: daysLabel, value: stats.days, scale: scale)
+            statisticsBox(title: entriesLabel, value: stats.entries, scale: scale)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
     }
 
-    private func statisticsBox(title: String, value: Int) -> some View {
+    private func statisticsBox(title: String, value: Int, scale: CGFloat) -> some View {
         VStack(spacing: 4) {
             Text("\(value)")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: statsValueFontSize * scale,
+                              weight: .bold,
+                              design: .rounded))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .monospacedDigit()
@@ -304,14 +310,14 @@ struct ContentView: View {
     }
 
     @ViewBuilder
-    private var lockOverlay: some View {
+    private func lockOverlay(scale: CGFloat) -> some View {
         if settings.faceIdLockEnabled && !isUnlocked {
             Color.brandBackground
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
                 Image(systemName: "faceid")
-                    .font(.system(size: 48))
+                    .font(.system(size: lockIconSize * scale))
                     .foregroundStyle(.secondary)
 
                 Text(L10n.string("lock.faceid.title", language: settings.language))
@@ -337,10 +343,12 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                ScrollViewReader { proxy in
-                    ScrollView(showsIndicators: false) {
+        GeometryReader { proxy in
+            let scale = ResponsiveTypeScale.scale(for: proxy.size.width)
+            NavigationStack {
+                ZStack {
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
                         let unfinishedEntries = cachedUnfinishedEntryIDs.compactMap { id in
                             entries.first { $0.id == id }
                         }
@@ -364,7 +372,8 @@ struct ContentView: View {
                                             }
                                         Spacer()
                                         Image(systemName: "gearshape.fill")
-                                            .font(.system(size: 18, weight: .semibold))
+                                            .font(.system(size: settingsGearSize * scale,
+                                                          weight: .semibold))
                                             .foregroundStyle(Color(.systemGray))
                                             .onTapGesture {
                                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -486,7 +495,7 @@ struct ContentView: View {
                             .padding(.top, 8)
 
                         if settings.statisticsEnabled {
-                            statisticsRow
+                            statisticsRow(scale: scale)
                         }
 
                         // Search + sort (finished only)
@@ -564,116 +573,118 @@ struct ContentView: View {
                     }
                 }
 
-                if !hasSeenAccessScreen {
-                    AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
-                        .transition(.opacity)
+                    if !hasSeenAccessScreen {
+                        AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
+                            .transition(.opacity)
+                    }
                 }
-            }
-            .background(Color.brandBackground.ignoresSafeArea())
-            .safeAreaInset(edge: .top) {
-                if hasSeenAccessScreen {
-                    headerView
+                .background(Color.brandBackground.ignoresSafeArea())
+                .safeAreaInset(edge: .top) {
+                    if hasSeenAccessScreen {
+                        headerView
+                    }
                 }
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(item: $shareSheetItem) { item in
-                ShareSheet(items: item.items)
-            }
-            .overlay {
-                if hasSeenAccessScreen {
-                    lockOverlay
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
+                .sheet(item: $shareSheetItem) { item in
+                    ShareSheet(items: item.items)
                 }
-            }
-            .task {
-                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                await notifier.refreshAuthorizationStatus()
-                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                    language: settings.language,
-                                                    dailyCount: settings.dailyItemCount)
+                .overlay {
+                    if hasSeenAccessScreen {
+                        lockOverlay(scale: scale)
+                    }
+                }
+                .task {
+                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    await notifier.refreshAuthorizationStatus()
+                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                        language: settings.language,
+                                                        dailyCount: settings.dailyItemCount)
 
-                let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                      shouldSchedule: shouldScheduleNext,
-                                                      language: settings.language)
-                scheduleMidnightRefresh()
-                refreshEntryLists()
-            }
-            .onChange(of: entries.count) { _, _ in
-                // Keep “next day if needed” in sync when entries are created/locked/unlocked.
-                Task {
                     let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
                     await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                           shouldSchedule: shouldScheduleNext,
                                                           language: settings.language)
+                    scheduleMidnightRefresh()
+                    refreshEntryLists()
                 }
-                refreshEntryLists()
-            }
-            .onChange(of: entries.map(\.isLocked)) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: entries.map(\.day)) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: settings.dailyItemCount) { _, _ in
-                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                refreshEntryLists()
-                Task {
-                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                        language: settings.language,
-                                                        dailyCount: settings.dailyItemCount)
+                .onChange(of: entries.count) { _, _ in
+                    // Keep “next day if needed” in sync when entries are created/locked/unlocked.
+                    Task {
+                        let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                        await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                              shouldSchedule: shouldScheduleNext,
+                                                              language: settings.language)
+                    }
+                    refreshEntryLists()
                 }
-            }
-            .onChange(of: entries.map(\.updatedAt)) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: vm.searchText) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: vm.newestFirst) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: vm.finishedLimit) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: settings.language) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: settings.moonEnabled) { _, _ in
-                refreshEntryLists()
-            }
-            .onChange(of: settings.holidaysEnabled) { _, _ in
-                refreshEntryLists()
-            }
-            .onAppear {
-                if !hasAppeared {
-                    hasAppeared = true
+                .onChange(of: entries.map(\.isLocked)) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: entries.map(\.day)) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: settings.dailyItemCount) { _, _ in
+                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    refreshEntryLists()
+                    Task {
+                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                            language: settings.language,
+                                                            dailyCount: settings.dailyItemCount)
+                    }
+                }
+                .onChange(of: entries.map(\.updatedAt)) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: vm.searchText) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: vm.newestFirst) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: vm.finishedLimit) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: settings.language) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: settings.moonEnabled) { _, _ in
+                    refreshEntryLists()
+                }
+                .onChange(of: settings.holidaysEnabled) { _, _ in
+                    refreshEntryLists()
+                }
+                .onAppear {
+                    if !hasAppeared {
+                        hasAppeared = true
+                        if settings.faceIdLockEnabled {
+                            isUnlocked = false
+                            updateUnlockStateIfNeeded()
+                        }
+                    }
+                }
+                .onChange(of: settings.faceIdLockEnabled) { _, _ in
                     if settings.faceIdLockEnabled {
                         isUnlocked = false
+                    }
+                    updateUnlockStateIfNeeded()
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase != .active, settings.faceIdLockEnabled {
+                        isUnlocked = false
+                    }
+                    if phase == .active {
+                        vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                        scheduleMidnightRefresh()
                         updateUnlockStateIfNeeded()
+                    } else {
+                        vm.flushPendingSaves(modelContext: modelContext)
+                        midnightTask?.cancel()
+                        midnightTask = nil
                     }
                 }
             }
-            .onChange(of: settings.faceIdLockEnabled) { _, _ in
-                if settings.faceIdLockEnabled {
-                    isUnlocked = false
-                }
-                updateUnlockStateIfNeeded()
-            }
-            .onChange(of: scenePhase) { _, phase in
-                if phase != .active, settings.faceIdLockEnabled {
-                    isUnlocked = false
-                }
-                if phase == .active {
-                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                    scheduleMidnightRefresh()
-                    updateUnlockStateIfNeeded()
-                } else {
-                    vm.flushPendingSaves(modelContext: modelContext)
-                    midnightTask?.cancel()
-                    midnightTask = nil
-                }
-            }
+            .environment(\.responsiveTypeScale, scale)
         }
     }
 

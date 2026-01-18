@@ -11,9 +11,14 @@ struct SettingsView: View {
     @Binding var showSecretMenu: Bool
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @StateObject private var notifier = NotificationManager.shared
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
-    private let settingsRowHeight: CGFloat = 44
+    @ScaledMetric(relativeTo: .body) private var settingsRowHeight: CGFloat = 44
+    @ScaledMetric(relativeTo: .headline) private var addDayButtonFontSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .headline) private var addDayButtonSize: CGFloat = 28
+    @ScaledMetric(relativeTo: .footnote) private var stepperFontSize: CGFloat = 14
+    @ScaledMetric(relativeTo: .body) private var stepperButtonSize: CGFloat = 28
 
     @State private var dailyReminderEnabled: Bool = false
     @State private var nextDayReminderEnabled: Bool = false
@@ -90,7 +95,7 @@ struct SettingsView: View {
                 settingsPickerLabel(text: settings.language.displayName)
             }
         }
-        .frame(height: settingsRowHeight)
+        .frame(height: scaledSettingsRowHeight)
         .tint(.brandAccent)
     }
 
@@ -165,7 +170,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .frame(height: settingsRowHeight)
+        .frame(height: scaledSettingsRowHeight)
     }
 
     private var otherSettingsSection: some View {
@@ -185,7 +190,7 @@ struct SettingsView: View {
                 .labelsHidden()
                 .disabled(isSigningInWithApple)
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -204,7 +209,7 @@ struct SettingsView: View {
                 .labelsHidden()
                 .disabled(isFaceIdAuthenticating)
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -214,7 +219,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -224,7 +229,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -234,7 +239,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -244,7 +249,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
         }
         .tint(.brandAccent)
@@ -321,8 +326,9 @@ struct SettingsView: View {
                         handleAddDay()
                     } label: {
                         Image(systemName: addDayHasExistingEntry ? "xmark" : "checkmark")
-                            .font(.system(size: 16, weight: .semibold))
-                            .frame(width: 28, height: 28)
+                            .font(.system(size: addDayButtonFontSize * responsiveTypeScale, weight: .semibold))
+                            .frame(width: addDayButtonSize * responsiveTypeScale,
+                                   height: addDayButtonSize * responsiveTypeScale)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .fill(Color.brandAccent)
@@ -427,7 +433,7 @@ struct SettingsView: View {
                 Toggle("", isOn: $dailyReminderEnabled)
                     .labelsHidden()
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -450,7 +456,7 @@ struct SettingsView: View {
                 Toggle("", isOn: $nextDayReminderEnabled)
                     .labelsHidden()
             }
-            .frame(height: settingsRowHeight)
+            .frame(height: scaledSettingsRowHeight)
 
             if notifier.authorizationStatus == .denied,
                (dailyReminderEnabled || nextDayReminderEnabled) {
@@ -669,8 +675,12 @@ struct SettingsView: View {
         }
     }
 
+    private var scaledSettingsRowHeight: CGFloat {
+        settingsRowHeight * responsiveTypeScale
+    }
+
     private var secretRowHeight: CGFloat {
-        settingsRowHeight * secretRowHeightMultiplier
+        scaledSettingsRowHeight * secretRowHeightMultiplier
     }
 
     private var deleteAllConfirmationTitle: String {
@@ -917,8 +927,9 @@ struct SettingsView: View {
                                        action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 14, weight: .semibold))
-                .frame(width: 28, height: 28)
+                .font(.system(size: stepperFontSize * responsiveTypeScale, weight: .semibold))
+                .frame(width: stepperButtonSize * responsiveTypeScale,
+                       height: stepperButtonSize * responsiveTypeScale)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Color(.systemGray5))

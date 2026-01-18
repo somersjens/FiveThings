@@ -8,14 +8,17 @@ struct AccessScreenView: View {
     @ObservedObject var settings: SettingsStore
     @Binding var hasSeenAccessScreen: Bool
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @State private var currentCardIndex: Int = 0
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     @State private var isSigningInWithApple: Bool = false
     @State private var isProcessingPayment: Bool = false
     @State private var paymentErrorMessage: String?
-    private let maxContentWidth: CGFloat = 320
-    private let cardHeight: CGFloat = 234
-    private let cardFontSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .body) private var maxContentWidth: CGFloat = 320
+    @ScaledMetric(relativeTo: .body) private var cardHeight: CGFloat = 234
+    @ScaledMetric(relativeTo: .body) private var cardFontSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .headline) private var paymentIconSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .headline) private var paymentButtonSize: CGFloat = 32
     private let inAppPaymentProductID = "five_things_tip_1_euro"
 
     private var cards: [String] {
@@ -54,7 +57,7 @@ struct AccessScreenView: View {
                                     .tag(index)
                             }
                         }
-                        .frame(height: cardHeight, alignment: .top)
+                        .frame(height: cardHeight * responsiveTypeScale, alignment: .top)
                         .tabViewStyle(.page(indexDisplayMode: .never))
 
                         pageIndicators
@@ -113,13 +116,15 @@ struct AccessScreenView: View {
     }
 
     private func cardView(text: String, index: Int, width: CGFloat) -> some View {
-        let cardWidth = min(width * 0.86, maxContentWidth)
+        let cardWidth = min(width * 0.86, maxContentWidth * responsiveTypeScale)
         return Text(formattedCardText(text))
-            .font(.system(size: cardFontSize))
+            .font(.system(size: cardFontSize * responsiveTypeScale))
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
             .padding(24)
-            .frame(width: cardWidth, height: cardHeight, alignment: .topLeading)
+            .frame(width: cardWidth,
+                   height: cardHeight * responsiveTypeScale,
+                   alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(.white.opacity(0.92))
@@ -172,9 +177,10 @@ struct AccessScreenView: View {
             }
         } label: {
             Image(systemName: "creditcard.fill")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: paymentIconSize * responsiveTypeScale, weight: .semibold))
                 .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
+                .frame(width: paymentButtonSize * responsiveTypeScale,
+                       height: paymentButtonSize * responsiveTypeScale)
                 .background(
                     Circle()
                         .fill(Color.brandAccent)

@@ -6,6 +6,10 @@ struct SearchAndSortBar: View {
     @Binding var text: String
     @Binding var newestFirst: Bool
     @Binding var finishedLimit: ContentViewModel.FinishedCardsLimit
+    @Environment(\.responsiveTypeScale) private var responsiveTypeScale
+    @ScaledMetric(relativeTo: .footnote) private var filterFontSize: CGFloat = 12
+    @ScaledMetric(relativeTo: .headline) private var sortIconSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 40
 
     var body: some View {
         HStack(spacing: 10) {
@@ -41,10 +45,11 @@ struct SearchAndSortBar: View {
                 finishedLimit = finishedLimit.next()
             } label: {
                 Text(finishedLimit.displayText(language: settings.language))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: filterFontSize * responsiveTypeScale, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(.black)
-                    .frame(width: 40, height: 40)
+                    .frame(width: controlSize * responsiveTypeScale,
+                           height: controlSize * responsiveTypeScale)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
@@ -57,7 +62,7 @@ struct SearchAndSortBar: View {
                 newestFirst.toggle()
             } label: {
                 Image(systemName: newestFirst ? "arrow.down" : "arrow.up")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: sortIconSize * responsiveTypeScale, weight: .semibold))
                     .padding(12)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))

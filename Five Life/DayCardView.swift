@@ -5,6 +5,7 @@ import UIKit
 
 struct DayCardView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @ObservedObject var settings: SettingsStore
     @ObservedObject var vm: ContentViewModel
 
@@ -25,12 +26,21 @@ struct DayCardView: View {
     @State private var activeEditIndex: Int? = nil
     @State private var hasCapturedEditSnapshot: Bool = false
 
-    private let rowSpacing: CGFloat = 10
-    private let headerIconSize: CGFloat = 31
-    private let headerIconFontSize: CGFloat = 14
-    private let rowTrailingControlPadding: CGFloat = 28
+    @ScaledMetric(relativeTo: .body) private var rowSpacing: CGFloat = 10
+    @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
+    @ScaledMetric(relativeTo: .footnote) private var headerIconFontSize: CGFloat = 14
+    @ScaledMetric(relativeTo: .body) private var rowTrailingControlPadding: CGFloat = 28
+    @ScaledMetric(relativeTo: .subheadline) private var dateFontSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .title) private var scoreValueFontSize: CGFloat = 32
+    @ScaledMetric(relativeTo: .headline) private var removeButtonFontSize: CGFloat = 18
+
+    private var scaledRowSpacing: CGFloat { rowSpacing * responsiveTypeScale }
+    private var scaledHeaderIconSize: CGFloat { headerIconSize * responsiveTypeScale }
+    private var scaledHeaderIconFontSize: CGFloat { headerIconFontSize * responsiveTypeScale }
+    private var scaledRowTrailingControlPadding: CGFloat { rowTrailingControlPadding * responsiveTypeScale }
+
     private var entryRowMinHeight: CGFloat {
-        UIFontMetrics(forTextStyle: .body).scaledValue(for: 34)
+        UIFontMetrics(forTextStyle: .body).scaledValue(for: 34 * responsiveTypeScale)
     }
 
     @FocusState private var focusedIndex: Int?
@@ -115,7 +125,7 @@ struct DayCardView: View {
         VStack(alignment: .leading, spacing: 12) {
             header
 
-            VStack(spacing: rowSpacing) {
+            VStack(spacing: scaledRowSpacing) {
                 ForEach(0..<displayCount, id: \.self) { idx in
                     entryRow(idx)
                 }
@@ -167,7 +177,7 @@ struct DayCardView: View {
         HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(dateString)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: dateFontSize * responsiveTypeScale, weight: .semibold))
 
                 if holidayNames.isEmpty {
                     if let phase = moonPhase {
@@ -198,7 +208,7 @@ struct DayCardView: View {
                     showScoreEditor = true
                 } label: {
                     scoreBadge
-                        .frame(width: headerIconSize, height: headerIconSize)
+                        .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
                         .background(.thinMaterial)
                         .clipShape(Circle())
                 }
@@ -220,9 +230,9 @@ struct DayCardView: View {
                     undoLastChange()
                 } label: {
                     Image(systemName: "arrow.uturn.left")
-                        .font(.system(size: headerIconFontSize, weight: .semibold))
+                        .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
                         .foregroundStyle(.primary)
-                        .frame(width: headerIconSize, height: headerIconSize)
+                        .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
                         .background(.thinMaterial)
                         .clipShape(Circle())
                 }
@@ -251,8 +261,8 @@ struct DayCardView: View {
                 }
             } label: {
                 Image(systemName: entry.isLocked ? "lock.fill" : (shouldPulse ? "lock.open.fill" : "lock.open"))
-                    .font(.system(size: headerIconFontSize, weight: .semibold))
-                    .frame(width: headerIconSize, height: headerIconSize)
+                    .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
+                    .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
                     .background(.thinMaterial)
                     .clipShape(Circle())
             }
@@ -270,11 +280,11 @@ struct DayCardView: View {
     private var scoreBadge: some View {
         if let score = entry.score {
             Text("\(score)")
-                .font(.system(size: headerIconFontSize, weight: .semibold))
+                .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
                 .foregroundStyle(.primary)
         } else {
             Image(systemName: "star.fill")
-                .font(.system(size: headerIconFontSize, weight: .semibold))
+                .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
                 .foregroundStyle(Color.brandAccent)
         }
     }
@@ -297,7 +307,7 @@ struct DayCardView: View {
                 .font(.headline)
 
             Text("\(Int(scoreDraft.rounded()))")
-                .font(.system(size: 32, weight: .bold))
+                .font(.system(size: scoreValueFontSize * responsiveTypeScale, weight: .bold))
                 .monospacedDigit()
 
             GeometryReader { proxy in
@@ -364,7 +374,7 @@ struct DayCardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .padding(.trailing, rowTrailingControlPadding)
+            .padding(.trailing, scaledRowTrailingControlPadding)
             .frame(minHeight: entryRowMinHeight, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -402,7 +412,7 @@ struct DayCardView: View {
                         vm.removeItem(entry, index: idx, modelContext: modelContext)
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: removeButtonFontSize * responsiveTypeScale, weight: .semibold))
                             .foregroundStyle(.secondary)
                             .frame(width: 26, height: 26)
                     }
@@ -595,7 +605,7 @@ struct DayCardView: View {
         guard dropTarget.index == idx else { return EdgeInsets() }
 
         let dragHeight = rowHeights[dragIndex] ?? rowHeights[idx] ?? 44
-        let gap = dragHeight + rowSpacing
+        let gap = dragHeight + scaledRowSpacing
 
         switch dropTarget.position {
         case .above:
