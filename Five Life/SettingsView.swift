@@ -95,7 +95,7 @@ struct SettingsView: View {
                 settingsPickerLabel(text: settings.language.displayName)
             }
         }
-        .frame(height: scaledSettingsRowHeight)
+        .frame(minHeight: scaledSettingsRowHeight)
         .tint(.brandAccent)
     }
 
@@ -160,7 +160,7 @@ struct SettingsView: View {
 
                 Text("\(settings.dailyItemCount)")
                     .font(.body.monospacedDigit())
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.brandAccent)
 
                 settingsStepperButton(
                     systemName: "plus",
@@ -170,7 +170,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .frame(height: scaledSettingsRowHeight)
+        .frame(minHeight: scaledSettingsRowHeight)
     }
 
     private var otherSettingsSection: some View {
@@ -190,7 +190,7 @@ struct SettingsView: View {
                 .labelsHidden()
                 .disabled(isSigningInWithApple)
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -209,7 +209,7 @@ struct SettingsView: View {
                 .labelsHidden()
                 .disabled(isFaceIdAuthenticating)
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -219,7 +219,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -229,7 +229,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -239,7 +239,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -249,7 +249,7 @@ struct SettingsView: View {
                 Toggle("", isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
                     .labelsHidden()
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
         }
         .tint(.brandAccent)
@@ -433,7 +433,7 @@ struct SettingsView: View {
                 Toggle("", isOn: $dailyReminderEnabled)
                     .labelsHidden()
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -456,7 +456,7 @@ struct SettingsView: View {
                 Toggle("", isOn: $nextDayReminderEnabled)
                     .labelsHidden()
             }
-            .frame(height: scaledSettingsRowHeight)
+            .frame(minHeight: scaledSettingsRowHeight)
 
             if notifier.authorizationStatus == .denied,
                (dailyReminderEnabled || nextDayReminderEnabled) {
@@ -496,6 +496,7 @@ struct SettingsView: View {
                 reminderSettingsSection
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: settings.language)
     }
 
     private var inlineSettings: some View {
@@ -524,6 +525,7 @@ struct SettingsView: View {
                 .frame(height: 1)
             reminderSettingsSection
         }
+        .animation(.easeInOut(duration: 0.2), value: settings.language)
     }
 
     var body: some View {
@@ -815,6 +817,8 @@ struct SettingsView: View {
         HStack(spacing: 6) {
             Text(text)
                 .foregroundStyle(.primary)
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: text)
             Image(systemName: "chevron.down")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.brandAccent)
@@ -834,6 +838,8 @@ struct SettingsView: View {
             Text(title)
                 .font(.body.weight(.semibold))
                 .foregroundStyle(.primary)
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: title)
         }
         .buttonStyle(.plain)
         .background(
