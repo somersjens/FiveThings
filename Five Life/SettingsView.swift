@@ -12,6 +12,7 @@ struct SettingsView: View {
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var notifier = NotificationManager.shared
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     @ScaledMetric(relativeTo: .body) private var settingsRowHeight: CGFloat = 44
@@ -396,6 +397,7 @@ struct SettingsView: View {
 
             Text(addDayDisplayText(addDayDigits))
                 .font(.body.monospacedDigit())
+                .foregroundStyle(colorScheme == .dark ? .white : .primary)
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -759,7 +761,7 @@ struct SettingsView: View {
     }
 
     private func addDayDisplayText(_ digits: String) -> AttributedString {
-        let digitColor = Color(.black)
+        let digitColor = Color.primary
         let placeholderColor = Color(.systemGray3)
 
         let dayDigits = String(digits.prefix(2))
