@@ -212,7 +212,7 @@ struct SettingsView: View {
     private var addDaySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Text(settings.language == .dutch ? "Dag toevoegen/verwijderen" : "Add/Delete a day")
+                Text(addDayTitle)
                     .font(.body.weight(.semibold))
 
                 Spacer(minLength: 8)
@@ -232,7 +232,7 @@ struct SettingsView: View {
                             )
                             .foregroundStyle(.white)
                     }
-                    .accessibilityLabel(settings.language == .dutch ? "Dag toevoegen/verwijderen" : "Add or delete day")
+                    .accessibilityLabel(addDayTitle)
                 }
             }
 
@@ -244,6 +244,16 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 8)
+    }
+
+    private var addDayTitle: String {
+        guard addDayDigits.count == 8 else {
+            return settings.language == .dutch ? "Dag toevoegen/verwijderen" : "Add/Delete a day"
+        }
+        if addDayHasExistingEntry {
+            return settings.language == .dutch ? "Dag verwijderen" : "Delete this day"
+        }
+        return settings.language == .dutch ? "Dag toevoegen" : "Add this day"
     }
 
     private var addDayInputField: some View {

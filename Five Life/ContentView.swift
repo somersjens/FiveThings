@@ -168,7 +168,7 @@ struct ContentView: View {
                 Text(" | ")
 
                 Link(destination: shareURL) {
-                    Text(settings.language == .dutch ? "Deel met vrienden" : "Share the friends")
+                    Text(settings.language == .dutch ? "Deel met vrienden" : "Share with friends")
                         .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
