@@ -20,7 +20,7 @@ struct AccessScreenView: View {
     @ScaledMetric(relativeTo: .headline) private var paymentIconSize: CGFloat = 16
     @ScaledMetric(relativeTo: .headline) private var paymentButtonSize: CGFloat = 32
     private let accessScale: CGFloat = 1.1
-    private let inAppPaymentProductID = "five_things_tip_1_euro"
+    private let inAppPaymentProductID = "19012026"
 
     private var cards: [String] {
         [
