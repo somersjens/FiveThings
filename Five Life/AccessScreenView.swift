@@ -89,7 +89,7 @@ struct AccessScreenView: View {
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                                             .fill(.white.opacity(0.85))
                                     )
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(Color.brandAccent)
                             }
                         }
                         .frame(maxWidth: maxContentWidth)
