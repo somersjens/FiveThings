@@ -18,10 +18,10 @@ final class ContentViewModel: ObservableObject {
         case threeSixtyFive = 365
         case all = 0
 
-        var displayText: String {
+        func displayText(language: AppLanguage) -> String {
             switch self {
             case .all:
-                return "All"
+                return L10n.string("filters.all", language: language)
             default:
                 return "\(rawValue)"
             }

@@ -38,7 +38,7 @@ struct SettingsView: View {
 
     private var languageSection: some View {
         HStack {
-            Text(settings.language == .dutch ? "Taal van de app" : "App language")
+            Text(L10n.string("settings.app.language", language: settings.language))
                 .font(.body.weight(.semibold))
             Spacer()
             Menu {
@@ -61,12 +61,12 @@ struct SettingsView: View {
 
     private var deleteAllEntriesSection: some View {
         HStack {
-            Text(settings.language == .dutch ? "Verwijderd alles" : "Delete all entries")
+            Text(L10n.string("settings.delete.all", language: settings.language))
                 .font(.body.weight(.semibold))
             Spacer()
             HStack(spacing: 8) {
                 deleteAllActionButton(
-                    title: settings.language == .dutch ? "Nee" : "No",
+                    title: L10n.string("common.no", language: settings.language),
                     background: Color(.systemGray5),
                     foreground: .primary
                 ) {
@@ -76,7 +76,7 @@ struct SettingsView: View {
                 }
 
                 deleteAllActionButton(
-                    title: settings.language == .dutch ? "Ja" : "Yes",
+                    title: L10n.string("common.yes", language: settings.language),
                     background: Color.red.opacity(0.15),
                     foreground: .red
                 ) {
@@ -92,7 +92,7 @@ struct SettingsView: View {
 
     private var itemsPerDaySection: some View {
         HStack {
-            Text(settings.language == .dutch ? "Aantal per dag" : "Entries per day")
+            Text(L10n.string("settings.entries.per.day", language: settings.language))
                 .font(.body.weight(.semibold))
             Spacer()
             HStack(spacing: 10) {
@@ -121,7 +121,7 @@ struct SettingsView: View {
     private var otherSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(settings.language == .dutch ? "Connect met je Apple ID" : "Connect with Apple ID")
+                Text(L10n.string("settings.apple.id.connect", language: settings.language))
                     .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -144,7 +144,7 @@ struct SettingsView: View {
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
-                Text(settings.language == .dutch ? "Vergrendel met Face ID" : "Lock with Face ID")
+                Text(L10n.string("settings.faceid.lock", language: settings.language))
                     .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -153,9 +153,8 @@ struct SettingsView: View {
                         AppleSyncManager.shared.captureSnapshotNow(modelContext: modelContext,
                                                                    settings: settings,
                                                                    isConnected: settings.appleIdConnected)
-                        showSecretSaveMessage(settings.language == .dutch
-                            ? "Geheime opslag toegepast."
-                            : "Secret save applied.")
+                        showSecretSaveMessage(L10n.string("settings.secret.save.applied",
+                                                          language: settings.language))
                     }
                 Spacer()
                 Toggle("", isOn: Binding(
@@ -171,28 +170,28 @@ struct SettingsView: View {
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(settings.language == .dutch ? "Beoordeel je dag" : "Score your day",
+            Toggle(L10n.string("settings.score.day", language: settings.language),
                    isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
                 .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(settings.language == .dutch ? "Statistieken" : "Statistics",
+            Toggle(L10n.string("settings.statistics", language: settings.language),
                    isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
                 .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(settings.language == .dutch ? "Feestdagen" : "Special holidays",
+            Toggle(L10n.string("settings.holidays", language: settings.language),
                    isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
                 .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(settings.language == .dutch ? "Maan informatie" : "Moon info",
+            Toggle(L10n.string("settings.moon.info", language: settings.language),
                    isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
                 .font(.body.weight(.semibold))
                 .frame(height: settingsRowHeight)
@@ -248,12 +247,12 @@ struct SettingsView: View {
 
     private var addDayTitle: String {
         guard addDayDigits.count == 8 else {
-            return settings.language == .dutch ? "Dag toevoegen/verwijderen" : "Add/Delete a day"
+            return L10n.string("settings.day.add.delete", language: settings.language)
         }
         if addDayHasExistingEntry {
-            return settings.language == .dutch ? "Dag verwijderen" : "Delete this day"
+            return L10n.string("settings.day.delete", language: settings.language)
         }
-        return settings.language == .dutch ? "Dag toevoegen" : "Add this day"
+        return L10n.string("settings.day.add", language: settings.language)
     }
 
     private var addDayInputField: some View {
@@ -267,7 +266,7 @@ struct SettingsView: View {
                 .tint(Color(.darkGray))
                 .multilineTextAlignment(.leading)
                 .focused($addDayFieldFocused)
-                .accessibilityLabel(settings.language == .dutch ? "Datum" : "Date")
+                .accessibilityLabel(L10n.string("common.date", language: settings.language))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .onChange(of: addDayText) { oldValue, newValue in
                     let filtered = newValue.filter(\.isWholeNumber)
@@ -312,7 +311,7 @@ struct SettingsView: View {
     private var reminderSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(settings.language == .dutch ? "Avond reminder" : "Evening reminder")
+                Text(L10n.string("settings.reminder.evening", language: settings.language))
                     .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -336,7 +335,7 @@ struct SettingsView: View {
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
-                Text(settings.language == .dutch ? "Volgende dag reminder" : "Next day reminder")
+                Text(L10n.string("settings.reminder.next.day", language: settings.language))
                     .font(.body.weight(.semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -359,9 +358,7 @@ struct SettingsView: View {
 
             if notifier.authorizationStatus == .denied,
                (dailyReminderEnabled || nextDayReminderEnabled) {
-                Text(settings.language == .dutch
-                     ? "Notificaties zijn uitgeschakeld. Zet ze aan in de iOS-instellingen als je reminders wilt."
-                     : "Notifications are disabled. Enable them in iOS Settings if you want reminders.")
+                Text(L10n.string("settings.notifications.disabled", language: settings.language))
                     .font(.footnote)
                     .foregroundStyle(.black)
             }
@@ -432,10 +429,10 @@ struct SettingsView: View {
             if showsNavigation {
                 NavigationStack {
                     settingsForm
-                        .navigationTitle(settings.language == .dutch ? "Instellingen" : "Settings")
+                        .navigationTitle(L10n.string("settings.title", language: settings.language))
                         .toolbar {
                             ToolbarItem(placement: .topBarTrailing) {
-                                Button(settings.language == .dutch ? "Gereed" : "Done") {
+                                Button(L10n.string("common.done", language: settings.language)) {
                                     // Dismiss handled by parent sheet
                                 }
                             }
@@ -466,18 +463,16 @@ struct SettingsView: View {
             faceIdLockEnabled = settings.faceIdLockEnabled
             appleIdConnected = settings.appleIdConnected
         }
-        .alert(settings.language == .dutch ? "Face ID vereist" : "Face ID required",
+        .alert(L10n.string("settings.faceid.required", language: settings.language),
                isPresented: $showFaceIdSettingsAlert) {
-            Button(settings.language == .dutch ? "Ga naar Instellingen" : "Go to Settings") {
+            Button(L10n.string("settings.go.to.settings", language: settings.language)) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
-            Button(settings.language == .dutch ? "Sluiten" : "Close", role: .cancel) { }
+            Button(L10n.string("common.close", language: settings.language), role: .cancel) { }
         } message: {
-            Text(settings.language == .dutch
-                ? "Activeer Face ID in iOS-instellingen om deze optie opnieuw te gebruiken."
-                : "Enable Face ID in iOS Settings to use this option again.")
+            Text(L10n.string("settings.faceid.required.message", language: settings.language))
         }
         .onChange(of: dailyReminderEnabled) { _, enabled in
             if !enabled { settings.dailyReminderTime = nil }
@@ -519,9 +514,7 @@ struct SettingsView: View {
                 _ = existing.items.count
                 modelContext.delete(existing)
                 try? modelContext.save()
-                showAddDayMessage(settings.language == .dutch
-                    ? "Dag verwijderd."
-                    : "Day deleted.", isError: false)
+                showAddDayMessage(L10n.string("settings.day.deleted", language: settings.language), isError: false)
             }
             addDayDigits = ""
             addDayText = ""
@@ -531,9 +524,7 @@ struct SettingsView: View {
         let entry = DayEntry(day: normalizedDay, itemCount: settings.dailyItemCount)
         modelContext.insert(entry)
         try? modelContext.save()
-        showAddDayMessage(settings.language == .dutch
-            ? "Dag toegevoegd."
-            : "Day added.", isError: false)
+        showAddDayMessage(L10n.string("settings.day.added", language: settings.language), isError: false)
 
         addDayDigits = ""
         addDayText = ""
@@ -746,9 +737,7 @@ struct SettingsView: View {
             return
         }
 
-        let reason = settings.language == .dutch
-            ? "Activeer Face ID om je kaarten te vergrendelen."
-            : "Enable Face ID to lock your cards."
+        let reason = L10n.string("settings.faceid.reason", language: settings.language)
 
         context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
             Task { @MainActor in

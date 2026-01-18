@@ -126,9 +126,7 @@ struct DayCardView: View {
             }
 
             if showIncompleteHint {
-                Text(settings.language == .dutch
-                     ? "Vul alle velden in om te vergrendelen."
-                     : "Fill all fields to lock.")
+                Text(L10n.string("daycard.complete.to.lock", language: settings.language))
                     .font(.footnote)
                     .foregroundStyle(.black)
                     .transition(.opacity)
@@ -215,8 +213,8 @@ struct DayCardView: View {
                 .buttonStyle(.plain)
                 .disabled(entry.isLocked)
                 .accessibilityLabel(entry.score == nil
-                                    ? (settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
-                                    : (settings.language == .dutch ? "Pas score aan" : "Adjust score"))
+                                    ? L10n.string("daycard.score.title", language: settings.language)
+                                    : L10n.string("daycard.score.adjust", language: settings.language))
             }
 
             if !entry.isLocked {
@@ -238,7 +236,7 @@ struct DayCardView: View {
                 }
                 .buttonStyle(.plain)
                 .opacity(undoHistory.isEmpty ? 0.4 : 1)
-                .accessibilityLabel(settings.language == .dutch ? "Laatste wijziging ongedaan maken" : "Undo last change")
+                .accessibilityLabel(L10n.string("daycard.undo", language: settings.language))
             }
 
             Button {
@@ -266,8 +264,8 @@ struct DayCardView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(entry.isLocked
-                                ? (settings.language == .dutch ? "Ontgrendelen" : "Unlock")
-                                : (settings.language == .dutch ? "Vergrendelen" : "Lock"))
+                                ? L10n.string("daycard.unlock", language: settings.language)
+                                : L10n.string("daycard.lock", language: settings.language))
         }
         .sheet(isPresented: $showScoreEditor) {
             scoreEditorSheet
@@ -301,7 +299,7 @@ struct DayCardView: View {
 
     private var scoreEditorSheet: some View {
         VStack(spacing: 16) {
-            Text(settings.language == .dutch ? "Beoordeel je dag" : "Score your day")
+            Text(L10n.string("daycard.score.title", language: settings.language))
                 .font(.headline)
 
             Text("\(Int(scoreDraft.rounded()))")
@@ -324,7 +322,7 @@ struct DayCardView: View {
                     updateScore(nil)
                     showScoreEditor = false
                 } label: {
-                    Text(settings.language == .dutch ? "Leegmaken" : "Clear")
+                    Text(L10n.string("common.clear", language: settings.language))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -335,7 +333,7 @@ struct DayCardView: View {
                     updateScore(Int(scoreDraft.rounded()))
                     showScoreEditor = false
                 } label: {
-                    Text(settings.language == .dutch ? "Opslaan" : "Save")
+                    Text(L10n.string("common.save", language: settings.language))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -414,7 +412,7 @@ struct DayCardView: View {
                             .frame(width: 26, height: 26)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(settings.language == .dutch ? "Optionele regel verwijderen" : "Remove optional entry")
+                    .accessibilityLabel(L10n.string("daycard.remove.optional", language: settings.language))
                     .padding(.trailing, 6)
                 }
             }
@@ -423,10 +421,8 @@ struct DayCardView: View {
     private func rowContent(idx: Int) -> some View {
         let showsOptionalPlaceholder = hasOptionalRows && !entry.isLocked && idx >= requiredCount
         let placeholderText = showsOptionalPlaceholder
-            ? (settings.language == .dutch
-               ? "Optioneel (boven oud aantal)"
-               : "Optional (above old amount)")
-            : (settings.language == .dutch ? "Schrijf iets positiefs…" : "Write something positive…")
+            ? L10n.string("daycard.placeholder.optional", language: settings.language)
+            : L10n.string("daycard.placeholder.entry", language: settings.language)
         return HStack(alignment: .top, spacing: 10) {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))

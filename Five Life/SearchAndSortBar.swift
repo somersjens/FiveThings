@@ -13,7 +13,7 @@ struct SearchAndSortBar: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.black)
 
-                TextField(settings.language == .dutch ? "Zoek in kaarten…" : "Search cards…",
+                TextField(L10n.string("search.placeholder", language: settings.language),
                           text: $text)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -27,7 +27,7 @@ struct SearchAndSortBar: View {
                             .foregroundStyle(.black)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(settings.language == .dutch ? "Wis zoekopdracht" : "Clear search")
+                    .accessibilityLabel(L10n.string("search.clear", language: settings.language))
                 }
             }
             .padding(.vertical, 10)
@@ -40,7 +40,7 @@ struct SearchAndSortBar: View {
             Button {
                 finishedLimit = finishedLimit.next()
             } label: {
-                Text(finishedLimit.displayText)
+                Text(finishedLimit.displayText(language: settings.language))
                     .font(.system(size: 12, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(.black)
@@ -49,9 +49,9 @@ struct SearchAndSortBar: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(settings.language == .dutch
-                                ? "Laatste \(finishedLimit.displayText) kaarten tonen"
-                                : "Show last \(finishedLimit.displayText) cards")
+            .accessibilityLabel(L10n.string("filters.show.last",
+                                            language: settings.language,
+                                            finishedLimit.displayText(language: settings.language)))
 
             Button {
                 newestFirst.toggle()
@@ -63,9 +63,9 @@ struct SearchAndSortBar: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(settings.language == .dutch
-                                ? (newestFirst ? "Nieuw naar oud" : "Oud naar nieuw")
-                                : (newestFirst ? "New to old" : "Old to new"))
+            .accessibilityLabel(newestFirst
+                                ? L10n.string("filters.sort.newest.first", language: settings.language)
+                                : L10n.string("filters.sort.oldest.first", language: settings.language))
         }
     }
 }

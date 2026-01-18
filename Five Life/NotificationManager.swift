@@ -53,12 +53,13 @@ final class NotificationManager: ObservableObject {
         guard allowed else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = (language == .dutch) ? "Dagelijkse reminder" : "Daily reminder"
+        content.title = L10n.string("notifications.daily.title", language: language)
         let timeString = reminderTimeString(for: time)
         let clampedCount = max(1, dailyCount)
-        content.body = (language == .dutch)
-            ? "Dit is je \(timeString) herinnering om \(clampedCount) dingen over vandaag op te schrijven"
-            : "This is your \(timeString) reminder to write \(clampedCount) things about today"
+        content.body = L10n.string("notifications.daily.body",
+                                   language: language,
+                                   timeString,
+                                   clampedCount)
         content.sound = notificationSound
 
         var triggerComps = time.asDateComponents()
@@ -79,11 +80,9 @@ final class NotificationManager: ObservableObject {
         guard allowed else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = (language == .dutch) ? "Niet vergeten" : "Don’t forget"
+        content.title = L10n.string("notifications.next.title", language: language)
         let timeString = reminderTimeString(for: time)
-        content.body = (language == .dutch)
-            ? "Dit is je \(timeString) herinnering om over je dag gisteren te schrijven aangezien deze nog leeg is"
-            : "This is your \(timeString) reminder as yesterday’s card is waiting for you to be filled."
+        content.body = L10n.string("notifications.next.body", language: language, timeString)
         content.sound = notificationSound
 
         // Schedule for *tomorrow* at the chosen time

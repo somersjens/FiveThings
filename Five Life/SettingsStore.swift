@@ -22,6 +22,13 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .dutch: return "Nederlands"
         }
     }
+
+    var localizationCode: String {
+        switch self {
+        case .english: return "en"
+        case .dutch: return "nl"
+        }
+    }
 }
 
 struct ReminderTime: Codable, Equatable {

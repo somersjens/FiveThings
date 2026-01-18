@@ -114,12 +114,12 @@ struct ContentView: View {
 
     private var dailyTitle: String {
         let count = settings.dailyItemCount
-        return settings.language == .dutch ? "Elke dag \(count)" : "\(count) Things everyday"
+        return L10n.string("title.daily", language: settings.language, count)
     }
 
     private var lifeTitle: String {
         let word = numberWord(for: settings.dailyItemCount)
-        return "Happy \(word)"
+        return L10n.string("title.happy", language: settings.language, word)
     }
 
     private let settingsTopID = "settingsTop"
@@ -159,7 +159,7 @@ struct ContentView: View {
         VStack(spacing: 16) {
             HStack(spacing: 4) {
                 Link(destination: reviewURL) {
-                    Text(settings.language == .dutch ? "Schrijf een review" : "Write a review")
+                    Text(L10n.string("footer.review", language: settings.language))
                         .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
@@ -168,7 +168,7 @@ struct ContentView: View {
                 Text(" | ")
 
                 Link(destination: shareURL) {
-                    Text(settings.language == .dutch ? "Deel met vrienden" : "Share with friends")
+                    Text(L10n.string("footer.share", language: settings.language))
                         .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
@@ -177,7 +177,7 @@ struct ContentView: View {
                 Text(" | ")
 
                 Link(destination: feedbackURL) {
-                    Text(settings.language == .dutch ? "Stuur feedback" : "Send feedback")
+                    Text(L10n.string("footer.feedback", language: settings.language))
                         .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
@@ -213,16 +213,16 @@ struct ContentView: View {
 
     private func numberWord(for count: Int) -> String {
         switch count {
-        case 1: return "One"
-        case 2: return "Two"
-        case 3: return "Three"
-        case 4: return "Four"
-        case 5: return "Five"
-        case 6: return "Six"
-        case 7: return "Seven"
-        case 8: return "Eight"
-        case 9: return "Nine"
-        case 10: return "Ten"
+        case 1: return L10n.string("number.one", language: settings.language)
+        case 2: return L10n.string("number.two", language: settings.language)
+        case 3: return L10n.string("number.three", language: settings.language)
+        case 4: return L10n.string("number.four", language: settings.language)
+        case 5: return L10n.string("number.five", language: settings.language)
+        case 6: return L10n.string("number.six", language: settings.language)
+        case 7: return L10n.string("number.seven", language: settings.language)
+        case 8: return L10n.string("number.eight", language: settings.language)
+        case 9: return L10n.string("number.nine", language: settings.language)
+        case 10: return L10n.string("number.ten", language: settings.language)
         default: return "\(count)"
         }
     }
@@ -256,14 +256,14 @@ struct ContentView: View {
             .background(Color.brandBackground)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(settings.language == .dutch ? "Instellingen tonen" : "Show settings")
+        .accessibilityLabel(L10n.string("settings.show", language: settings.language))
     }
 
     private var statisticsRow: some View {
         let stats = statisticsSnapshot
-        let streakLabel = settings.language == .dutch ? "Streak" : "Streak"
-        let daysLabel = settings.language == .dutch ? "Dagen" : "Days"
-        let entriesLabel = settings.language == .dutch ? "Items" : "Entries"
+        let streakLabel = L10n.string("stats.streak", language: settings.language)
+        let daysLabel = L10n.string("stats.days", language: settings.language)
+        let entriesLabel = L10n.string("stats.entries", language: settings.language)
         return HStack(spacing: 10) {
             statisticsBox(title: streakLabel, value: stats.streak)
             statisticsBox(title: daysLabel, value: stats.days)
@@ -306,14 +306,14 @@ struct ContentView: View {
                     .font(.system(size: 48))
                     .foregroundStyle(.secondary)
 
-                Text(settings.language == .dutch ? "Ontgrendel met Face ID" : "Unlock with Face ID")
+                Text(L10n.string("lock.faceid.title", language: settings.language))
                     .font(.title3.weight(.semibold))
                     .multilineTextAlignment(.center)
 
                 Button {
                     attemptUnlock()
                 } label: {
-                    Text(settings.language == .dutch ? "Ontgrendel" : "Unlock")
+                    Text(L10n.string("lock.faceid.action", language: settings.language))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -347,7 +347,7 @@ struct ContentView: View {
                             if showSettings {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
-                                        Text(settings.language == .dutch ? "Instellingen" : "Settings")
+                                        Text(L10n.string("settings.title", language: settings.language))
                                             .font(.title3.weight(.semibold))
                                             .onTapGesture(count: 10) {
                                                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -378,9 +378,7 @@ struct ContentView: View {
                                                 showExportOptions.toggle()
                                             }
                                         } label: {
-                                            Text(settings.language == .dutch
-                                                 ? "Exporteren naar PDF/CSV"
-                                                 : "Export to PDF/CSV")
+                                            Text(L10n.string("export.title", language: settings.language))
                                                 .font(.headline)
                                                 .frame(maxWidth: .infinity)
                                                 .padding(.vertical, 10)
@@ -398,7 +396,7 @@ struct ContentView: View {
                                                 Button {
                                                     handleExport(format: .pdf)
                                                 } label: {
-                                                    Text("PDF")
+                                                    Text(L10n.string("export.pdf", language: settings.language))
                                                         .font(.headline)
                                                         .foregroundStyle(.primary)
                                                         .frame(width: 80, height: 36)
@@ -412,7 +410,7 @@ struct ContentView: View {
                                                 Button {
                                                     handleExport(format: .csv)
                                                 } label: {
-                                                    Text("CSV")
+                                                    Text(L10n.string("export.csv", language: settings.language))
                                                         .font(.headline)
                                                         .foregroundStyle(.primary)
                                                         .frame(width: 80, height: 36)
@@ -463,7 +461,7 @@ struct ContentView: View {
                             .animation(.spring(response: 0.5, dampingFraction: 0.85),
                                        value: unfinishedEntries.map(\.id))
                         } else {
-                            Text(settings.language == .dutch ? "Tot morgen!" : "See you tomorrow!")
+                            Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
                                 .font(.title3.weight(.semibold))
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .multilineTextAlignment(.center)
@@ -490,9 +488,7 @@ struct ContentView: View {
                         // Finished section
                         LazyVStack(alignment: .leading, spacing: 10) {
                             if finishedEntries.isEmpty {
-                                Text(settings.language == .dutch
-                                     ? "Geen kaarten gevonden."
-                                     : "No cards found.")
+                                Text(L10n.string("cards.none", language: settings.language))
                                     .foregroundStyle(.black)
                                     .padding(.horizontal, 4)
                             } else {
@@ -746,9 +742,7 @@ struct ContentView: View {
         }
 
         isUnlocking = true
-        let reason = settings.language == .dutch
-            ? "Ontgrendel je kaarten met Face ID."
-            : "Unlock your cards with Face ID."
+        let reason = L10n.string("lock.faceid.reason", language: settings.language)
 
         context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
             Task { @MainActor in

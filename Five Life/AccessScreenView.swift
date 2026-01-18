@@ -19,31 +19,21 @@ struct AccessScreenView: View {
     private let inAppPaymentProductID = "five_things_tip_1_euro"
 
     private var cards: [String] {
-        if settings.language == .dutch {
-            return [
-                "Uit meerdere onderzoeken blijkt dat dagelijks *5 dingen* opschrijven je geluksgevoel kan versterken en een positievere mindset kan bevorderen.",
-                "In *Emmons & McCullough (2003)* scoorden deelnemers die |tot vijf| dankbare dingen noteerden hoger op welbevinden dan controlegroepen \n\n (|in één meting ≈ +12% van de schaalbreedte|).",
-                "Ook in Yale’s |The Science of Well-Being| (|Laurie Santos|) komt een *dankbaarheidsdagboek* terug als één van de “rewirements”: laagdrempelige oefeningen die kunnen bijdragen aan meer welzijn.",
-                "*Per dag:*\n\n• 30 minuten (|lichte|) *beweging*\n• 10 minuten *mediteren*\n• 5 *positieve* dingen opschrijven\n• 1 (|kleine|) *vriendelijke* daad\n• 1 |nieuwe| *sociale* interactie\n• 1 minuut *bewust* genieten",
-                "Deze app is gebouwd met respect voor je *privacy* en maakt het makkelijker om *waardevolle momenten* in je dag op te schrijven. Een bijdrage van €1,- aan de ontwikkeling is volledig *optioneel*."
-            ]
-        }
-
-        return [
-            "Multiple studies suggest that writing down *5 things* each day can boost your sense of happiness and encourage a more positive mindset.",
-            "In *Emmons & McCullough (2003)*, participants who wrote down |up to five| gratitude items scored higher on well-being than control groups \n\n (|in one measure ≈ +12% of the scale range|).",
-            "Yale’s |The Science of Well-Being| (|Laurie Santos|) also includes a *gratitude journal* as one of its “rewirements”: low-barrier exercises that can support well-being.",
-            "*Daily:*\n\n• 30 minutes of (|light|) *movement*\n• 10 minutes of *meditation*\n• Write down 5 *positive* things\n• 1 (|small|) act of *kindness*\n• 1 |new| *social* interaction\n• 1 minute of *mindful* enjoyment",
-            "This app is built with respect for your *privacy* and makes it easier to write down *valuable moments* from your day. A €1 contribution to support development is completely *optional*."
+        [
+            L10n.string("access.card.1", language: settings.language),
+            L10n.string("access.card.2", language: settings.language),
+            L10n.string("access.card.3", language: settings.language),
+            L10n.string("access.card.4", language: settings.language),
+            L10n.string("access.card.5", language: settings.language)
         ]
     }
 
     private var connectButtonTitle: String {
-        settings.language == .dutch ? "Connect met je Apple ID" : "Connect with your Apple ID"
+        L10n.string("access.connect.apple", language: settings.language)
     }
 
     private var continueButtonTitle: String {
-        settings.language == .dutch ? "Gebruik de app zonder" : "Use the app without"
+        L10n.string("access.continue.without", language: settings.language)
     }
 
     var body: some View {
@@ -111,11 +101,11 @@ struct AccessScreenView: View {
                 .padding(.horizontal, 30)
             }
             .background(Color.brandBackground.ignoresSafeArea())
-            .alert("In-App Payment", isPresented: Binding(
+            .alert(L10n.string("access.payment.title", language: settings.language), isPresented: Binding(
                 get: { paymentErrorMessage != nil },
                 set: { if !$0 { paymentErrorMessage = nil } }
             )) {
-                Button(settings.language == .dutch ? "Oké" : "OK", role: .cancel) {}
+                Button(L10n.string("common.ok", language: settings.language), role: .cancel) {}
             } message: {
                 Text(paymentErrorMessage ?? "")
             }
@@ -187,9 +177,7 @@ struct AccessScreenView: View {
                 .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
         }
         .disabled(isProcessingPayment)
-        .accessibilityLabel(settings.language == .dutch
-            ? "Doe een bijdrage van één euro"
-            : "Make a one euro contribution")
+        .accessibilityLabel(L10n.string("access.payment.contribute", language: settings.language))
     }
 
     private var pageIndicators: some View {
@@ -201,9 +189,10 @@ struct AccessScreenView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(settings.language == .dutch
-            ? "Pagina \(currentCardIndex + 1) van \(cards.count)"
-            : "Page \(currentCardIndex + 1) of \(cards.count)")
+        .accessibilityLabel(L10n.string("access.page.indicator",
+                                         language: settings.language,
+                                         currentCardIndex + 1,
+                                         cards.count))
     }
 
     @MainActor
@@ -234,9 +223,7 @@ struct AccessScreenView: View {
         do {
             let products = try await Product.products(for: [inAppPaymentProductID])
             guard let product = products.first else {
-                paymentErrorMessage = settings.language == .dutch
-                    ? "Het product is nog niet beschikbaar."
-                    : "The product is not available yet."
+                paymentErrorMessage = L10n.string("access.payment.unavailable", language: settings.language)
                 return
             }
 
@@ -250,9 +237,7 @@ struct AccessScreenView: View {
                 break
             }
         } catch {
-            paymentErrorMessage = settings.language == .dutch
-                ? "Betaling mislukt. Probeer het later opnieuw."
-                : "Payment failed. Please try again later."
+            paymentErrorMessage = L10n.string("access.payment.failed", language: settings.language)
         }
     }
 }

@@ -45,7 +45,7 @@ enum ExportService {
         let destination = makeTemporaryURL(withExtension: format.fileExtension)
         switch format {
         case .csv:
-            let csvString = csvContent(entries: entries)
+            let csvString = csvContent(entries: entries, language: language)
             guard let data = csvString.data(using: .utf8) else {
                 throw ExportError.encodingFailed
             }
@@ -59,10 +59,10 @@ enum ExportService {
         return destination
     }
 
-    private static func csvContent(entries: [DayEntry]) -> String {
+    private static func csvContent(entries: [DayEntry], language: AppLanguage) -> String {
         let exportEntries = entries.filter { !sanitizedItems(from: $0).isEmpty }
         let hasScore = exportEntries.contains { $0.score != nil }
-        var lines: [String] = ["Date, entry, Description, score"]
+        var lines: [String] = [L10n.string("export.csv.header", language: language)]
 
         for entry in exportEntries {
             let dateString = csvDateFormatter.string(from: entry.day)
@@ -70,7 +70,7 @@ enum ExportService {
             let scoreString = hasScore ? (entry.score.map(String.init) ?? "") : ""
 
             for (index, item) in items.enumerated() {
-                let ordinal = ordinalEntry(for: index + 1)
+                let ordinal = ordinalEntry(for: index + 1, language: language)
                 let fields = [dateString, ordinal, item, scoreString]
                 lines.append(fields.map { csvEscape($0) }.joined(separator: ","))
             }
@@ -177,7 +177,10 @@ enum ExportService {
                 let dateString = DateFormatting.formattedDayString(entry.day, language: language)
                 let headerText: String
                 if let score = entry.score {
-                    headerText = "\(dateString) (score \(score))"
+                    headerText = L10n.string("export.pdf.entry.with.score",
+                                             language: language,
+                                             dateString,
+                                             score)
                 } else {
                     headerText = dateString
                 }
@@ -291,7 +294,10 @@ enum ExportService {
                 let dateString = DateFormatting.formattedDayString(entry.day, language: language)
                 let headerText: String
                 if let score = entry.score {
-                    headerText = "\(dateString) (score \(score))"
+                    headerText = L10n.string("export.pdf.entry.with.score",
+                                             language: language,
+                                             dateString,
+                                             score)
                 } else {
                     headerText = dateString
                 }
@@ -354,29 +360,23 @@ enum ExportService {
                                       page: Int,
                                       totalPages: Int) -> String {
         let dateString = pdfHeaderDateFormatter.string(from: generationDate)
-        let orderText: String
+        let orderKey = filterContext.newestFirst ? "export.order.descending" : "export.order.ascending"
+        let orderText = L10n.string(orderKey, language: language)
         let limitText: String
-
-        switch language {
-        case .dutch:
-            orderText = filterContext.newestFirst ? "aflopende" : "oplopende"
-            if filterContext.finishedLimit == .all {
-                limitText = "alle informatie"
-            } else {
-                let positionText = "laatste"
-                limitText = "de \(positionText) \(filterContext.finishedLimit.rawValue) dagen"
-            }
-            return "PDF gegenereerd op \(dateString): \(limitText) in \(orderText) volgorde (filter instellingen) - pagina \(page)/\(totalPages)"
-        case .english:
-            orderText = filterContext.newestFirst ? "descending" : "ascending"
-            if filterContext.finishedLimit == .all {
-                limitText = "all entries"
-            } else {
-                let positionText = "last"
-                limitText = "the \(positionText) \(filterContext.finishedLimit.rawValue) entries"
-            }
-            return "PDF generated on \(dateString): \(limitText) in \(orderText) order (filter settings) - page \(page)/\(totalPages)"
+        if filterContext.finishedLimit == .all {
+            limitText = L10n.string("export.limit.all", language: language)
+        } else {
+            limitText = L10n.string("export.limit.last.entries",
+                                    language: language,
+                                    filterContext.finishedLimit.rawValue)
         }
+        return L10n.string("export.pdf.header",
+                           language: language,
+                           dateString,
+                           limitText,
+                           orderText,
+                           page,
+                           totalPages)
     }
 
     private static func sanitizedItems(from entry: DayEntry) -> [String] {
@@ -385,7 +385,7 @@ enum ExportService {
             .filter { !$0.isEmpty }
     }
 
-    private static func ordinalEntry(for index: Int) -> String {
+    private static func ordinalEntry(for index: Int, language: AppLanguage) -> String {
         let suffix: String
         let tens = index % 100
         if tens >= 11 && tens <= 13 {
@@ -398,7 +398,10 @@ enum ExportService {
             default: suffix = "th"
             }
         }
-        return "\(index)\(suffix) entry"
+        if language == .english {
+            return L10n.string("export.entry.ordinal.en", language: language, index, suffix)
+        }
+        return L10n.string("export.entry.ordinal", language: language, index)
     }
 
     private static func csvEscape(_ value: String) -> String {

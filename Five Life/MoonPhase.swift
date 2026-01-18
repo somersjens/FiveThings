@@ -12,23 +12,19 @@ enum MoonPhaseKind: String {
     case waningCrescent
 
     func localizedName(language: AppLanguage) -> String {
-        switch (self, language) {
-        case (.newMoon, .dutch): return "Nieuwe maan"
-        case (.waxingCrescent, .dutch): return "Wassende sikkel"
-        case (.firstQuarter, .dutch): return "Eerste kwartier"
-        case (.waxingGibbous, .dutch): return "Wassende gibbeus"
-        case (.fullMoon, .dutch): return "Volle maan"
-        case (.waningGibbous, .dutch): return "Afnemende gibbeus"
-        case (.thirdQuarter, .dutch): return "Derde kwartier"
-        case (.waningCrescent, .dutch): return "Afnemende sikkel"
-        case (.newMoon, .english): return "New Moon"
-        case (.waxingCrescent, .english): return "Waxing Crescent"
-        case (.firstQuarter, .english): return "First Quarter"
-        case (.waxingGibbous, .english): return "Waxing Gibbous"
-        case (.fullMoon, .english): return "Full Moon"
-        case (.waningGibbous, .english): return "Waning Gibbous"
-        case (.thirdQuarter, .english): return "Third Quarter"
-        case (.waningCrescent, .english): return "Waning Crescent"
+        L10n.string(localizationKey, language: language)
+    }
+
+    private var localizationKey: String {
+        switch self {
+        case .newMoon: return "moonphase.new.moon"
+        case .waxingCrescent: return "moonphase.waxing.crescent"
+        case .firstQuarter: return "moonphase.first.quarter"
+        case .waxingGibbous: return "moonphase.waxing.gibbous"
+        case .fullMoon: return "moonphase.full.moon"
+        case .waningGibbous: return "moonphase.waning.gibbous"
+        case .thirdQuarter: return "moonphase.last.quarter"
+        case .waningCrescent: return "moonphase.waning.crescent"
         }
     }
 
