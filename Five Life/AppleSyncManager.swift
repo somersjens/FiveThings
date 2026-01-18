@@ -109,6 +109,7 @@ final class AppleSyncManager {
                                          isConnected: Bool) {
         guard isConnected else { return }
         ensureTodayEntry(modelContext: modelContext, settings: settings)
+        lockCompletedEntriesIfNeeded(modelContext: modelContext)
         let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
     }
@@ -320,5 +321,22 @@ final class AppleSyncManager {
         let entry = DayEntry(day: today, itemCount: settings.dailyItemCount)
         modelContext.insert(entry)
         try? modelContext.save()
+    }
+
+    private func lockCompletedEntriesIfNeeded(modelContext: ModelContext) {
+        let entries = fetchEntries(modelContext: modelContext)
+        var didChange = false
+        entries.forEach { entry in
+            guard !entry.isLocked else { return }
+            if entry.isComplete(requiredCount: entry.itemCount) {
+                entry.isLocked = true
+                entry.wasCompleted = true
+                entry.updatedAt = Date()
+                didChange = true
+            }
+        }
+        if didChange {
+            try? modelContext.save()
+        }
     }
 }
