@@ -25,8 +25,8 @@ struct DayCardView: View {
     @State private var hasCapturedEditSnapshot: Bool = false
 
     private let rowSpacing: CGFloat = 10
-    private let headerIconSize: CGFloat = 36
-    private let headerIconFontSize: CGFloat = 16
+    private let headerIconSize: CGFloat = 31
+    private let headerIconFontSize: CGFloat = 14
 
     @FocusState private var focusedIndex: Int?
 
@@ -172,10 +172,10 @@ struct DayCardView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(dateString)
-                    .font(.headline)
+                    .font(.system(size: 16, weight: .semibold))
 
                 if holidayNames.isEmpty {
                     if let phase = moonPhase {
