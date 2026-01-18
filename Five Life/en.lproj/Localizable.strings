@@ -113,6 +113,17 @@
 "settings.faceid.required.message" = "Enable Face ID in iOS Settings to use this option again.";
 "settings.go.to.settings" = "Go to Settings";
 "settings.holidays" = "Special holidays";
+"settings.info.add.day" = "Based on the date you enter, the app will recognize whether you want to add or delete an entry.";
+"settings.info.apple.id" = "If your phone gets stolen or you get a new one, your entries will still be there.";
+"settings.info.entries.per.day" = "Five is the magic number, but you can choose fewer or more if you prefer!";
+"settings.info.faceid" = "When you enable this, only you can unlock the app—even if your phone is already unlocked.";
+"settings.info.holidays" = "Official holidays based on your selected language. Missing any? Let us know using the feedback option below.";
+"settings.info.language" = "No more explanation, just pick your preferred language.";
+"settings.info.moon" = "If your emotions tend to get stronger depending on the moon phase, this might explain why.";
+"settings.info.reminder.evening" = "Sends a reminder at your preferred time, only if today’s card is still unlocked.";
+"settings.info.reminder.next.day" = "Sends a reminder at your preferred time, only if yesterday’s card is still unlocked.";
+"settings.info.score.day" = "Option to rate your day, so you can analyze what makes you happiest.";
+"settings.info.statistics" = "Get insights into your current streak, total days filled, and total entries.";
 "settings.moon.info" = "Moon info";
 "settings.notifications.disabled" = "Notifications are disabled. Enable them in iOS Settings if you want reminders.";
 "settings.reminder.evening" = "Evening reminder";

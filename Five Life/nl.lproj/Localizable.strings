@@ -113,6 +113,17 @@
 "settings.faceid.required.message" = "Activeer Face ID in iOS-instellingen om deze optie opnieuw te gebruiken.";
 "settings.go.to.settings" = "Ga naar Instellingen";
 "settings.holidays" = "Feestdagen";
+"settings.info.add.day" = "Op basis van de datum die je invoert, herkent de app of je een item wilt toevoegen of verwijderen.";
+"settings.info.apple.id" = "Als je telefoon wordt gestolen of je een nieuwe hebt, blijven je items gewoon bewaard.";
+"settings.info.entries.per.day" = "Vijf is het magische getal, maar minder of meer kan natuurlijk ook!";
+"settings.info.faceid" = "Als je dit inschakelt, kun alleen jij de app ontgrendelen—ook als je telefoon al ontgrendeld is.";
+"settings.info.holidays" = "Officiële feestdagen op basis van de gekozen taal. Mis je er één? Laat het ons weten via de feedbackoptie hieronder.";
+"settings.info.language" = "Geen extra uitleg, kies hier je voorkeurstaal.";
+"settings.info.moon" = "Als je emoties soms sterker zijn afhankelijk van de maanstand, kan dit verklaren waarom.";
+"settings.info.reminder.evening" = "Stuurt een herinnering op je voorkeurstijd, alleen als de kaart van vandaag nog niet is ingevuld.";
+"settings.info.reminder.next.day" = "Stuurt een herinnering op dit tijdstip, alleen als de kaart van gisteren nog niet is ingevuld.";
+"settings.info.score.day" = "Optie om je dag een score te geven, zodat je kunt analyseren wat jou het meest gelukkig maakt.";
+"settings.info.statistics" = "Krijg inzicht in je huidige streak, het aantal ingevulde dagen en het totaal aantal items.";
 "settings.moon.info" = "Maan informatie";
 "settings.notifications.disabled" = "Notificaties zijn uitgeschakeld. Zet ze aan in de iOS-instellingen als je reminders wilt.";
 "settings.reminder.evening" = "Avond reminder";

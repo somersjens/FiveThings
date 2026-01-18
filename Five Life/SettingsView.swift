@@ -38,11 +38,25 @@ struct SettingsView: View {
     private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
     private let secretRowHeightMultiplier: CGFloat = 1.5
     @State private var isDeleteAllConfirming: Bool = false
+    @State private var activeInfo: SettingsInfo?
+
+    private enum SettingsInfo {
+        case language
+        case addDay
+        case entriesPerDay
+        case appleId
+        case faceId
+        case scoreDay
+        case statistics
+        case holidays
+        case moonInfo
+        case reminderEvening
+        case reminderNextDay
+    }
 
     private var languageSection: some View {
         HStack {
-            Text(L10n.string("settings.app.language", language: settings.language))
-                .font(.body.weight(.semibold))
+            infoTitle(L10n.string("settings.app.language", language: settings.language), info: .language)
             Spacer()
             Menu {
                 Picker("", selection: Binding(
@@ -111,8 +125,7 @@ struct SettingsView: View {
 
     private var itemsPerDaySection: some View {
         HStack {
-            Text(L10n.string("settings.entries.per.day", language: settings.language))
-                .font(.body.weight(.semibold))
+            infoTitle(L10n.string("settings.entries.per.day", language: settings.language), info: .entriesPerDay)
             Spacer()
             HStack(spacing: 10) {
                 settingsStepperButton(
@@ -140,8 +153,7 @@ struct SettingsView: View {
     private var otherSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(L10n.string("settings.apple.id.connect", language: settings.language))
-                    .font(.body.weight(.semibold))
+                infoTitle(L10n.string("settings.apple.id.connect", language: settings.language), info: .appleId)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -160,8 +172,7 @@ struct SettingsView: View {
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
-                Text(L10n.string("settings.faceid.lock", language: settings.language))
-                    .font(.body.weight(.semibold))
+                infoTitle(L10n.string("settings.faceid.lock", language: settings.language), info: .faceId)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -179,31 +190,43 @@ struct SettingsView: View {
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(L10n.string("settings.score.day", language: settings.language),
-                   isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
+            HStack {
+                infoTitle(L10n.string("settings.score.day", language: settings.language), info: .scoreDay)
+                Spacer()
+                Toggle("", isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
+                    .labelsHidden()
+            }
+            .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(L10n.string("settings.statistics", language: settings.language),
-                   isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
+            HStack {
+                infoTitle(L10n.string("settings.statistics", language: settings.language), info: .statistics)
+                Spacer()
+                Toggle("", isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
+                    .labelsHidden()
+            }
+            .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(L10n.string("settings.holidays", language: settings.language),
-                   isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
+            HStack {
+                infoTitle(L10n.string("settings.holidays", language: settings.language), info: .holidays)
+                Spacer()
+                Toggle("", isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
+                    .labelsHidden()
+            }
+            .frame(height: settingsRowHeight)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
-            Toggle(L10n.string("settings.moon.info", language: settings.language),
-                   isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
-                .font(.body.weight(.semibold))
-                .frame(height: settingsRowHeight)
+            HStack {
+                infoTitle(L10n.string("settings.moon.info", language: settings.language), info: .moonInfo)
+                Spacer()
+                Toggle("", isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
+                    .labelsHidden()
+            }
+            .frame(height: settingsRowHeight)
 
         }
         .tint(.brandAccent)
@@ -269,8 +292,7 @@ struct SettingsView: View {
     private var addDaySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Text(addDayTitle)
-                    .font(.body.weight(.semibold))
+                infoTitle(addDayTitle, info: .addDay)
 
                 Spacer(minLength: 8)
 
@@ -369,8 +391,7 @@ struct SettingsView: View {
     private var reminderSettingsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(L10n.string("settings.reminder.evening", language: settings.language))
-                    .font(.body.weight(.semibold))
+                infoTitle(L10n.string("settings.reminder.evening", language: settings.language), info: .reminderEvening)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -393,8 +414,7 @@ struct SettingsView: View {
             Divider().overlay(Color.gray.opacity(0.3))
 
             HStack {
-                Text(L10n.string("settings.reminder.next.day", language: settings.language))
-                    .font(.body.weight(.semibold))
+                infoTitle(L10n.string("settings.reminder.next.day", language: settings.language), info: .reminderNextDay)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -725,6 +745,80 @@ struct SettingsView: View {
             Image(systemName: "chevron.down")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.brandAccent)
+        }
+    }
+
+    private func infoTitle(_ title: String, info: SettingsInfo) -> some View {
+        Button {
+            if activeInfo == info {
+                activeInfo = nil
+            } else {
+                activeInfo = info
+            }
+        } label: {
+            Text(title)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.primary)
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: Binding(
+            get: { activeInfo == info },
+            set: { isPresented in
+                if !isPresented {
+                    activeInfo = nil
+                }
+            })
+        ) {
+            infoPopover(text: infoPopoverText(for: info))
+        }
+    }
+
+    private func infoPopover(text: String) -> some View {
+        Text(text)
+            .font(.footnote)
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.leading)
+            .padding(12)
+            .frame(maxWidth: 260, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(.systemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.gray.opacity(0.25), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+            .padding(6)
+            .onTapGesture {
+                activeInfo = nil
+            }
+    }
+
+    private func infoPopoverText(for info: SettingsInfo) -> String {
+        switch info {
+        case .language:
+            return L10n.string("settings.info.language", language: settings.language)
+        case .addDay:
+            return L10n.string("settings.info.add.day", language: settings.language)
+        case .entriesPerDay:
+            return L10n.string("settings.info.entries.per.day", language: settings.language)
+        case .appleId:
+            return L10n.string("settings.info.apple.id", language: settings.language)
+        case .faceId:
+            return L10n.string("settings.info.faceid", language: settings.language)
+        case .scoreDay:
+            return L10n.string("settings.info.score.day", language: settings.language)
+        case .statistics:
+            return L10n.string("settings.info.statistics", language: settings.language)
+        case .holidays:
+            return L10n.string("settings.info.holidays", language: settings.language)
+        case .moonInfo:
+            return L10n.string("settings.info.moon", language: settings.language)
+        case .reminderEvening:
+            return L10n.string("settings.info.reminder.evening", language: settings.language)
+        case .reminderNextDay:
+            return L10n.string("settings.info.reminder.next.day", language: settings.language)
         }
     }
 
