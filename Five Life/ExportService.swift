@@ -60,10 +60,11 @@ enum ExportService {
     }
 
     private static func csvContent(entries: [DayEntry]) -> String {
-        let hasScore = entries.contains { $0.score != nil }
+        let exportEntries = entries.filter { !sanitizedItems(from: $0).isEmpty }
+        let hasScore = exportEntries.contains { $0.score != nil }
         var lines: [String] = ["Date, entry, Description, score"]
 
-        for entry in entries {
+        for entry in exportEntries {
             let dateString = csvDateFormatter.string(from: entry.day)
             let items = sanitizedItems(from: entry)
             let scoreString = hasScore ? (entry.score.map(String.init) ?? "") : ""
@@ -81,6 +82,7 @@ enum ExportService {
     private static func pdfContent(entries: [DayEntry],
                                    language: AppLanguage,
                                    filterContext: ExportFilterContext) -> Data {
+        let exportEntries = entries.filter { !sanitizedItems(from: $0).isEmpty }
         let pageRect = CGRect(x: 0, y: 0, width: 595.2, height: 841.8)
         let margin: CGFloat = 36
         let columnSpacing: CGFloat = 24
@@ -91,7 +93,7 @@ enum ExportService {
         let generationDate = Date()
 
         let pdfHeaderFont = UIFont.systemFont(ofSize: 9, weight: .semibold)
-        let headerFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        let headerFont = UIFont.systemFont(ofSize: 12, weight: .semibold)
         let bodyFont = UIFont.systemFont(ofSize: 12, weight: .regular)
         let pdfHeaderAttributes: [NSAttributedString.Key: Any] = [
             .font: pdfHeaderFont,
@@ -108,7 +110,7 @@ enum ExportService {
 
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
         return renderer.pdfData { context in
-            let totalPages = pdfTotalPages(entries: entries,
+            let totalPages = pdfTotalPages(entries: exportEntries,
                                            language: language,
                                            filterContext: filterContext,
                                            headerAttributes: pdfHeaderAttributes,
@@ -171,7 +173,7 @@ enum ExportService {
 
             beginNewPage()
 
-            for entry in entries {
+            for entry in exportEntries {
                 let dateString = DateFormatting.formattedDayString(entry.day, language: language)
                 let headerText: String
                 if let score = entry.score {
@@ -241,7 +243,7 @@ enum ExportService {
                                       margin: CGFloat,
                                       columnWidth: CGFloat,
                                       pageRect: CGRect) -> Int {
-        let entryHeaderFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        let entryHeaderFont = UIFont.systemFont(ofSize: 12, weight: .semibold)
         let entryBodyFont = UIFont.systemFont(ofSize: 12, weight: .regular)
         let entryHeaderAttributes: [NSAttributedString.Key: Any] = [
             .font: entryHeaderFont,
