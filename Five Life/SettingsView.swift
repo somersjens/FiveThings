@@ -36,6 +36,8 @@ struct SettingsView: View {
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     private let defaultDailyReminderTime = ReminderTime(hour: 22, minute: 0)
     private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
+    private let secretRowHeightMultiplier: CGFloat = 1.5
+    @State private var isDeleteAllConfirming: Bool = false
 
     private var languageSection: some View {
         HStack {
@@ -62,29 +64,49 @@ struct SettingsView: View {
 
     private var deleteAllEntriesSection: some View {
         HStack {
-            Text(L10n.string("settings.delete.all", language: settings.language))
+            Text(deleteAllConfirmationTitle)
                 .font(.body.weight(.semibold))
             Spacer()
             HStack(spacing: 8) {
-                deleteAllActionButton(
-                    title: L10n.string("common.no", language: settings.language),
-                    background: Color(.systemGray5),
-                    foreground: .primary
-                ) {
-                    closeSecretMenu()
-                }
+                if isDeleteAllConfirming {
+                    deleteAllActionButton(
+                        title: L10n.string("common.yes", language: settings.language),
+                        background: Color.red.opacity(0.15),
+                        foreground: .red
+                    ) {
+                        deleteAllEntries()
+                        closeSecretMenu()
+                    }
 
-                deleteAllActionButton(
-                    title: L10n.string("common.yes", language: settings.language),
-                    background: Color.red.opacity(0.15),
-                    foreground: .red
-                ) {
-                    deleteAllEntries()
-                    closeSecretMenu()
+                    deleteAllActionButton(
+                        title: L10n.string("common.no", language: settings.language),
+                        background: Color(.systemGray5),
+                        foreground: .primary
+                    ) {
+                        closeSecretMenu()
+                    }
+                } else {
+                    deleteAllActionButton(
+                        title: L10n.string("common.no", language: settings.language),
+                        background: Color(.systemGray5),
+                        foreground: .primary
+                    ) {
+                        closeSecretMenu()
+                    }
+
+                    deleteAllActionButton(
+                        title: L10n.string("common.yes", language: settings.language),
+                        background: Color.red.opacity(0.15),
+                        foreground: .red
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isDeleteAllConfirming = true
+                        }
+                    }
                 }
             }
         }
-        .frame(height: settingsRowHeight)
+        .frame(height: secretRowHeight)
     }
 
     private var itemsPerDaySection: some View {
@@ -241,7 +263,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .frame(height: settingsRowHeight)
+        .frame(height: secretRowHeight)
     }
 
     private var addDaySection: some View {
@@ -465,7 +487,18 @@ struct SettingsView: View {
             if showsNavigation {
                 NavigationStack {
                     settingsForm
-                        .navigationTitle(L10n.string("settings.title", language: settings.language))
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text(L10n.string("settings.title", language: settings.language))
+                                    .font(.headline)
+                                    .onTapGesture(count: 5) {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            showSecretMenu = true
+                                        }
+                                    }
+                            }
+                        }
                         .toolbar {
                             ToolbarItem(placement: .topBarTrailing) {
                                 Button(L10n.string("common.done", language: settings.language)) {
@@ -535,6 +568,11 @@ struct SettingsView: View {
                 Task { await notifier.requestAuthorizationIfNeeded() }
             }
         }
+        .onChange(of: showSecretMenu) { _, newValue in
+            if !newValue {
+                isDeleteAllConfirming = false
+            }
+        }
         .fileImporter(isPresented: $showImportPicker,
                       allowedContentTypes: [.commaSeparatedText],
                       allowsMultipleSelection: false) { result in
@@ -546,6 +584,17 @@ struct SettingsView: View {
                 importErrorMessage = L10n.string("settings.import.error.format", language: settings.language)
             }
         }
+    }
+
+    private var secretRowHeight: CGFloat {
+        settingsRowHeight * secretRowHeightMultiplier
+    }
+
+    private var deleteAllConfirmationTitle: String {
+        if isDeleteAllConfirming {
+            return L10n.string("settings.delete.confirm", language: settings.language)
+        }
+        return L10n.string("settings.delete.all", language: settings.language)
     }
 
     private func defaultReminderDate(for time: ReminderTime) -> Date {
@@ -838,6 +887,7 @@ struct SettingsView: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             showSecretMenu = false
         }
+        isDeleteAllConfirming = false
     }
 
     private func handleImportFile(url: URL) {

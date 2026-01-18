@@ -105,6 +105,7 @@
 "settings.day.delete" = "Dag verwijderen";
 "settings.day.deleted" = "Dag verwijderd.";
 "settings.delete.all" = "Verwijderd alles";
+"settings.delete.confirm" = "Weet je het zeker";
 "settings.entries.per.day" = "Aantal per dag";
 "settings.faceid.lock" = "Vergrendel met Face ID";
 "settings.faceid.reason" = "Activeer Face ID om je kaarten te vergrendelen.";

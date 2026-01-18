@@ -105,6 +105,7 @@
 "settings.day.delete" = "Delete this day";
 "settings.day.deleted" = "Day deleted.";
 "settings.delete.all" = "Delete all entries";
+"settings.delete.confirm" = "Are you sure";
 "settings.entries.per.day" = "Entries per day";
 "settings.faceid.lock" = "Lock with Face ID";
 "settings.faceid.reason" = "Enable Face ID to lock your cards.";
