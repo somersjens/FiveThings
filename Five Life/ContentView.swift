@@ -41,7 +41,7 @@ struct ContentView: View {
     }
 
     private func isFinishedEntry(_ entry: DayEntry) -> Bool {
-        entry.isLocked
+        entry.isLocked || entry.wasCompleted
     }
 
     private var unfinished: [DayEntry] {
