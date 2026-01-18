@@ -64,6 +64,22 @@ final class DayEntry {
         }
     }
 
+    func updateItemCountPreservingItems(to newCount: Int) {
+        let clamped = max(1, min(10, newCount))
+        var didChange = false
+        if clamped != itemCount {
+            itemCount = clamped
+            didChange = true
+        }
+        if items.count < clamped {
+            items.append(contentsOf: Array(repeating: "", count: clamped - items.count))
+            didChange = true
+        }
+        if didChange {
+            updatedAt = Date()
+        }
+    }
+
     func ensureItemsCount(atLeast count: Int) {
         let clamped = max(1, min(10, count))
         guard items.count < clamped else { return }

@@ -152,6 +152,8 @@ struct DayCardView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(outlineColor, lineWidth: 3)
         )
+        .animation(nil, value: entry.isLocked)
+        .animation(nil, value: displayCount)
         .animation(.easeInOut(duration: 0.2), value: outlineColor)
         .onAppear {
             syncEntryCounts()
@@ -163,6 +165,7 @@ struct DayCardView: View {
             if !locked {
                 showSuccess = false
             } else {
+                focusedIndex = nil
                 clearUndoHistory()
             }
         }
@@ -243,10 +246,8 @@ struct DayCardView: View {
 
             Button {
                 if entry.isLocked {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                        vm.unlock(entry, settings: settings, modelContext: modelContext)
-                        showSuccess = false
-                    }
+                    vm.unlock(entry, settings: settings, modelContext: modelContext)
+                    showSuccess = false
                 } else {
                     // If unlocked: allow lock only if complete, otherwise show hint
                     if entry.isComplete(requiredCount: requiredCount) {
@@ -360,10 +361,7 @@ struct DayCardView: View {
             .zIndex(dragIndex == idx ? 1 : 0)
             .simultaneousGesture(canDragEntries ? longPressGesture(for: idx) : nil)
             .simultaneousGesture(canDragEntries ? activeDragGesture(for: idx) : nil)
-        if isEditable {
-            return AnyView(interactiveRow)
-        }
-        return AnyView(styledRow)
+        return AnyView(interactiveRow)
     }
 
     private func rowContainer(idx: Int,
@@ -434,20 +432,17 @@ struct DayCardView: View {
                 .frame(width: 28, alignment: .leading)
                 .foregroundStyle(.primary)
 
-            if isEditable {
-                editableTextField(placeholderText: placeholderText, idx: idx)
-            } else {
-                lockedTextField(placeholderText: placeholderText, idx: idx)
-            }
+            rowTextField(placeholderText: placeholderText, idx: idx)
         }
     }
 
-    private func editableTextField(placeholderText: String, idx: Int) -> some View {
+    private func rowTextField(placeholderText: String, idx: Int) -> some View {
         TextField(
             placeholderText,
             text: Binding(
                 get: { entry.items[safe: idx] ?? "" },
                 set: { newValue in
+                    guard !entry.isLocked else { return }
                     if idx < entry.items.count {
                         let hasNewline = newValue.contains("\n")
                         let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
@@ -473,30 +468,13 @@ struct DayCardView: View {
         .foregroundStyle(.primary)
         .multilineTextAlignment(.leading)
         .focused($focusedIndex, equals: idx)
-        .disabled(isDragging || suppressFocus)
+        .disabled(entry.isLocked || isDragging || suppressFocus)
+        .allowsHitTesting(!(entry.isLocked || isDragging || suppressFocus))
         .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
         .onSubmit {
+            guard !entry.isLocked else { return }
             handleSubmit(at: idx)
         }
-    }
-
-    private func lockedTextField(placeholderText: String, idx: Int) -> some View {
-        let textBinding = Binding(
-            get: { entry.items[safe: idx] ?? "" },
-            set: { _ in }
-        )
-        return TextField(placeholderText, text: textBinding, axis: .vertical)
-            .textFieldStyle(.plain)
-            .font(.body)
-            .lineLimit(1...4)
-            .lineSpacing(0)
-            .fixedSize(horizontal: false, vertical: true)
-            .foregroundStyle(.primary)
-            .multilineTextAlignment(.leading)
-            .disabled(true)
-            .allowsHitTesting(false)
-            .opacity(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var dragOverlay: some View {

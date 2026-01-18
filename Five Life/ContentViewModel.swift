@@ -67,7 +67,7 @@ final class ContentViewModel: ObservableObject {
     }
 
     func lock(_ entry: DayEntry, requiredCount: Int, modelContext: ModelContext) {
-        entry.resizeItemsIfNeeded(to: requiredCount)
+        entry.updateItemCountPreservingItems(to: requiredCount)
         entry.isLocked = true
         entry.wasCompleted = true
         entry.updatedAt = Date()
