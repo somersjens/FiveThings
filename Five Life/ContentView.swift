@@ -36,14 +36,24 @@ struct ContentView: View {
         return formatter
     }()
 
+    private func requiredCount(for entry: DayEntry) -> Int {
+        if entry.isLocked { return entry.itemCount }
+        if Calendar.current.isDate(entry.day, inSameDayAs: Date()) { return settings.dailyItemCount }
+        return min(entry.itemCount, settings.dailyItemCount)
+    }
+
+    private func isFinishedEntry(_ entry: DayEntry) -> Bool {
+        entry.isLocked || entry.isComplete(requiredCount: requiredCount(for: entry))
+    }
+
     private var unfinished: [DayEntry] {
         entries
-            .filter { !$0.isLocked }
+            .filter { !isFinishedEntry($0) }
             .sorted { $0.day > $1.day }
     }
 
     private var finished: [DayEntry] {
-        let base = entries.filter { $0.isLocked }
+        let base = entries.filter { isFinishedEntry($0) }
         let limited = vm.limitedFinishedEntries(from: base)
         let sorted = limited.sorted { vm.newestFirst ? ($0.day > $1.day) : ($0.day < $1.day) }
         let normalizedQuery = vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -611,11 +621,15 @@ struct ContentView: View {
             }
             .onChange(of: settings.dailyItemCount) { _, _ in
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                refreshEntryLists()
                 Task {
                     await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
                                                         language: settings.language,
                                                         dailyCount: settings.dailyItemCount)
                 }
+            }
+            .onChange(of: entries.map(\.updatedAt)) { _, _ in
+                refreshEntryLists()
             }
             .onChange(of: vm.searchText) { _, _ in
                 refreshEntryLists()

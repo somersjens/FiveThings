@@ -107,16 +107,26 @@ final class AppleSyncManager {
     func captureMidnightSnapshotIfNeeded(modelContext: ModelContext,
                                          settings: SettingsStore,
                                          isConnected: Bool) {
-        guard isConnected else { return }
-        ensureTodayEntry(modelContext: modelContext, settings: settings)
-        lockCompletedEntriesIfNeeded(modelContext: modelContext)
-        let entries = fetchEntries(modelContext: modelContext)
-        saveSnapshot(from: entries)
+        performMidnightMaintenance(modelContext: modelContext,
+                                   settings: settings,
+                                   isConnected: isConnected,
+                                   shouldSaveSnapshot: true)
     }
 
     func captureSnapshotNow(modelContext: ModelContext, settings: SettingsStore, isConnected: Bool) {
-        guard isConnected else { return }
+        performMidnightMaintenance(modelContext: modelContext,
+                                   settings: settings,
+                                   isConnected: isConnected,
+                                   shouldSaveSnapshot: true)
+    }
+
+    func performMidnightMaintenance(modelContext: ModelContext,
+                                    settings: SettingsStore,
+                                    isConnected: Bool,
+                                    shouldSaveSnapshot: Bool) {
         ensureTodayEntry(modelContext: modelContext, settings: settings)
+        lockCompletedEntriesIfNeeded(modelContext: modelContext)
+        guard shouldSaveSnapshot, isConnected else { return }
         let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
     }

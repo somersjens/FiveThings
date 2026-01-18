@@ -114,11 +114,6 @@ struct DayCardView: View {
                 ForEach(0..<displayCount, id: \.self) { idx in
                     entryRow(idx)
                 }
-
-                if isEditable {
-                    Color.clear
-                        .frame(height: rowSpacing)
-                }
             }
             .coordinateSpace(name: "entryList")
             .overlay {
@@ -143,14 +138,6 @@ struct DayCardView: View {
                 .strokeBorder(outlineColor, lineWidth: 3)
         )
         .animation(.easeInOut(duration: 0.2), value: outlineColor)
-        .overlay(alignment: .topTrailing) {
-            if showSuccess && entry.isLocked {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 28, weight: .semibold))
-                    .padding(10)
-                    .transition(.scale.combined(with: .opacity))
-            }
-        }
         .onAppear {
             syncEntryCounts()
         }
@@ -241,8 +228,10 @@ struct DayCardView: View {
 
             Button {
                 if entry.isLocked {
-                    vm.unlock(entry, settings: settings, modelContext: modelContext)
-                    showSuccess = false
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        vm.unlock(entry, settings: settings, modelContext: modelContext)
+                        showSuccess = false
+                    }
                 } else {
                     // If unlocked: allow lock only if complete, otherwise show hint
                     if entry.isComplete(requiredCount: requiredCount) {
