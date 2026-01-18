@@ -447,6 +447,9 @@ struct ContentView: View {
                                         .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
                                 )
                                 .transition(.move(edge: .top).combined(with: .opacity))
+                                .onAppear {
+                                    scrollSettingsIntoView(using: proxy)
+                                }
                             }
 
                         // Unfinished section
@@ -762,10 +765,15 @@ struct ContentView: View {
         settingsScrollTask?.cancel()
         settingsScrollTask = Task { @MainActor in
             let animation = Animation.easeInOut(duration: settingsScrollDuration)
+            await Task.yield()
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
-            try? await Task.sleep(for: .milliseconds(80))
+            try? await Task.sleep(for: .milliseconds(120))
+            withAnimation(animation) {
+                proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+            try? await Task.sleep(for: .milliseconds(120))
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
