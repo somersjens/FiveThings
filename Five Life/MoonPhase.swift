@@ -99,7 +99,7 @@ enum MoonPhase {
         let range = illuminationRange(in: dayStart..<dayEnd)
         let direction = waxingOrWaning(on: midday, language: language)
         return L10n.string("moonphase.illumination.range", language: language,
-                           "\(range.min)%", "\(range.max)%", direction)
+                           "\(range.min)", "\(range.max)%", direction)
     }
 
     private static func waxingOrWaning(on date: Date, language: AppLanguage) -> String {

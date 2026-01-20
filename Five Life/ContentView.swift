@@ -25,6 +25,8 @@ struct ContentView: View {
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
+    @State private var pendingSettingsOpen = false
+    @State private var suppressSettingsAutoScroll = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -254,8 +256,12 @@ struct ContentView: View {
         ZStack {
             HStack {
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        showSettings.toggle()
+                    if showSettings {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showSettings = false
+                        }
+                    } else {
+                        pendingSettingsOpen = true
                     }
                 } label: {
                     Image(systemName: "gearshape.fill")
@@ -562,7 +568,11 @@ struct ContentView: View {
                     }
                     .onChange(of: showSettings) { _, expanded in
                         if expanded {
-                            scrollSettingsIntoView(using: proxy)
+                            if suppressSettingsAutoScroll {
+                                suppressSettingsAutoScroll = false
+                            } else {
+                                scrollSettingsIntoView(using: proxy)
+                            }
                         } else {
                             showSecretMenu = false
                             if showExportOptions {
@@ -590,6 +600,11 @@ struct ContentView: View {
                     .onChange(of: showExportOptions) { _, _ in
                         if showSettings {
                             scrollSettingsIntoView(using: proxy)
+                        }
+                    }
+                    .onChange(of: pendingSettingsOpen) { _, shouldOpen in
+                        if shouldOpen {
+                            openSettingsAfterScroll(using: proxy)
                         }
                     }
                     .onChange(of: scrollToTopTrigger) { _, _ in
@@ -814,14 +829,6 @@ struct ContentView: View {
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
-            try? await Task.sleep(for: .milliseconds(120))
-            withAnimation(animation) {
-                proxy.scrollTo(settingsTopID, anchor: .top)
-            }
-            try? await Task.sleep(for: .milliseconds(120))
-            withAnimation(animation) {
-                proxy.scrollTo(settingsTopID, anchor: .top)
-            }
         }
     }
 
@@ -832,6 +839,24 @@ struct ContentView: View {
             await Task.yield()
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+        }
+    }
+
+    private func openSettingsAfterScroll(using proxy: ScrollViewProxy) {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = Task { @MainActor in
+            let animation = Animation.easeInOut(duration: scrollToTopDuration)
+            await Task.yield()
+            withAnimation(animation) {
+                proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+            let delay = UInt64((scrollToTopDuration + 0.05) * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: delay)
+            suppressSettingsAutoScroll = true
+            pendingSettingsOpen = false
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                showSettings = true
             }
         }
     }
