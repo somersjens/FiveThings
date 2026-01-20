@@ -364,7 +364,6 @@ struct DayCardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 6)
             .padding(.horizontal, 10)
-            .padding(.trailing, scaledRowTrailingControlPadding)
             .frame(minHeight: entryRowMinHeight, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
