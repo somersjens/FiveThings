@@ -424,7 +424,7 @@ struct DayCardView: View {
                 .frame(width: 28, alignment: .leading)
                 .foregroundStyle(.primary)
 
-            rowTextField(placeholderText: placeholderText, idx: idx)
+            rowTextView(placeholderText: placeholderText, idx: idx)
         }
     }
 
@@ -469,6 +469,30 @@ struct DayCardView: View {
         }
     }
 
+    @ViewBuilder
+    private func rowTextView(placeholderText: String, idx: Int) -> some View {
+        if entry.isLocked {
+            let text = entry.items[safe: idx] ?? ""
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(placeholderText)
+                    .font(.body)
+                    .lineSpacing(0)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                highlightedText(text, baseFont: .body)
+                    .lineLimit(4)
+                    .lineSpacing(0)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+            }
+        } else {
+            rowTextField(placeholderText: placeholderText, idx: idx)
+        }
+    }
+
     private func highlightedText(_ text: String, baseFont: Font) -> Text {
         guard !normalizedSearchQuery.isEmpty else {
             return Text(text).font(baseFont)
@@ -479,6 +503,7 @@ struct DayCardView: View {
         while let range = text.range(of: normalizedSearchQuery, options: options, range: searchRange) {
             if let attributedRange = Range(range, in: attributed) {
                 attributed[attributedRange].foregroundColor = Color.brandAccent
+                attributed[attributedRange].font = baseFont.weight(.bold)
             }
             searchRange = range.upperBound..<text.endIndex
         }
