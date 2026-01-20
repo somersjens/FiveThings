@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var settingsScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
     @State private var pendingSettingsOpen = false
+    @State private var pendingSettingsClose = false
     @State private var suppressSettingsAutoScroll = false
     @State private var dismissedEmptyLimitNotice = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
@@ -454,9 +455,7 @@ struct ContentView: View {
                                                           weight: .semibold))
                                             .foregroundStyle(Color(.systemGray))
                                             .onTapGesture {
-                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                                    showSettings = false
-                                                }
+                                                pendingSettingsClose = true
                                             }
                                     }
                                     .frame(height: 44)
@@ -674,6 +673,11 @@ struct ContentView: View {
                             openSettingsAfterScroll(using: proxy)
                         }
                     }
+                    .onChange(of: pendingSettingsClose) { _, shouldClose in
+                        if shouldClose {
+                            closeSettingsAfterScroll(using: proxy)
+                        }
+                    }
                     .onChange(of: scrollToTopTrigger) { _, _ in
                         scrollToTop(using: proxy)
                     }
@@ -856,9 +860,7 @@ struct ContentView: View {
 
     private func handleSettingsToggle() {
         if showSettings {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                showSettings = false
-            }
+            pendingSettingsClose = true
         } else {
             pendingSettingsOpen = true
         }
@@ -941,6 +943,23 @@ struct ContentView: View {
             withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
                 showSettings = true
             }
+        }
+    }
+
+    private func closeSettingsAfterScroll(using proxy: ScrollViewProxy) {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = Task { @MainActor in
+            let animation = Animation.easeOut(duration: scrollToTopDuration)
+            await Task.yield()
+            withAnimation(animation) {
+                proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+            let delay = UInt64(scrollToTopDuration * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: delay)
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                showSettings = false
+            }
+            pendingSettingsClose = false
         }
     }
 }

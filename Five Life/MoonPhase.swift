@@ -145,8 +145,8 @@ enum MoonPhase {
             minValue = min(minValue, illum)
             maxValue = max(maxValue, illum)
         }
-        let minRounded = max(0, Int(floor(minValue)))
-        let maxRounded = min(100, Int(ceil(maxValue)))
+        let minRounded = max(0, Int(minValue.rounded()))
+        let maxRounded = min(100, Int(maxValue.rounded()))
         return (minRounded, maxRounded)
     }
 
