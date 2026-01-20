@@ -133,6 +133,7 @@
 "settings.show" = "Instellingen tonen";
 "settings.statistics" = "Statistieken";
 "settings.title" = "Instellingen";
+"scroll.to.top" = "Scroll naar boven";
 "settings.secret.snapshot" = "Middernacht snapshot nu";
 "settings.secret.access" = "Terug naar welkom";
 "settings.secret.import" = "Data importeren";

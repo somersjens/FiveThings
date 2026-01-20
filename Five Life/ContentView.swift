@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var showExportOptions: Bool = false
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
+    @State private var scrollToTopTrigger = 0
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -145,6 +146,7 @@ struct ContentView: View {
 
     private let settingsTopID = "settingsTop"
     private let settingsScrollDuration: Double = 0.48
+    private let scrollToTopDuration: Double = 0.2
 
     private struct StatisticsSnapshot {
         let streak: Int
@@ -249,35 +251,48 @@ struct ContentView: View {
     }
 
     private var headerView: some View {
-        Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                showSettings.toggle()
-            }
-        } label: {
-            ZStack {
-                HStack(spacing: 6) {
-                    Text(lifeTitle)
-                        .font(.title.bold())
-
-                    Image("NoBackground")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 24)
-                        .accessibilityHidden(true)
+        ZStack {
+            HStack {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showSettings.toggle()
+                    }
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(L10n.string("settings.show", language: settings.language))
+
+                Spacer()
+
+                Button {
+                    scrollToTopTrigger += 1
+                } label: {
+                    Image(systemName: "arrow.up")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(L10n.string("scroll.to.top", language: settings.language))
             }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .overlay(alignment: .trailing) {
-                Image(systemName: "gearshape.fill")
-                    .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 32)
+
+            HStack(spacing: 6) {
+                Text(lifeTitle)
+                    .font(.title.bold())
+
+                Image("NoBackground")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 24)
+                    .accessibilityHidden(true)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.brandBackground)
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(L10n.string("settings.show", language: settings.language))
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.brandBackground)
     }
 
     private func statisticsRow(scale: CGFloat) -> some View {
@@ -577,6 +592,9 @@ struct ContentView: View {
                             scrollSettingsIntoView(using: proxy)
                         }
                     }
+                    .onChange(of: scrollToTopTrigger) { _, _ in
+                        scrollToTop(using: proxy)
+                    }
                 }
 
                     if !hasSeenAccessScreen {
@@ -801,6 +819,17 @@ struct ContentView: View {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
             try? await Task.sleep(for: .milliseconds(120))
+            withAnimation(animation) {
+                proxy.scrollTo(settingsTopID, anchor: .top)
+            }
+        }
+    }
+
+    private func scrollToTop(using proxy: ScrollViewProxy) {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = Task { @MainActor in
+            let animation = Animation.easeOut(duration: scrollToTopDuration)
+            await Task.yield()
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
