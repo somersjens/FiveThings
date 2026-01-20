@@ -256,6 +256,37 @@ struct ContentView: View {
         .accessibilityLabel(L10n.string("cards.empty.limit.notice", language: settings.language))
     }
 
+    private func filterActiveNotice(scale: CGFloat, limit: ContentViewModel.FinishedCardsLimit) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                vm.finishedLimit = .all
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "line.horizontal.3.decrease.circle.fill")
+                    .font(.system(size: 16 * scale, weight: .semibold))
+                    .foregroundStyle(Color.brandAccent)
+                Text(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.brandAccent.opacity(0.12))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.brandAccent.opacity(0.25), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
+    }
+
     private func calculateStreak(from entries: [DayEntry]) -> Int {
         let calendar = Calendar.current
         let uniqueDays = Array(Set(entries.map { calendar.startOfDay(for: $0.day) }))
@@ -604,6 +635,11 @@ struct ContentView: View {
                         .animation(.easeInOut(duration: 0.25), value: vm.searchText)
                         .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
                         .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
+
+                        if vm.finishedLimit != .all {
+                            filterActiveNotice(scale: scale, limit: vm.finishedLimit)
+                                .padding(.top, 6)
+                        }
 
                         // Footer links
                         VStack(spacing: 10) {
