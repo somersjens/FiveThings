@@ -135,7 +135,7 @@
 "settings.statistics" = "Statistics";
 "settings.title" = "Settings";
 "scroll.to.top" = "Scroll to top";
-"cards.empty.limit.notice" = "To keep things tidy, the app keeps up to 3 empty cards each day. You can create more empty cards anytime in Settings.";
+"cards.empty.limit.notice" = "To keep things tidy, the app keeps up to 3 empty cards each day. You can create recreate cards anytime in Settings.";
 "settings.secret.snapshot" = "Take snapshot now";
 "settings.secret.access" = "Return to access";
 "settings.secret.import" = "Import data";

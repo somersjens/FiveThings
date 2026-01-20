@@ -229,26 +229,17 @@ struct ContentView: View {
                 dismissedEmptyLimitNotice = true
             }
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 16 * scale, weight: .semibold))
-                    .foregroundStyle(Color.brandAccent)
-                Text(L10n.string("cards.empty.limit.notice", language: settings.language))
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.brandAccent.opacity(0.12))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.brandAccent.opacity(0.35), lineWidth: 1)
-            )
+            Text(L10n.string("cards.empty.limit.notice", language: settings.language))
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.secondary.opacity(0.10))
+                )
         }
         .buttonStyle(.plain)
         .padding(.top, 4)
@@ -262,26 +253,17 @@ struct ContentView: View {
                 vm.finishedLimit = .all
             }
         } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "line.horizontal.3.decrease.circle.fill")
-                    .font(.system(size: 16 * scale, weight: .semibold))
-                    .foregroundStyle(Color.brandAccent)
-                Text(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.brandAccent.opacity(0.12))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.brandAccent.opacity(0.25), lineWidth: 1)
-            )
+            Text(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.secondary.opacity(0.10))
+                )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
