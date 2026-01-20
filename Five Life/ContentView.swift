@@ -19,8 +19,6 @@ struct ContentView: View {
     @State private var isUnlocking: Bool = false
     @State private var hasAppeared: Bool = false
     @State private var midnightTask: Task<Void, Never>?
-    @State private var cachedUnfinishedEntryIDs: [UUID] = []
-    @State private var cachedFinishedEntryIDs: [UUID] = []
     @State private var showExportOptions: Bool = false
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
@@ -433,12 +431,8 @@ struct ContentView: View {
                 ZStack {
                     ScrollViewReader { proxy in
                         ScrollView(showsIndicators: false) {
-                        let unfinishedEntries = cachedUnfinishedEntryIDs.compactMap { id in
-                            entries.first { $0.id == id }
-                        }
-                        let finishedEntries = cachedFinishedEntryIDs.compactMap { id in
-                            entries.first { $0.id == id }
-                        }
+                        let unfinishedEntries = unfinished
+                        let finishedEntries = finished
                         LazyVStack(alignment: .leading, spacing: 14) {
                             Color.clear
                                 .frame(height: 1)
@@ -748,6 +742,9 @@ struct ContentView: View {
                 .onChange(of: entries.map(\.updatedAt)) { _, _ in
                     refreshEntryLists()
                 }
+                .onChange(of: entries.map(\.wasCompleted)) { _, _ in
+                    refreshEntryLists()
+                }
                 .onChange(of: vm.searchText) { _, _ in
                     refreshEntryLists()
                 }
@@ -789,6 +786,7 @@ struct ContentView: View {
                         vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
                         scheduleMidnightRefresh()
                         updateUnlockStateIfNeeded()
+                        refreshEntryLists()
                     } else {
                         vm.flushPendingSaves(modelContext: modelContext)
                         midnightTask?.cancel()
@@ -900,8 +898,6 @@ struct ContentView: View {
     }
 
     private func refreshEntryLists() {
-        cachedUnfinishedEntryIDs = unfinished.map(\.id)
-        cachedFinishedEntryIDs = finished.map(\.id)
         let emptyCount = unfinished.filter { isEntryEmptyForLimit($0) }.count
         if emptyCount < 3, dismissedEmptyLimitNotice {
             dismissedEmptyLimitNotice = false
