@@ -78,6 +78,7 @@ final class SettingsStore: ObservableObject {
     @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
     @AppStorage("appleIdConnected") var appleIdConnected: Bool = false
     @AppStorage("appleUserIdentifier") var appleUserIdentifier: String = ""
+    @AppStorage("appleLastSnapshotAt") var appleLastSnapshotAt: Date = Date(timeIntervalSince1970: 0)
 
     // Optional reminders stored as JSON Data in AppStorage
     @AppStorage("dailyReminderData") private var dailyReminderData: Data = Data()

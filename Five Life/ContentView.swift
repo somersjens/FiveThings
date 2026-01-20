@@ -790,6 +790,11 @@ struct ContentView: View {
                     }
                     if phase == .active {
                         vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                        AppleSyncManager.shared.catchUpSnapshotIfNeeded(
+                            modelContext: modelContext,
+                            settings: settings,
+                            isConnected: settings.appleIdConnected
+                        )
                         scheduleMidnightRefresh()
                         updateUnlockStateIfNeeded()
                         refreshEntryLists()

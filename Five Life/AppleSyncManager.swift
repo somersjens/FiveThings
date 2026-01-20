@@ -120,6 +120,20 @@ final class AppleSyncManager {
                                    shouldSaveSnapshot: true)
     }
 
+    func catchUpSnapshotIfNeeded(modelContext: ModelContext,
+                                 settings: SettingsStore,
+                                 isConnected: Bool) {
+        guard isConnected else { return }
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: Date())
+        let lastSnapshotStart = calendar.startOfDay(for: settings.appleLastSnapshotAt)
+        guard lastSnapshotStart < todayStart else { return }
+        performMidnightMaintenance(modelContext: modelContext,
+                                   settings: settings,
+                                   isConnected: isConnected,
+                                   shouldSaveSnapshot: true)
+    }
+
     func performMidnightMaintenance(modelContext: ModelContext,
                                     settings: SettingsStore,
                                     isConnected: Bool,
@@ -130,6 +144,7 @@ final class AppleSyncManager {
         guard shouldSaveSnapshot, isConnected else { return }
         let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
+        settings.appleLastSnapshotAt = Date()
     }
 
     private func loadSnapshot() -> AppleSnapshot? {
