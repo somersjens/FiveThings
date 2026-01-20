@@ -154,6 +154,10 @@
 "moonphase.full.moon" = "Full Moon";
 "moonphase.last.quarter" = "Third Quarter";
 "moonphase.new.moon" = "New Moon";
+"moonphase.principal.format" = "%@ at %@ (≈%@%%)";
+"moonphase.illumination.range" = "%@–%@ illuminated • %@";
+"moonphase.waxing" = "Waxing";
+"moonphase.waning" = "Waning";
 "moonphase.waning.crescent" = "Waning Crescent";
 "moonphase.waning.gibbous" = "Waning Gibbous";
 "moonphase.waxing.crescent" = "Waxing Crescent";

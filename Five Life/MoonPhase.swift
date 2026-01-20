@@ -44,7 +44,6 @@ enum MoonPhaseKind: String {
 
 enum MoonPhase {
     private static var phaseCache: [Date: MoonPhaseKind] = [:]
-    private static var fullMoonCache: [Date: Date] = [:]
 
     /// Simple local approximation (no network).
     static func phase(on date: Date) -> MoonPhaseKind {
@@ -77,18 +76,82 @@ enum MoonPhase {
         return phase
     }
 
-    static func fullMoonDate(near date: Date) -> Date {
-        let dayKey = cacheDayKey(for: date)
-        if let cached = fullMoonCache[dayKey] {
-            return cached
+    static func description(on date: Date, language: AppLanguage, locale: Locale) -> String {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone.current
+        let dayStart = calendar.startOfDay(for: date)
+        guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart),
+              let midday = calendar.date(byAdding: .hour, value: 12, to: dayStart) else {
+            return ""
         }
+
+        if let principal = principalPhaseEvent(on: midday, within: dayStart..<dayEnd) {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .none
+            formatter.timeStyle = .short
+            formatter.locale = locale
+            formatter.timeZone = calendar.timeZone
+            let timeText = formatter.string(from: principal.date)
+            let phaseName = principal.kind.localizedName(language: language)
+            return L10n.string("moonphase.principal.format", language: language, phaseName, timeText, "\(principal.approxPercent)")
+        }
+
+        let range = illuminationRange(in: dayStart..<dayEnd)
+        let direction = waxingOrWaning(on: midday, language: language)
+        return L10n.string("moonphase.illumination.range", language: language,
+                           "\(range.min)%", "\(range.max)%", direction)
+    }
+
+    private static func waxingOrWaning(on date: Date, language: AppLanguage) -> String {
+        let phaseValue = phaseFraction(on: date)
+        let key = phaseValue < 0.5 ? "moonphase.waxing" : "moonphase.waning"
+        return L10n.string(key, language: language)
+    }
+
+    private static func principalPhaseEvent(on date: Date,
+                                           within range: Range<Date>) -> (kind: MoonPhaseKind, approxPercent: Int, date: Date)? {
+        let candidates: [(MoonPhaseKind, Double, Int)] = [
+            (.newMoon, 0.0, 0),
+            (.firstQuarter, 0.25, 50),
+            (.fullMoon, 0.5, 100),
+            (.thirdQuarter, 0.75, 50)
+        ]
+        for (kind, targetPhase, percent) in candidates {
+            let eventDate = principalPhaseDate(near: date, targetPhase: targetPhase)
+            if range.contains(eventDate) {
+                return (kind, percent, eventDate)
+            }
+        }
+        return nil
+    }
+
+    private static func principalPhaseDate(near date: Date, targetPhase: Double) -> Date {
         let phase = phaseFraction(on: date)
-        var delta = 0.5 - phase
+        var delta = targetPhase - phase
         if delta > 0.5 { delta -= 1.0 }
         if delta < -0.5 { delta += 1.0 }
-        let fullMoon = date.addingTimeInterval(delta * synodicMonth * secondsPerDay)
-        fullMoonCache[dayKey] = fullMoon
-        return fullMoon
+        return date.addingTimeInterval(delta * synodicMonth * secondsPerDay)
+    }
+
+    private static func illuminationRange(in range: Range<Date>) -> (min: Int, max: Int) {
+        let samples = 24
+        let span = range.upperBound.timeIntervalSince(range.lowerBound)
+        var minValue = 100.0
+        var maxValue = 0.0
+        for index in 0...samples {
+            let fraction = Double(index) / Double(samples)
+            let sampleDate = range.lowerBound.addingTimeInterval(span * fraction)
+            let illum = illuminationPercentage(for: phaseFraction(on: sampleDate))
+            minValue = min(minValue, illum)
+            maxValue = max(maxValue, illum)
+        }
+        let minRounded = max(0, Int(floor(minValue)))
+        let maxRounded = min(100, Int(ceil(maxValue)))
+        return (minRounded, maxRounded)
+    }
+
+    private static func illuminationPercentage(for phase: Double) -> Double {
+        (1.0 - cos(2.0 * Double.pi * phase)) / 2.0 * 100.0
     }
 
     private static func cacheDayKey(for date: Date) -> Date {

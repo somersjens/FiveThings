@@ -45,13 +45,6 @@ struct DayCardView: View {
 
     @FocusState private var focusedIndex: Int?
 
-    private static let fullMoonTimeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        formatter.dateStyle = .none
-        return formatter
-    }()
-
     private var isEditable: Bool { !entry.isLocked }
     private var canDragEntries: Bool {
         isEditable && entry.isComplete(requiredCount: requiredCount)
@@ -69,12 +62,9 @@ struct DayCardView: View {
         settings.moonEnabled ? MoonPhase.phase(on: entry.day) : nil
     }
 
-    private var fullMoonTimeText: String? {
-        guard settings.moonEnabled, moonPhase == .fullMoon else { return nil }
-        let fullMoonDate = MoonPhase.fullMoonDate(near: entry.day)
-        guard Calendar.current.isDate(fullMoonDate, inSameDayAs: entry.day) else { return nil }
-        DayCardView.fullMoonTimeFormatter.locale = settings.locale
-        return DayCardView.fullMoonTimeFormatter.string(from: fullMoonDate)
+    private var moonDescription: String? {
+        guard settings.moonEnabled else { return nil }
+        return MoonPhase.description(on: entry.day, language: settings.language, locale: settings.locale)
     }
 
     private var holidayNames: [String] {
@@ -291,12 +281,9 @@ struct DayCardView: View {
     }
 
     private func moonLine(_ phase: MoonPhaseKind) -> some View {
-        let timeText = fullMoonTimeText
         return HStack(spacing: 6) {
             Image(systemName: phase.sfSymbolName)
-            Text(timeText == nil
-                 ? phase.localizedName(language: settings.language)
-                 : "\(phase.localizedName(language: settings.language)) • \(timeText ?? "")")
+            Text(moonDescription ?? phase.localizedName(language: settings.language))
         }
         .font(.subheadline)
         .foregroundStyle(.primary)
