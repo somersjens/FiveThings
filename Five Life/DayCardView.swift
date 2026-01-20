@@ -432,7 +432,9 @@ struct DayCardView: View {
         Group {
             if entry.isLocked {
                 let text = entry.items[safe: idx] ?? ""
-                if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if normalizedSearchQuery.isEmpty {
+                    lockedTextField(text: text, placeholderText: placeholderText)
+                } else if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     highlightedText(placeholderText, baseFont: .body)
                         .foregroundStyle(.secondary)
                         .lineLimit(1...4)
@@ -442,13 +444,13 @@ struct DayCardView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .layoutPriority(1)
                 } else {
-                    LockedEntryTextView(
-                        text: text,
-                        searchQuery: normalizedSearchQuery
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .layoutPriority(1)
-                    .fixedSize(horizontal: false, vertical: true)
+                    highlightedText(text, baseFont: .body)
+                        .lineLimit(1...4)
+                        .lineSpacing(0)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .layoutPriority(1)
                 }
             } else {
                 TextField(
@@ -508,6 +510,19 @@ struct DayCardView: View {
             searchRange = range.upperBound..<text.endIndex
         }
         return Text(attributed).font(baseFont)
+    }
+
+    private func lockedTextField(text: String, placeholderText: String) -> some View {
+        TextField(placeholderText, text: .constant(text), axis: .vertical)
+            .textFieldStyle(.plain)
+            .font(.body)
+            .lineLimit(1...4)
+            .lineSpacing(0)
+            .fixedSize(horizontal: false, vertical: true)
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.leading)
+            .allowsHitTesting(false)
+            .textSelection(.disabled)
     }
 
     private var dragOverlay: some View {
@@ -732,63 +747,6 @@ struct DayCardView: View {
         if settings.dailyItemCount > entry.itemCount {
             entry.ensureItemsCount(atLeast: settings.dailyItemCount)
         }
-    }
-}
-
-private struct LockedEntryTextView: UIViewRepresentable {
-    let text: String
-    let searchQuery: String
-    private let maximumLines = 4
-
-    func makeUIView(context: Context) -> UILabel {
-        let label = UILabel()
-        label.numberOfLines = maximumLines
-        label.lineBreakMode = .byWordWrapping
-        label.backgroundColor = .clear
-        label.textAlignment = .left
-        label.adjustsFontForContentSizeCategory = true
-        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        label.setContentCompressionResistancePriority(.required, for: .vertical)
-        label.setContentHuggingPriority(.required, for: .vertical)
-        return label
-    }
-
-    func updateUIView(_ uiView: UILabel, context: Context) {
-        uiView.attributedText = attributedText()
-    }
-
-    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UILabel, context: Context) -> CGSize {
-        let targetWidth = max(1, proposal.width ?? 0)
-        uiView.preferredMaxLayoutWidth = targetWidth
-        let fittingSize = CGSize(width: targetWidth, height: .greatestFiniteMagnitude)
-        let size = uiView.sizeThatFits(fittingSize)
-        return CGSize(width: targetWidth, height: size.height)
-    }
-
-    private func attributedText() -> NSAttributedString {
-        let baseFont = UIFont.preferredFont(forTextStyle: .body)
-        let boldFont = UIFont.systemFont(ofSize: baseFont.pointSize, weight: .bold)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 0
-        paragraphStyle.lineBreakMode = .byWordWrapping
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: baseFont,
-            .foregroundColor: UIColor.label,
-            .paragraphStyle: paragraphStyle
-        ]
-        let attributed = NSMutableAttributedString(string: text, attributes: attributes)
-        guard !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return attributed
-        }
-        let normalizedQuery = searchQuery.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-        let normalizedText = text.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-        var searchRange = normalizedText.startIndex..<normalizedText.endIndex
-        while let range = normalizedText.range(of: normalizedQuery, options: [], range: searchRange) {
-            let nsRange = NSRange(range, in: normalizedText)
-            attributed.addAttribute(.font, value: boldFont, range: nsRange)
-            searchRange = range.upperBound..<normalizedText.endIndex
-        }
-        return attributed
     }
 }
 
