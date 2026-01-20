@@ -43,7 +43,7 @@
 "filters.show.last" = "Laatste %@ kaarten tonen";
 "filters.sort.newest.first" = "Nieuw naar oud";
 "filters.sort.oldest.first" = "Oud naar nieuw";
-"filters.active.notice" = "Filter staat aan %d meest recente berichten tik om te verwijderen";
+"filters.active.notice" = "Filter actief voor de %d meest recente berichten, tik op dit bericht om de filter eraf te halen";
 "footer.feedback" = "Stuur feedback";
 "footer.review" = "Schrijf een review";
 "footer.share" = "Deel met vrienden";

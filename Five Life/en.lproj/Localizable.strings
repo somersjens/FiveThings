@@ -43,7 +43,7 @@
 "filters.show.last" = "Show last %@ cards";
 "filters.sort.newest.first" = "New to old";
 "filters.sort.oldest.first" = "Old to new";
-"filters.active.notice" = "Filter is on %d most recent messages tap to remove";
+"filters.active.notice" = "Active filter for the %d most recent posts. Tap this message to remove the filter";
 "footer.feedback" = "Send feedback";
 "footer.review" = "Write a review";
 "footer.share" = "Share with friends";

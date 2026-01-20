@@ -564,6 +564,7 @@ struct ContentView: View {
                             }
                             .animation(.easeInOut(duration: 0.25),
                                        value: unfinishedEntries.map(\.id))
+                            .animation(.none, value: showSettings)
                         } else {
                             Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
                                 .font(.title3.weight(.semibold))
@@ -610,6 +611,7 @@ struct ContentView: View {
                         .animation(.easeInOut(duration: 0.25), value: vm.searchText)
                         .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
                         .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
+                        .animation(.none, value: showSettings)
 
                         if vm.finishedLimit != .all {
                             filterActiveNotice(scale: scale, limit: vm.finishedLimit)
@@ -936,8 +938,6 @@ struct ContentView: View {
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
-            let delay = UInt64(0.05 * 1_000_000_000)
-            try? await Task.sleep(nanoseconds: delay)
             suppressSettingsAutoScroll = true
             pendingSettingsOpen = false
             withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
@@ -954,9 +954,7 @@ struct ContentView: View {
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
-            let delay = UInt64(scrollToTopDuration * 1_000_000_000)
-            try? await Task.sleep(nanoseconds: delay)
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
                 showSettings = false
             }
             pendingSettingsClose = false
