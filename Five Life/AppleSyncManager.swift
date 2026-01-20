@@ -126,6 +126,7 @@ final class AppleSyncManager {
                                     shouldSaveSnapshot: Bool) {
         ensureTodayEntry(modelContext: modelContext, settings: settings)
         lockCompletedEntriesIfNeeded(modelContext: modelContext)
+        pruneEmptyEntriesIfNeeded(modelContext: modelContext, keepingAtMost: 3)
         guard shouldSaveSnapshot, isConnected else { return }
         let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
@@ -348,5 +349,23 @@ final class AppleSyncManager {
         if didChange {
             try? modelContext.save()
         }
+    }
+
+    private func pruneEmptyEntriesIfNeeded(modelContext: ModelContext, keepingAtMost limit: Int) {
+        let entries = fetchEntries(modelContext: modelContext)
+        let emptyEntries = entries.filter { isEntryEmptyForLimit($0) }
+        guard emptyEntries.count > limit else { return }
+        let sorted = emptyEntries.sorted { lhs, rhs in
+            lhs.day > rhs.day
+        }
+        let toDelete = sorted.dropFirst(limit)
+        guard !toDelete.isEmpty else { return }
+        toDelete.forEach { modelContext.delete($0) }
+        try? modelContext.save()
+    }
+
+    private func isEntryEmptyForLimit(_ entry: DayEntry) -> Bool {
+        guard !entry.isLocked, !entry.wasCompleted, entry.score == nil else { return false }
+        return entry.items.allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 }

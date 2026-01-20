@@ -27,6 +27,7 @@ struct ContentView: View {
     @State private var scrollToTopTrigger = 0
     @State private var pendingSettingsOpen = false
     @State private var suppressSettingsAutoScroll = false
+    @State private var dismissedEmptyLimitNotice = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -58,6 +59,11 @@ struct ContentView: View {
 
     private func isFinishedEntry(_ entry: DayEntry) -> Bool {
         entry.isLocked || entry.wasCompleted
+    }
+
+    private func isEntryEmptyForLimit(_ entry: DayEntry) -> Bool {
+        guard !entry.isLocked, !entry.wasCompleted, entry.score == nil else { return false }
+        return entry.items.allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     private var unfinished: [DayEntry] {
@@ -214,6 +220,39 @@ struct ContentView: View {
         }
         .font(.footnote)
         .foregroundStyle(.secondary)
+    }
+
+    private func emptyLimitNotice(scale: CGFloat) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                dismissedEmptyLimitNotice = true
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 16 * scale, weight: .semibold))
+                    .foregroundStyle(Color.brandAccent)
+                Text(L10n.string("cards.empty.limit.notice", language: settings.language))
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.brandAccent.opacity(0.12))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.brandAccent.opacity(0.35), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 4)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+        .accessibilityLabel(L10n.string("cards.empty.limit.notice", language: settings.language))
     }
 
     private func calculateStreak(from entries: [DayEntry]) -> Int {
@@ -498,11 +537,19 @@ struct ContentView: View {
                             }
 
                         // Unfinished section
+                        let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
+                        let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
                         if !unfinishedEntries.isEmpty {
                             LazyVStack(alignment: .leading, spacing: 10) {
                                 ForEach(unfinishedEntries) { entry in
                                     DayCardView(settings: settings, vm: vm, entry: entry)
                                         .transition(.opacity)
+
+                                    if !dismissedEmptyLimitNotice,
+                                       let thirdEmptyEntryID,
+                                       entry.id == thirdEmptyEntryID {
+                                        emptyLimitNotice(scale: scale)
+                                    }
                                 }
                             }
                             .animation(.easeInOut(duration: 0.25),
@@ -830,6 +877,10 @@ struct ContentView: View {
     private func refreshEntryLists() {
         cachedUnfinishedEntryIDs = unfinished.map(\.id)
         cachedFinishedEntryIDs = finished.map(\.id)
+        let emptyCount = unfinished.filter { isEntryEmptyForLimit($0) }.count
+        if emptyCount < 3, dismissedEmptyLimitNotice {
+            dismissedEmptyLimitNotice = false
+        }
     }
 
     private func scrollSettingsIntoView(using proxy: ScrollViewProxy) {

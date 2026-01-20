@@ -134,6 +134,7 @@
 "settings.statistics" = "Statistieken";
 "settings.title" = "Instellingen";
 "scroll.to.top" = "Scroll naar boven";
+"cards.empty.limit.notice" = "Maximaal 3 lege kaarten beschikbaar, voeg meer toe in het settings menu";
 "settings.secret.snapshot" = "Middernacht snapshot nu";
 "settings.secret.access" = "Terug naar welkom";
 "settings.secret.import" = "Data importeren";

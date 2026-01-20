@@ -134,6 +134,7 @@
 "settings.statistics" = "Statistics";
 "settings.title" = "Settings";
 "scroll.to.top" = "Scroll to top";
+"cards.empty.limit.notice" = "Maximum 3 empty cards available, add more days in settings menu";
 "settings.secret.snapshot" = "Take snapshot now";
 "settings.secret.access" = "Return to access";
 "settings.secret.import" = "Import data";
