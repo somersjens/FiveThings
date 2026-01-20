@@ -475,11 +475,10 @@ struct DayCardView: View {
         }
         var attributed = AttributedString(text)
         let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
-        let boldFont = baseFont.weight(.bold)
         var searchRange = text.startIndex..<text.endIndex
         while let range = text.range(of: normalizedSearchQuery, options: options, range: searchRange) {
             if let attributedRange = Range(range, in: attributed) {
-                attributed[attributedRange].font = boldFont
+                attributed[attributedRange].foregroundColor = Color.brandAccent
             }
             searchRange = range.upperBound..<text.endIndex
         }
