@@ -31,7 +31,7 @@
 "daycard.unlock" = "Ontgrendelen";
 "export.csv" = "CSV";
 "export.csv.header" = "Date, entry, Description, score";
-"export.entry.ordinal" = "%de item";
+"export.entry.ordinal" = "%de notities";
 "export.entry.ordinal.en" = "%d%@ entry";
 "export.limit.all" = "alle informatie";
 "export.limit.last.entries" = "de laatste %d dagen";
@@ -114,7 +114,7 @@
 "settings.go.to.settings" = "Ga naar Instellingen";
 "settings.holidays" = "Feestdagen";
 "settings.info.add.day" = "Op basis van de datum die je invoert, herkent de app of je een item wilt toevoegen of verwijderen.";
-"settings.info.apple.id" = "Als je telefoon wordt gestolen of je een nieuwe hebt, blijven je items gewoon bewaard.";
+"settings.info.apple.id" = "Als je telefoon wordt gestolen of je een nieuwe hebt, blijven je notities gewoon bewaard.";
 "settings.info.entries.per.day" = "Vijf is het magische getal, maar minder of meer kan natuurlijk ook!";
 "settings.info.faceid" = "Als je dit inschakelt, kun alleen jij de app ontgrendelen—ook als je telefoon al ontgrendeld is.";
 "settings.info.holidays" = "Officiële feestdagen op basis van de gekozen taal. Mis je er één? Laat het ons weten via de feedbackoptie hieronder.";
@@ -123,7 +123,7 @@
 "settings.info.reminder.evening" = "Stuurt een herinnering op je voorkeurstijd, alleen als de kaart van vandaag nog niet is ingevuld.";
 "settings.info.reminder.next.day" = "Stuurt een herinnering op dit tijdstip, alleen als de kaart van gisteren nog niet is ingevuld.";
 "settings.info.score.day" = "Optie om je dag een score te geven, zodat je kunt analyseren wat jou het meest gelukkig maakt.";
-"settings.info.statistics" = "Krijg inzicht in je huidige streak, het aantal ingevulde dagen en het totaal aantal items.";
+"settings.info.statistics" = "Krijg inzicht in je huidige streak, het aantal ingevulde dagen en het totaal aantal notities.";
 "settings.moon.info" = "Maan informatie";
 "settings.notifications.disabled" = "Notificaties zijn uitgeschakeld. Zet ze aan in de iOS-instellingen als je reminders wilt.";
 "settings.reminder.evening" = "Avond reminder";
@@ -143,7 +143,7 @@
 "settings.import.error.entry" = "Invoerkolom is ongeldig.";
 "settings.import.error.score" = "Scorekolom is ongeldig.";
 "stats.days" = "Dagen";
-"stats.entries" = "Items";
+"stats.entries" = "notities";
 "stats.streak" = "Streak";
 "title.daily" = "Elke dag %d";
 "title.happy" = "Happy %@";

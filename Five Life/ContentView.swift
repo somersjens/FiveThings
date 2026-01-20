@@ -165,11 +165,11 @@ struct ContentView: View {
     }
 
     private var reviewURL: URL {
-        URL(string: "https://apps.apple.com/app/id6757681706?action=write-review")!
+        URL(string: "https://apps.apple.com/app/id6757990326?action=write-review")!
     }
 
     private var shareURL: URL {
-        URL(string: "https://apps.apple.com/app/id6757681706")!
+        URL(string: "https://apps.apple.com/app/id6757990326")!
     }
 
     private var feedbackURL: URL {

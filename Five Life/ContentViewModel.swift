@@ -121,9 +121,17 @@ final class ContentViewModel: ObservableObject {
     }
 
     func shouldScheduleNextDayReminder(allEntries: [DayEntry]) -> Bool {
-        // “If needed”: schedule if there exists any unlocked (unfinished) entry for *today* OR any prior day.
-        // This is a practical interpretation given iOS notification constraints.
-        allEntries.contains { !$0.isLocked }
+        let calendar = Calendar.current
+        let todayStart = startOfDay(Date())
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
+            return false
+        }
+
+        if let yesterdayEntry = allEntries.first(where: { $0.day == yesterday }) {
+            return !yesterdayEntry.isLocked
+        }
+
+        return true
     }
 
     func limitedFinishedEntries(from entries: [DayEntry]) -> [DayEntry] {
