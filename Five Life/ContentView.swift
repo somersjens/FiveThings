@@ -149,6 +149,7 @@ struct ContentView: View {
     private let settingsTopID = "settingsTop"
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
+    private let settingsOpenAnimationDuration: Double = 0.35
 
     private struct StatisticsSnapshot {
         let streak: Int
@@ -256,13 +257,7 @@ struct ContentView: View {
         ZStack {
             HStack {
                 Button {
-                    if showSettings {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            showSettings = false
-                        }
-                    } else {
-                        pendingSettingsOpen = true
-                    }
+                    handleSettingsToggle()
                 } label: {
                     Image(systemName: "gearshape.fill")
                         .foregroundStyle(.secondary)
@@ -284,16 +279,22 @@ struct ContentView: View {
                 .accessibilityLabel(L10n.string("scroll.to.top", language: settings.language))
             }
 
-            HStack(spacing: 6) {
-                Text(lifeTitle)
-                    .font(.title.bold())
+            Button {
+                handleSettingsToggle()
+            } label: {
+                HStack(spacing: 6) {
+                    Text(lifeTitle)
+                        .font(.title.bold())
 
-                Image("NoBackground")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 24)
-                    .accessibilityHidden(true)
+                    Image("NoBackground")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 24)
+                        .accessibilityHidden(true)
+                }
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(L10n.string("settings.show", language: settings.language))
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 16)
@@ -783,6 +784,16 @@ struct ContentView: View {
         return max(interval, 1)
     }
 
+    private func handleSettingsToggle() {
+        if showSettings {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                showSettings = false
+            }
+        } else {
+            pendingSettingsOpen = true
+        }
+    }
+
     private func updateUnlockStateIfNeeded() {
         if !settings.faceIdLockEnabled {
             isUnlocked = true
@@ -851,11 +862,11 @@ struct ContentView: View {
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
-            let delay = UInt64((scrollToTopDuration + 0.05) * 1_000_000_000)
+            let delay = UInt64(0.05 * 1_000_000_000)
             try? await Task.sleep(nanoseconds: delay)
             suppressSettingsAutoScroll = true
             pendingSettingsOpen = false
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
                 showSettings = true
             }
         }
