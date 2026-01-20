@@ -418,10 +418,10 @@ struct DayCardView: View {
         let placeholderText = showsOptionalPlaceholder
             ? L10n.string("daycard.placeholder.optional", language: settings.language)
             : L10n.string("daycard.placeholder.entry", language: settings.language)
-        return HStack(alignment: .top, spacing: 10) {
+        return HStack(alignment: .top, spacing: 6) {
             Text("\(idx + 1).")
                 .font(.system(.body, design: .rounded).weight(.semibold))
-                .frame(width: 28, alignment: .leading)
+                .frame(width: 22, alignment: .leading)
                 .foregroundStyle(.primary)
 
             rowTextView(placeholderText: placeholderText, idx: idx)
