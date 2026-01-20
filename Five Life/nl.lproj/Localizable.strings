@@ -134,7 +134,7 @@
 "settings.statistics" = "Statistieken";
 "settings.title" = "Instellingen";
 "scroll.to.top" = "Scroll naar boven";
-"cards.empty.limit.notice" = "Maximaal 3 lege kaarten beschikbaar, voeg meer toe in het settings menu";
+"cards.empty.limit.notice" = "Om het overzichtelijk te houden, bewaart de app elke dag maximaal 3 lege kaarten. Je kunt altijd extra lege kaarten aanmaken via Instellingen.";
 "settings.secret.snapshot" = "Middernacht snapshot nu";
 "settings.secret.access" = "Terug naar welkom";
 "settings.secret.import" = "Data importeren";

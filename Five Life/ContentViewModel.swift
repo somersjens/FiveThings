@@ -40,6 +40,7 @@ final class ContentViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var newestFirst: Bool = true
     @Published var finishedLimit: FinishedCardsLimit = .thirty
+    @Published private(set) var searchSnapshots: [UUID: DayEntrySnapshot] = [:]
 
     func startOfDay(_ date: Date) -> Date {
         Calendar.current.startOfDay(for: date)
@@ -72,10 +73,12 @@ final class ContentViewModel: ObservableObject {
         entry.wasCompleted = true
         entry.updatedAt = Date()
         try? modelContext.save()
+        searchSnapshots[entry.id] = nil
     }
 
     func unlock(_ entry: DayEntry, settings: SettingsStore, modelContext: ModelContext) {
         if entry.isLocked {
+            searchSnapshots[entry.id] = DayEntrySnapshot(from: entry)
             entry.wasCompleted = true
         }
         entry.isLocked = false
@@ -86,6 +89,11 @@ final class ContentViewModel: ObservableObject {
         }
         entry.updatedAt = Date()
         try? modelContext.save()
+    }
+
+    func searchSnapshot(for entry: DayEntry) -> DayEntrySnapshot? {
+        guard !entry.isLocked else { return nil }
+        return searchSnapshots[entry.id]
     }
 
     func updateItem(_ entry: DayEntry, index: Int, text: String, modelContext: ModelContext) {

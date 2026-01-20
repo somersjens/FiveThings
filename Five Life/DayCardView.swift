@@ -8,6 +8,7 @@ struct DayCardView: View {
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @ObservedObject var settings: SettingsStore
     @ObservedObject var vm: ContentViewModel
+    let searchHighlightsEnabled: Bool
 
     @Bindable var entry: DayEntry
 
@@ -56,6 +57,11 @@ struct DayCardView: View {
 
     private var dateString: String {
         DateFormatting.formattedDayString(entry.day, language: settings.language)
+    }
+
+    private var normalizedSearchQuery: String {
+        guard searchHighlightsEnabled else { return "" }
+        return vm.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private var moonPhase: MoonPhaseKind? {
@@ -169,8 +175,8 @@ struct DayCardView: View {
     private var header: some View {
         HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(dateString)
-                    .font(.system(size: dateFontSize * responsiveTypeScale, weight: .semibold))
+                highlightedText(dateString,
+                                baseFont: .system(size: dateFontSize * responsiveTypeScale, weight: .semibold))
 
                 if holidayNames.isEmpty {
                     if let phase = moonPhase {
@@ -182,8 +188,7 @@ struct DayCardView: View {
                     }
                 } else {
                     ForEach(holidayNames.prefix(2), id: \.self) { holiday in
-                        Text(holiday)
-                            .font(.subheadline)
+                        highlightedText(holiday, baseFont: .subheadline)
                             .foregroundStyle(.primary)
                     }
                     if let phase = moonPhase {
@@ -270,8 +275,7 @@ struct DayCardView: View {
     @ViewBuilder
     private var scoreBadge: some View {
         if let score = entry.score {
-            Text("\(score)")
-                .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
+            highlightedText("\(score)", baseFont: .system(size: scaledHeaderIconFontSize, weight: .semibold))
                 .foregroundStyle(.primary)
         } else {
             Image(systemName: "star.fill")
@@ -283,7 +287,8 @@ struct DayCardView: View {
     private func moonLine(_ phase: MoonPhaseKind) -> some View {
         return HStack(spacing: 6) {
             Image(systemName: phase.sfSymbolName)
-            Text(moonDescription ?? phase.localizedName(language: settings.language))
+            highlightedText(moonDescription ?? phase.localizedName(language: settings.language),
+                            baseFont: .subheadline)
         }
         .font(.subheadline)
         .foregroundStyle(.primary)
@@ -424,44 +429,74 @@ struct DayCardView: View {
     }
 
     private func rowTextField(placeholderText: String, idx: Int) -> some View {
-        TextField(
-            placeholderText,
-            text: Binding(
-                get: { entry.items[safe: idx] ?? "" },
-                set: { newValue in
-                    guard !entry.isLocked else { return }
-                    if idx < entry.items.count {
-                        let hasNewline = newValue.contains("\n")
-                        let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
-                        if entry.items[idx] != sanitized {
-                            trackEditSession(for: idx)
-                            pushUndoSnapshot()
-                            hasCapturedEditSnapshot = true
-                        }
-                        vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
-                        if hasNewline {
-                            handleSubmit(at: idx)
-                        }
-                    }
+        Group {
+            if entry.isLocked {
+                let text = entry.items[safe: idx] ?? ""
+                if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    highlightedText(placeholderText, baseFont: .body)
+                        .foregroundStyle(.secondary)
+                } else {
+                    highlightedText(text, baseFont: .body)
+                        .foregroundStyle(.primary)
                 }
-            ),
-            axis: .vertical
-        )
-        .textFieldStyle(.plain)
-        .font(.body)
-        .lineLimit(1...4)
-        .lineSpacing(0)
-        .fixedSize(horizontal: false, vertical: true)
-        .foregroundStyle(.primary)
-        .multilineTextAlignment(.leading)
-        .focused($focusedIndex, equals: idx)
-        .disabled(entry.isLocked || isDragging || suppressFocus)
-        .allowsHitTesting(!(entry.isLocked || isDragging || suppressFocus))
-        .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
-        .onSubmit {
-            guard !entry.isLocked else { return }
-            handleSubmit(at: idx)
+            } else {
+                TextField(
+                    placeholderText,
+                    text: Binding(
+                        get: { entry.items[safe: idx] ?? "" },
+                        set: { newValue in
+                            guard !entry.isLocked else { return }
+                            if idx < entry.items.count {
+                                let hasNewline = newValue.contains("\n")
+                                let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
+                                if entry.items[idx] != sanitized {
+                                    trackEditSession(for: idx)
+                                    pushUndoSnapshot()
+                                    hasCapturedEditSnapshot = true
+                                }
+                                vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
+                                if hasNewline {
+                                    handleSubmit(at: idx)
+                                }
+                            }
+                        }
+                    ),
+                    axis: .vertical
+                )
+                .textFieldStyle(.plain)
+                .font(.body)
+                .lineLimit(1...4)
+                .lineSpacing(0)
+                .fixedSize(horizontal: false, vertical: true)
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.leading)
+                .focused($focusedIndex, equals: idx)
+                .disabled(entry.isLocked || isDragging || suppressFocus)
+                .allowsHitTesting(!(entry.isLocked || isDragging || suppressFocus))
+                .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
+                .onSubmit {
+                    guard !entry.isLocked else { return }
+                    handleSubmit(at: idx)
+                }
+            }
         }
+    }
+
+    private func highlightedText(_ text: String, baseFont: Font) -> Text {
+        guard !normalizedSearchQuery.isEmpty else {
+            return Text(text).font(baseFont)
+        }
+        var attributed = AttributedString(text)
+        let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
+        let boldFont = baseFont.weight(.bold)
+        var searchRange = text.startIndex..<text.endIndex
+        while let range = text.range(of: normalizedSearchQuery, options: options, range: searchRange) {
+            if let attributedRange = Range(range, in: attributed) {
+                attributed[attributedRange].font = boldFont
+            }
+            searchRange = range.upperBound..<text.endIndex
+        }
+        return Text(attributed).font(baseFont)
     }
 
     private var dragOverlay: some View {

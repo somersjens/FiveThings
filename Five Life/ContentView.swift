@@ -99,23 +99,24 @@ struct ContentView: View {
     private func entryMatchesSearch(_ entry: DayEntry, normalizedQuery: String) -> Bool {
         guard !normalizedQuery.isEmpty else { return true }
 
-        if entry.items.joined(separator: " ")
+        let searchSnapshot = vm.searchSnapshot(for: entry) ?? DayEntrySnapshot(from: entry)
+        if searchSnapshot.items.joined(separator: " ")
             .range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
             return true
         }
 
-        let dayString = DateFormatting.formattedDayString(entry.day, language: settings.language)
+        let dayString = DateFormatting.formattedDayString(searchSnapshot.day, language: settings.language)
         if dayString.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
             return true
         }
 
-        let numericDate = ContentView.numericDateFormatter.string(from: entry.day)
+        let numericDate = ContentView.numericDateFormatter.string(from: searchSnapshot.day)
         if numericDate.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
             return true
         }
 
         if settings.moonEnabled {
-            let phase = MoonPhase.phase(on: entry.day)
+            let phase = MoonPhase.phase(on: searchSnapshot.day)
             let phaseName = phase.localizedName(language: settings.language)
             if phaseName.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
                 return true
@@ -123,7 +124,7 @@ struct ContentView: View {
         }
 
         if settings.holidaysEnabled {
-            let holidayNames = HolidayProvider.holidayNames(on: entry.day, language: settings.language)
+            let holidayNames = HolidayProvider.holidayNames(on: searchSnapshot.day, language: settings.language)
             if holidayNames.contains(where: { name in
                 name.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil
             }) {
@@ -132,7 +133,7 @@ struct ContentView: View {
         }
 
         if settings.scoreEnabled,
-           let score = entry.score,
+           let score = searchSnapshot.score,
            let queryScore = Int(normalizedQuery.trimmingCharacters(in: .whitespacesAndNewlines)),
            (1...10).contains(queryScore),
            score == queryScore {
@@ -542,7 +543,10 @@ struct ContentView: View {
                         if !unfinishedEntries.isEmpty {
                             LazyVStack(alignment: .leading, spacing: 10) {
                                 ForEach(unfinishedEntries) { entry in
-                                    DayCardView(settings: settings, vm: vm, entry: entry)
+                                    DayCardView(settings: settings,
+                                                vm: vm,
+                                                searchHighlightsEnabled: false,
+                                                entry: entry)
                                         .transition(.opacity)
 
                                     if !dismissedEmptyLimitNotice,
@@ -587,7 +591,10 @@ struct ContentView: View {
                                     .padding(.horizontal, 4)
                             } else {
                                 ForEach(finishedEntries) { entry in
-                                    DayCardView(settings: settings, vm: vm, entry: entry)
+                                    DayCardView(settings: settings,
+                                                vm: vm,
+                                                searchHighlightsEnabled: true,
+                                                entry: entry)
                                         .transition(.opacity)
                                 }
                             }
