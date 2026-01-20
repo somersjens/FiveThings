@@ -429,69 +429,43 @@ struct DayCardView: View {
     }
 
     private func rowTextField(placeholderText: String, idx: Int) -> some View {
-        Group {
-            if entry.isLocked {
-                let text = entry.items[safe: idx] ?? ""
-                if normalizedSearchQuery.isEmpty {
-                    lockedTextField(text: text, placeholderText: placeholderText)
-                } else if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    highlightedText(placeholderText, baseFont: .body)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1...4)
-                        .lineSpacing(0)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .layoutPriority(1)
-                } else {
-                    highlightedText(text, baseFont: .body)
-                        .lineLimit(1...4)
-                        .lineSpacing(0)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .layoutPriority(1)
-                }
-            } else {
-                TextField(
-                    placeholderText,
-                    text: Binding(
-                        get: { entry.items[safe: idx] ?? "" },
-                        set: { newValue in
-                            guard !entry.isLocked else { return }
-                            if idx < entry.items.count {
-                                let hasNewline = newValue.contains("\n")
-                                let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
-                                if entry.items[idx] != sanitized {
-                                    trackEditSession(for: idx)
-                                    pushUndoSnapshot()
-                                    hasCapturedEditSnapshot = true
-                                }
-                                vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
-                                if hasNewline {
-                                    handleSubmit(at: idx)
-                                }
-                            }
-                        }
-                    ),
-                    axis: .vertical
-                )
-                .textFieldStyle(.plain)
-                .font(.body)
-                .lineLimit(1...4)
-                .lineSpacing(0)
-                .fixedSize(horizontal: false, vertical: true)
-                .foregroundStyle(.primary)
-                .multilineTextAlignment(.leading)
-                .focused($focusedIndex, equals: idx)
-                .disabled(entry.isLocked || isDragging || suppressFocus)
-                .allowsHitTesting(!(entry.isLocked || isDragging || suppressFocus))
-                .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
-                .onSubmit {
+        TextField(
+            placeholderText,
+            text: Binding(
+                get: { entry.items[safe: idx] ?? "" },
+                set: { newValue in
                     guard !entry.isLocked else { return }
-                    handleSubmit(at: idx)
+                    if idx < entry.items.count {
+                        let hasNewline = newValue.contains("\n")
+                        let sanitized = newValue.replacingOccurrences(of: "\n", with: "")
+                        if entry.items[idx] != sanitized {
+                            trackEditSession(for: idx)
+                            pushUndoSnapshot()
+                            hasCapturedEditSnapshot = true
+                        }
+                        vm.updateItem(entry, index: idx, text: sanitized, modelContext: modelContext)
+                        if hasNewline {
+                            handleSubmit(at: idx)
+                        }
+                    }
                 }
-            }
+            ),
+            axis: .vertical
+        )
+        .textFieldStyle(.plain)
+        .font(.body)
+        .lineLimit(1...4)
+        .lineSpacing(0)
+        .fixedSize(horizontal: false, vertical: true)
+        .foregroundStyle(.primary)
+        .multilineTextAlignment(.leading)
+        .focused($focusedIndex, equals: idx)
+        .disabled(entry.isLocked || isDragging || suppressFocus)
+        .allowsHitTesting(!(entry.isLocked || isDragging || suppressFocus))
+        .submitLabel(nextEmptyEntryIndex(after: idx) == nil ? .done : .next)
+        .onSubmit {
+            guard !entry.isLocked else { return }
+            handleSubmit(at: idx)
         }
     }
 
@@ -510,19 +484,6 @@ struct DayCardView: View {
             searchRange = range.upperBound..<text.endIndex
         }
         return Text(attributed).font(baseFont)
-    }
-
-    private func lockedTextField(text: String, placeholderText: String) -> some View {
-        TextField(placeholderText, text: .constant(text), axis: .vertical)
-            .textFieldStyle(.plain)
-            .font(.body)
-            .lineLimit(1...4)
-            .lineSpacing(0)
-            .fixedSize(horizontal: false, vertical: true)
-            .foregroundStyle(.primary)
-            .multilineTextAlignment(.leading)
-            .allowsHitTesting(false)
-            .textSelection(.disabled)
     }
 
     private var dragOverlay: some View {
