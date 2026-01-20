@@ -143,7 +143,7 @@
 "settings.import.error.entry" = "Invoerkolom is ongeldig.";
 "settings.import.error.score" = "Scorekolom is ongeldig.";
 "stats.days" = "Dagen";
-"stats.entries" = "notities";
+"stats.entries" = "Notities";
 "stats.streak" = "Streak";
 "title.daily" = "Elke dag %d";
 "title.happy" = "Happy %@";

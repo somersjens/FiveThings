@@ -473,9 +473,6 @@ struct ContentView: View {
                                         .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
                                 )
                                 .transition(.move(edge: .top).combined(with: .opacity))
-                                .onAppear {
-                                    scrollSettingsIntoView(using: proxy)
-                                }
                             }
 
                         // Unfinished section
