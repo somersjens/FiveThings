@@ -70,8 +70,8 @@ enum ExportService {
             let scoreString = hasScore ? (entry.score.map(String.init) ?? "") : ""
 
             for (index, item) in items.enumerated() {
-                let ordinal = ordinalEntry(for: index + 1, language: language)
-                let fields = [dateString, ordinal, item, scoreString]
+                let entryNumber = String(index + 1)
+                let fields = [dateString, entryNumber, item, scoreString]
                 lines.append(fields.map { csvEscape($0) }.joined(separator: ","))
             }
         }
