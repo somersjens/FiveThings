@@ -547,46 +547,25 @@ struct ContentView: View {
                         let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
                         let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
                         if !unfinishedEntries.isEmpty {
-                            Group {
-                                if showSettings {
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        ForEach(unfinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: false,
-                                                        entry: entry)
-                                                .transition(.identity)
+                            LazyVStack(alignment: .leading, spacing: 10) {
+                                ForEach(unfinishedEntries) { entry in
+                                    DayCardView(settings: settings,
+                                                vm: vm,
+                                                searchHighlightsEnabled: false,
+                                                entry: entry)
+                                        .transition(.identity)
 
-                                            if !dismissedEmptyLimitNotice,
-                                               let thirdEmptyEntryID,
-                                               entry.id == thirdEmptyEntryID {
-                                                emptyLimitNotice(scale: scale)
-                                            }
-                                        }
+                                    if !dismissedEmptyLimitNotice,
+                                       let thirdEmptyEntryID,
+                                       entry.id == thirdEmptyEntryID {
+                                        emptyLimitNotice(scale: scale)
                                     }
-                                    .transaction { transaction in
-                                        transaction.animation = nil
-                                    }
-                                } else {
-                                    LazyVStack(alignment: .leading, spacing: 10) {
-                                        ForEach(unfinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: false,
-                                                        entry: entry)
-                                                .transition(.opacity)
-
-                                            if !dismissedEmptyLimitNotice,
-                                               let thirdEmptyEntryID,
-                                               entry.id == thirdEmptyEntryID {
-                                                emptyLimitNotice(scale: scale)
-                                            }
-                                        }
-                                    }
-                                    .animation(.easeInOut(duration: 0.25),
-                                               value: unfinishedEntries.map(\.id))
                                 }
                             }
+                            .animation(.easeInOut(duration: 0.25),
+                                       value: unfinishedEntries.map(\.id))
+                            .animation(.easeInOut(duration: settingsOpenAnimationDuration),
+                                       value: showSettings)
                         } else {
                             Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
                                 .font(.title3.weight(.semibold))
