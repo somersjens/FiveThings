@@ -8,12 +8,18 @@ enum NotificationIDs {
     static let nextDay = "next_day_if_needed"
 }
 
+private enum NotificationVariant: String {
+    case daily
+    case nextDay
+}
+
 @MainActor
 final class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
 
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
     private let notificationSound = UNNotificationSound(named: UNNotificationSoundName("Pling.wav"))
+    private let notificationVariantCount = 10
 
     private init() { }
 
@@ -52,11 +58,12 @@ final class NotificationManager: ObservableObject {
         let allowed = await requestAuthorizationIfNeeded()
         guard allowed else { return }
 
+        let variantIndex = nextVariantIndex(for: .daily, language: language)
         let content = UNMutableNotificationContent()
-        content.title = L10n.string("notifications.daily.title", language: language)
+        content.title = L10n.string("notifications.daily.\(variantIndex).title", language: language)
         let timeString = reminderTimeString(for: time)
         let clampedCount = max(1, dailyCount)
-        content.body = L10n.string("notifications.daily.body",
+        content.body = L10n.string("notifications.daily.\(variantIndex).body",
                                    language: language,
                                    timeString,
                                    clampedCount)
@@ -79,10 +86,11 @@ final class NotificationManager: ObservableObject {
         let allowed = await requestAuthorizationIfNeeded()
         guard allowed else { return }
 
+        let variantIndex = nextVariantIndex(for: .nextDay, language: language)
         let content = UNMutableNotificationContent()
-        content.title = L10n.string("notifications.next.title", language: language)
+        content.title = L10n.string("notifications.next.\(variantIndex).title", language: language)
         let timeString = reminderTimeString(for: time)
-        content.body = L10n.string("notifications.next.body", language: language, timeString)
+        content.body = L10n.string("notifications.next.\(variantIndex).body", language: language, timeString)
         content.sound = notificationSound
 
         var triggerComps = time.asDateComponents()
@@ -103,5 +111,17 @@ final class NotificationManager: ObservableObject {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "H:mm"
         return formatter.string(from: date)
+    }
+
+    private func nextVariantIndex(for variant: NotificationVariant, language: AppLanguage) -> Int {
+        let defaults = UserDefaults.standard
+        let key = "notificationVariants.\(variant.rawValue).\(language.rawValue)"
+        var remaining = defaults.array(forKey: key) as? [Int] ?? []
+        if remaining.isEmpty {
+            remaining = Array(1...notificationVariantCount).shuffled()
+        }
+        let next = remaining.removeFirst()
+        defaults.set(remaining, forKey: key)
+        return next
     }
 }
