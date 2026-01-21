@@ -406,12 +406,16 @@ struct SettingsView: View {
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(.systemBackground))
+                .fill(settingsCardOuterBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .strokeBorder(Color.gray.opacity(0.3), lineWidth: 1)
         )
+    }
+
+    private var settingsCardOuterBackground: Color {
+        colorScheme == .dark ? Color.brandBackground : Color(.systemGray6)
     }
 
     private var reminderSettingsSection: some View {

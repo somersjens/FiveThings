@@ -196,7 +196,6 @@ struct ContentView: View {
             HStack(spacing: 4) {
                 Link(destination: reviewURL) {
                     Text(L10n.string("footer.review", language: settings.language))
-                        .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.plain)
@@ -205,7 +204,6 @@ struct ContentView: View {
 
                 Link(destination: shareURL) {
                     Text(L10n.string("footer.share", language: settings.language))
-                        .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.plain)
@@ -214,7 +212,6 @@ struct ContentView: View {
 
                 Link(destination: feedbackURL) {
                     Text(L10n.string("footer.feedback", language: settings.language))
-                        .foregroundStyle(.primary)
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.plain)
@@ -222,7 +219,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
         }
-        .font(.footnote)
+        .font(.footnote.weight(.semibold))
         .foregroundStyle(.secondary)
     }
 
@@ -581,7 +578,7 @@ struct ContentView: View {
                         // Thick divider
                         Rectangle()
                             .fill(Color.brandAccent)
-                            .frame(height: 6)
+                            .frame(height: 5)
                             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                             .padding(.top, 8)
 
