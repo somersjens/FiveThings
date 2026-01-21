@@ -42,12 +42,16 @@ struct ContentView: View {
         return formatter
     }()
 
+    private var mainBackground: Color {
+        colorScheme == .dark ? Color.brandSecondarySurface : Color.brandBackground
+    }
+
     private var settingsCardOuterBackground: Color {
-        colorScheme == .dark ? .black : Color(.systemGray6)
+        colorScheme == .dark ? Color.brandBackground : Color(.systemGray6)
     }
 
     private var settingsCardInnerBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+        colorScheme == .dark ? Color.brandSurface : Color(.systemBackground)
     }
 
     private func requiredCount(for entry: DayEntry) -> Int {
@@ -351,7 +355,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.brandBackground)
+        .background(mainBackground)
     }
 
     private func statisticsRow(scale: CGFloat) -> some View {
@@ -395,7 +399,7 @@ struct ContentView: View {
     @ViewBuilder
     private func lockOverlay(scale: CGFloat) -> some View {
         if settings.faceIdLockEnabled && !isUnlocked {
-            Color.brandBackground
+            mainBackground
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
@@ -690,7 +694,7 @@ struct ContentView: View {
                             .transition(.opacity)
                     }
                 }
-                .background(Color.brandBackground.ignoresSafeArea())
+                .background(mainBackground.ignoresSafeArea())
                 .safeAreaInset(edge: .top) {
                     if hasSeenAccessScreen {
                         headerView

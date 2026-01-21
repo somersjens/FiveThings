@@ -6,6 +6,7 @@ import UIKit
 struct DayCardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
+    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var settings: SettingsStore
     @ObservedObject var vm: ContentViewModel
     let searchHighlightsEnabled: Bool
@@ -117,6 +118,14 @@ struct DayCardView: View {
         return .orange
     }
 
+    private var cardBackgroundColor: Color {
+        colorScheme == .dark ? Color.brandSurface : Color(.systemBackground)
+    }
+
+    private var rowBackgroundColor: Color {
+        colorScheme == .dark ? Color.brandSecondarySurface : Color(.systemGray6)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
@@ -141,7 +150,7 @@ struct DayCardView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.background)
+                .fill(cardBackgroundColor)
                 .shadow(radius: 6, y: 2)
         )
         .overlay(
@@ -367,7 +376,7 @@ struct DayCardView: View {
             .frame(minHeight: entryRowMinHeight, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color(.systemGray6))
+                    .fill(rowBackgroundColor)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
