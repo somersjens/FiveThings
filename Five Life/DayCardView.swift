@@ -119,11 +119,11 @@ struct DayCardView: View {
     }
 
     private var cardBackgroundColor: Color {
-        colorScheme == .dark ? Color.brandSurface : Color(.systemBackground)
+        colorScheme == .dark ? Color.brandBackground : Color(.systemBackground)
     }
 
     private var rowBackgroundColor: Color {
-        colorScheme == .dark ? Color.brandSecondarySurface : Color(.systemGray6)
+        colorScheme == .dark ? Color.brandSurface : Color(.systemGray6)
     }
 
     var body: some View {
