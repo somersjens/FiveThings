@@ -548,9 +548,11 @@ struct ContentView: View {
                         // Unfinished section
                         let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
                         let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
+                        let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(3))
+                        let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(3))
                         if !unfinishedEntries.isEmpty {
-                            LazyVStack(alignment: .leading, spacing: 10) {
-                                ForEach(unfinishedEntries) { entry in
+                            VStack(alignment: .leading, spacing: 10) {
+                                ForEach(pinnedUnfinishedEntries) { entry in
                                     DayCardView(settings: settings,
                                                 vm: vm,
                                                 searchHighlightsEnabled: false,
@@ -561,6 +563,24 @@ struct ContentView: View {
                                        let thirdEmptyEntryID,
                                        entry.id == thirdEmptyEntryID {
                                         emptyLimitNotice(scale: scale)
+                                    }
+                                }
+
+                                if !remainingUnfinishedEntries.isEmpty {
+                                    LazyVStack(alignment: .leading, spacing: 10) {
+                                        ForEach(remainingUnfinishedEntries) { entry in
+                                            DayCardView(settings: settings,
+                                                        vm: vm,
+                                                        searchHighlightsEnabled: false,
+                                                        entry: entry)
+                                                .transition(.identity)
+
+                                            if !dismissedEmptyLimitNotice,
+                                               let thirdEmptyEntryID,
+                                               entry.id == thirdEmptyEntryID {
+                                                emptyLimitNotice(scale: scale)
+                                            }
+                                        }
                                     }
                                 }
                             }
