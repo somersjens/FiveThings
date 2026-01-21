@@ -23,7 +23,6 @@ struct ContentView: View {
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
-    @State private var settingsScrollPosition: String?
     @State private var pendingSettingsOpen = false
     @State private var pendingSettingsClose = false
     @State private var suppressSettingsAutoScroll = false
@@ -548,11 +547,9 @@ struct ContentView: View {
                         // Unfinished section
                         let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
                         let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
-                        let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(3))
-                        let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(3))
                         if !unfinishedEntries.isEmpty {
-                            VStack(alignment: .leading, spacing: 10) {
-                                ForEach(pinnedUnfinishedEntries) { entry in
+                            LazyVStack(alignment: .leading, spacing: 10) {
+                                ForEach(unfinishedEntries) { entry in
                                     DayCardView(settings: settings,
                                                 vm: vm,
                                                 searchHighlightsEnabled: false,
@@ -563,24 +560,6 @@ struct ContentView: View {
                                        let thirdEmptyEntryID,
                                        entry.id == thirdEmptyEntryID {
                                         emptyLimitNotice(scale: scale)
-                                    }
-                                }
-
-                                if !remainingUnfinishedEntries.isEmpty {
-                                    LazyVStack(alignment: .leading, spacing: 10) {
-                                        ForEach(remainingUnfinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: false,
-                                                        entry: entry)
-                                                .transition(.identity)
-
-                                            if !dismissedEmptyLimitNotice,
-                                               let thirdEmptyEntryID,
-                                               entry.id == thirdEmptyEntryID {
-                                                emptyLimitNotice(scale: scale)
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -648,17 +627,6 @@ struct ContentView: View {
                         .padding(.top, 10)
                     }
                         .padding(16)
-                        .scrollDisabled(showSettings)
-                        .scrollPosition(id: $settingsScrollPosition, anchor: .top)
-                        .highPriorityGesture(
-                            DragGesture(minimumDistance: 8)
-                                .onEnded { value in
-                                    guard showSettings, !pendingSettingsClose else { return }
-                                    if value.translation.height < -20 {
-                                        pendingSettingsClose = true
-                                    }
-                                }
-                        )
                     }
                     .onTapGesture {
                         if showExportOptions {
@@ -674,10 +642,8 @@ struct ContentView: View {
                             } else {
                                 scrollSettingsIntoView(using: proxy)
                             }
-                            settingsScrollPosition = settingsTopID
                         } else {
                             showSecretMenu = false
-                            settingsScrollPosition = nil
                             if showExportOptions {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     showExportOptions = false
@@ -698,12 +664,6 @@ struct ContentView: View {
                     .onChange(of: showSecretMenu) { _, _ in
                         if showSettings {
                             scrollSettingsIntoView(using: proxy)
-                        }
-                    }
-                    .onChange(of: settingsScrollPosition) { _, newValue in
-                        guard showSettings else { return }
-                        if newValue != settingsTopID {
-                            settingsScrollPosition = settingsTopID
                         }
                     }
                     .onChange(of: showExportOptions) { _, _ in
