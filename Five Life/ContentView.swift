@@ -29,6 +29,10 @@ struct ContentView: View {
     @State private var dismissedEmptyLimitNotice = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     @AppStorage("hasDismissedInfoCard") private var hasDismissedInfoCard: Bool = false
+    @AppStorage("seeYouTomorrowIndexEnglish") private var seeYouTomorrowIndexEnglish: Int = 0
+    @AppStorage("seeYouTomorrowIndexDutch") private var seeYouTomorrowIndexDutch: Int = 0
+    @State private var seeYouTomorrowMessageKey: String = "cards.see.you.tomorrow.1"
+    @State private var lastUnfinishedCount: Int = -1
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -171,6 +175,7 @@ struct ContentView: View {
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
     private let settingsOpenAnimationDuration: Double = 0.35
+    private let seeYouTomorrowMessageCount = 20
 
     private struct StatisticsSnapshot {
         let streak: Int
@@ -200,6 +205,38 @@ struct ContentView: View {
 
     private var feedbackURL: URL {
         URL(string: "mailto:jens@hakketjak.nl")!
+    }
+
+    private func seeYouTomorrowIndex(for language: AppLanguage) -> Int {
+        switch language {
+        case .english:
+            return seeYouTomorrowIndexEnglish
+        case .dutch:
+            return seeYouTomorrowIndexDutch
+        }
+    }
+
+    private func setSeeYouTomorrowIndex(_ index: Int, for language: AppLanguage) {
+        switch language {
+        case .english:
+            seeYouTomorrowIndexEnglish = index
+        case .dutch:
+            seeYouTomorrowIndexDutch = index
+        }
+    }
+
+    private func showNextSeeYouTomorrowMessage() {
+        let language = settings.language
+        var index = seeYouTomorrowIndex(for: language)
+        if index < 0 || index >= seeYouTomorrowMessageCount {
+            index = 0
+        }
+
+        let messageNumber = index + 1
+        seeYouTomorrowMessageKey = "cards.see.you.tomorrow.\(messageNumber)"
+
+        let nextIndex = (index + 1) % seeYouTomorrowMessageCount
+        setSeeYouTomorrowIndex(nextIndex, for: language)
     }
 
     private var footerLinks: some View {
@@ -477,7 +514,9 @@ struct ContentView: View {
         pinnedFinishedEntries: [DayEntry],
         remainingFinishedEntries: [DayEntry]
     ) -> some View {
-        ZStack {
+        let header = AnyView(headerView)
+        let overlay = AnyView(lockOverlay(scale: scale))
+        return ZStack {
             scrollContent(
                 scale: scale,
                 unfinishedEntries: unfinishedEntries,
@@ -494,120 +533,63 @@ struct ContentView: View {
                     .transition(.opacity)
             }
         }
-        .background(mainBackground.ignoresSafeArea())
-        .safeAreaInset(edge: .top) {
-            if hasSeenAccessScreen {
-                headerView
-            }
-        }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $shareSheetItem) { item in
-            ShareSheet(items: item.items)
-        }
-        .overlay {
-            if hasSeenAccessScreen {
-                lockOverlay(scale: scale)
-            }
-        }
-        .task {
-            vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-            await notifier.refreshAuthorizationStatus()
-            await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                language: settings.language,
-                                                dailyCount: settings.dailyItemCount)
-
-            let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-            await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                  shouldSchedule: shouldScheduleNext,
-                                                  language: settings.language)
-            scheduleMidnightRefresh()
-            refreshEntryLists()
-        }
-        .onChange(of: entries.count) { _, _ in
-            // Keep “next day if needed” in sync when entries are created/locked/unlocked.
-            Task {
-                let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                      shouldSchedule: shouldScheduleNext,
-                                                      language: settings.language)
-            }
-            refreshEntryLists()
-        }
-        .onChange(of: entries.map(\.isLocked)) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: entries.map(\.day)) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: settings.dailyItemCount) { _, _ in
-            vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-            refreshEntryLists()
-            Task {
-                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                    language: settings.language,
-                                                    dailyCount: settings.dailyItemCount)
-            }
-        }
-        .onChange(of: entries.map(\.updatedAt)) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: entries.map(\.wasCompleted)) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: vm.searchText) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: vm.newestFirst) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: vm.finishedLimit) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: settings.language) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: settings.moonEnabled) { _, _ in
-            refreshEntryLists()
-        }
-        .onChange(of: settings.holidaysEnabled) { _, _ in
-            refreshEntryLists()
-        }
-        .onAppear {
-            if !hasAppeared {
-                hasAppeared = true
-                if settings.faceIdLockEnabled {
-                    isUnlocked = false
-                    updateUnlockStateIfNeeded()
-                }
-            }
-        }
-        .onChange(of: settings.faceIdLockEnabled) { _, _ in
-            if settings.faceIdLockEnabled {
-                isUnlocked = false
-            }
-            updateUnlockStateIfNeeded()
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase != .active, settings.faceIdLockEnabled {
-                isUnlocked = false
-            }
-            if phase == .active {
-                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                AppleSyncManager.shared.catchUpSnapshotIfNeeded(
-                    modelContext: modelContext,
-                    settings: settings,
-                    isConnected: settings.appleIdConnected
-                )
-                scheduleMidnightRefresh()
-                updateUnlockStateIfNeeded()
-                refreshEntryLists()
-            } else {
-                vm.flushPendingSaves(modelContext: modelContext)
-                midnightTask?.cancel()
-                midnightTask = nil
-            }
-        }
+        .modifier(RootContentBaseModifier(
+            mainBackground: mainBackground,
+            hasSeenAccessScreen: hasSeenAccessScreen,
+            headerView: header,
+            shareSheetItem: $shareSheetItem,
+            lockOverlay: overlay
+        ))
+        .modifier(RootContentTaskModifier(
+            settings: settings,
+            vm: vm,
+            notifier: notifier,
+            modelContext: modelContext,
+            entries: entries,
+            refreshEntryLists: refreshEntryLists,
+            scheduleMidnightRefresh: scheduleMidnightRefresh
+        ))
+        .modifier(RootContentEntriesChangeModifier(
+            settings: settings,
+            vm: vm,
+            notifier: notifier,
+            entries: entries,
+            refreshEntryLists: refreshEntryLists
+        ))
+        .modifier(RootContentSettingsChangeModifier(
+            settings: settings,
+            vm: vm,
+            notifier: notifier,
+            modelContext: modelContext,
+            unfinishedEntries: unfinishedEntries,
+            refreshEntryLists: refreshEntryLists,
+            showNextSeeYouTomorrowMessage: showNextSeeYouTomorrowMessage
+        ))
+        .modifier(RootContentUnfinishedChangeModifier(
+            lastUnfinishedCount: $lastUnfinishedCount,
+            unfinishedEntries: unfinishedEntries,
+            showNextSeeYouTomorrowMessage: showNextSeeYouTomorrowMessage
+        ))
+        .modifier(RootContentLifecycleModifier(
+            hasAppeared: $hasAppeared,
+            isUnlocked: $isUnlocked,
+            lastUnfinishedCount: $lastUnfinishedCount,
+            settings: settings,
+            unfinishedEntries: unfinishedEntries,
+            updateUnlockStateIfNeeded: updateUnlockStateIfNeeded,
+            showNextSeeYouTomorrowMessage: showNextSeeYouTomorrowMessage
+        ))
+        .modifier(RootContentScenePhaseModifier(
+            isUnlocked: $isUnlocked,
+            midnightTask: $midnightTask,
+            settings: settings,
+            vm: vm,
+            modelContext: modelContext,
+            scenePhase: scenePhase,
+            refreshEntryLists: refreshEntryLists,
+            scheduleMidnightRefresh: scheduleMidnightRefresh,
+            updateUnlockStateIfNeeded: updateUnlockStateIfNeeded
+        ))
     }
 
     private func scrollContent(
@@ -883,7 +865,7 @@ struct ContentView: View {
                 .animation(.easeInOut(duration: settingsOpenAnimationDuration),
                            value: showSettings)
             } else {
-                Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
+                Text(L10n.string(seeYouTomorrowMessageKey, language: settings.language))
                     .font(.title3.weight(.semibold))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .multilineTextAlignment(.center)
