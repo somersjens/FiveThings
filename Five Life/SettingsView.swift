@@ -332,9 +332,9 @@ struct SettingsView: View {
                                    height: addDayButtonSize * responsiveTypeScale)
                             .background(
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(Color.brandAccent)
+                                    .fill(addDayHasExistingEntry ? Color.red.opacity(0.15) : Color.brandAccent)
                             )
-                            .foregroundStyle(.white)
+                            .foregroundStyle(addDayHasExistingEntry ? .red : .white)
                     }
                     .accessibilityLabel(addDayTitle)
                 }
@@ -729,6 +729,11 @@ struct SettingsView: View {
             return
         }
 
+        guard isAddDayWithinRange(normalizedDay) else {
+            showAddDayMessage(L10n.string("settings.day.range", language: settings.language))
+            return
+        }
+
         let entry = DayEntry(day: normalizedDay, itemCount: settings.dailyItemCount)
         modelContext.insert(entry)
         try? modelContext.save()
@@ -747,6 +752,16 @@ struct SettingsView: View {
         }
 
         return dateFrom(day: first, month: second, year: year)
+    }
+
+    private func isAddDayWithinRange(_ date: Date) -> Bool {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        guard let minDate = calendar.date(byAdding: .year, value: -100, to: today),
+              let maxDate = calendar.date(byAdding: .year, value: 100, to: today) else {
+            return true
+        }
+        return date >= minDate && date <= maxDate
     }
 
     private func formattedAddDayDigits(_ digits: String) -> String {

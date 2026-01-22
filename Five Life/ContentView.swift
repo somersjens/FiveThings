@@ -867,6 +867,7 @@ struct ContentView: View {
             } else {
                 Text(L10n.string(seeYouTomorrowMessageKey, language: settings.language))
                     .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.brandAccent)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .multilineTextAlignment(.center)
                     .padding(.vertical, 8)

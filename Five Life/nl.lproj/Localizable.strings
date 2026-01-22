@@ -170,6 +170,7 @@
 "settings.day.add" = "Dag toevoegen";
 "settings.day.add.delete" = "Dag toevoegen/verwijderen";
 "settings.day.added" = "Dag toegevoegd.";
+"settings.day.range" = "Maximaal +/- 100 jaar";
 "settings.day.delete" = "Dag verwijderen";
 "settings.day.deleted" = "Dag verwijderd.";
 "settings.delete.all" = "Verwijderd alles";
