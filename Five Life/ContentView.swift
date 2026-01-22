@@ -547,8 +547,13 @@ struct ContentView: View {
                         // Unfinished section
                         let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
                         let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
-                        let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(3))
-                        let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(3))
+                        let pinnedCardCount = 3
+                        let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(pinnedCardCount))
+                        let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(pinnedCardCount))
+                        let pinnedFinishedEntries = Array(
+                            finishedEntries.prefix(max(0, pinnedCardCount - pinnedUnfinishedEntries.count))
+                        )
+                        let remainingFinishedEntries = Array(finishedEntries.dropFirst(pinnedFinishedEntries.count))
                         if !unfinishedEntries.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
                                 ForEach(pinnedUnfinishedEntries) { entry in
@@ -613,18 +618,30 @@ struct ContentView: View {
                                          finishedLimit: $vm.finishedLimit)
 
                         // Finished section
-                        LazyVStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 10) {
                             if finishedEntries.isEmpty {
                                 Text(L10n.string("cards.none", language: settings.language))
                                     .foregroundStyle(.primary)
                                     .padding(.horizontal, 4)
                             } else {
-                                ForEach(finishedEntries) { entry in
+                                ForEach(pinnedFinishedEntries) { entry in
                                     DayCardView(settings: settings,
                                                 vm: vm,
                                                 searchHighlightsEnabled: true,
                                                 entry: entry)
                                         .transition(.opacity)
+                                }
+
+                                if !remainingFinishedEntries.isEmpty {
+                                    LazyVStack(alignment: .leading, spacing: 10) {
+                                        ForEach(remainingFinishedEntries) { entry in
+                                            DayCardView(settings: settings,
+                                                        vm: vm,
+                                                        searchHighlightsEnabled: true,
+                                                        entry: entry)
+                                                .transition(.opacity)
+                                        }
+                                    }
                                 }
                             }
                         }
