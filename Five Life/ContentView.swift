@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var suppressSettingsAutoScroll = false
     @State private var dismissedEmptyLimitNotice = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
+    @AppStorage("hasDismissedInfoCard") private var hasDismissedInfoCard: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -144,6 +145,16 @@ struct ContentView: View {
         }
 
         return false
+    }
+
+    private var shouldShowInfoCard: Bool {
+        !hasDismissedInfoCard
+    }
+
+    private var infoCardEntries: [String] {
+        (1...10)
+            .map { L10n.string("info.card.entry.\($0)", language: settings.language) }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     private var dailyTitle: String {
@@ -619,11 +630,19 @@ struct ContentView: View {
 
                         // Finished section
                         VStack(alignment: .leading, spacing: 10) {
-                            if finishedEntries.isEmpty {
+                            if finishedEntries.isEmpty && !shouldShowInfoCard {
                                 Text(L10n.string("cards.none", language: settings.language))
                                     .foregroundStyle(.primary)
                                     .padding(.horizontal, 4)
                             } else {
+                                if shouldShowInfoCard, !vm.newestFirst {
+                                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
+                                                 items: infoCardEntries,
+                                                 infoAction: { hasDismissedInfoCard = true },
+                                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                                        .transition(.opacity)
+                                }
+
                                 ForEach(pinnedFinishedEntries) { entry in
                                     DayCardView(settings: settings,
                                                 vm: vm,
@@ -642,6 +661,14 @@ struct ContentView: View {
                                                 .transition(.opacity)
                                         }
                                     }
+                                }
+
+                                if shouldShowInfoCard, vm.newestFirst {
+                                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
+                                                 items: infoCardEntries,
+                                                 infoAction: { hasDismissedInfoCard = true },
+                                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                                        .transition(.opacity)
                                 }
                             }
                         }
