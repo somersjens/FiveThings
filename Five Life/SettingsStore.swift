@@ -61,6 +61,16 @@ struct ReminderTime: Codable, Equatable {
     }
 }
 
+struct SeeYouTomorrowState: Codable {
+    var orderByLanguage: [String: [Int]]
+    var indexByLanguage: [String: Int]
+
+    init(orderByLanguage: [String: [Int]] = [:], indexByLanguage: [String: Int] = [:]) {
+        self.orderByLanguage = orderByLanguage
+        self.indexByLanguage = indexByLanguage
+    }
+}
+
 @MainActor
 final class SettingsStore: ObservableObject {
     @AppStorage("dailyItemCount") var dailyItemCount: Int = 5
@@ -87,6 +97,7 @@ final class SettingsStore: ObservableObject {
     // Optional reminders stored as JSON Data in AppStorage
     @AppStorage("dailyReminderData") private var dailyReminderData: Data = Data()
     @AppStorage("nextDayReminderData") private var nextDayReminderData: Data = Data()
+    @AppStorage("seeYouTomorrowStateData") private var seeYouTomorrowStateData: Data = Data()
 
     var dailyReminderTime: ReminderTime? {
         get { decode(ReminderTime.self, from: dailyReminderData) }
@@ -97,6 +108,8 @@ final class SettingsStore: ObservableObject {
         get { decode(ReminderTime.self, from: nextDayReminderData) }
         set { nextDayReminderData = encode(newValue); objectWillChange.send() }
     }
+
+    private let seeYouTomorrowCount = 20
 
     var locale: Locale { Locale(identifier: language.localeIdentifier) }
 
@@ -112,5 +125,28 @@ final class SettingsStore: ObservableObject {
     private func decode<T: Decodable>(_ type: T.Type, from data: Data) -> T? {
         guard !data.isEmpty else { return nil }
         return try? JSONDecoder().decode(type, from: data)
+    }
+
+    func nextSeeYouTomorrowKey() -> String {
+        let count = seeYouTomorrowCount
+        let languageKey = language.rawValue
+        var state = decode(SeeYouTomorrowState.self, from: seeYouTomorrowStateData) ?? SeeYouTomorrowState()
+        var order = state.orderByLanguage[languageKey] ?? []
+        var index = state.indexByLanguage[languageKey] ?? 0
+
+        if order.count != count || order.sorted() != Array(1...count) {
+            order = Array(1...count).shuffled()
+            index = 0
+        } else if index >= order.count {
+            order = Array(1...count).shuffled()
+            index = 0
+        }
+
+        let number = order[index]
+        state.orderByLanguage[languageKey] = order
+        state.indexByLanguage[languageKey] = index + 1
+        seeYouTomorrowStateData = encode(state)
+        objectWillChange.send()
+        return "cards.see.you.tomorrow.\(number)"
     }
 }
