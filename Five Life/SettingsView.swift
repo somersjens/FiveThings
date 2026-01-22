@@ -722,6 +722,7 @@ struct SettingsView: View {
                 _ = existing.items.count
                 modelContext.delete(existing)
                 try? modelContext.save()
+                settings.appleSnapshotDeletionPending = true
                 showAddDayMessage(L10n.string("settings.day.deleted", language: settings.language), isError: false)
             }
             addDayDigits = ""
@@ -988,6 +989,7 @@ struct SettingsView: View {
             modelContext.delete(entry)
         }
         try? modelContext.save()
+        settings.appleSnapshotDeletionPending = true
     }
 
     private func intFromDigits(start: Int, length: Int) -> Int? {

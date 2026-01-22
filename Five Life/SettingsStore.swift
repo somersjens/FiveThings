@@ -79,6 +79,7 @@ final class SettingsStore: ObservableObject {
     @AppStorage("appleIdConnected") var appleIdConnected: Bool = false
     @AppStorage("appleUserIdentifier") var appleUserIdentifier: String = ""
     @AppStorage("appleLastSnapshotAt") private var appleLastSnapshotAtInterval: Double = 0
+    @AppStorage("appleSnapshotDeletionPending") var appleSnapshotDeletionPending: Bool = false
     var appleLastSnapshotAt: Date {
         get { Date(timeIntervalSince1970: appleLastSnapshotAtInterval) }
         set { appleLastSnapshotAtInterval = newValue.timeIntervalSince1970; objectWillChange.send() }

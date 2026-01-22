@@ -67,13 +67,19 @@ final class ContentViewModel: ObservableObject {
         try? modelContext.save()
     }
 
-    func lock(_ entry: DayEntry, requiredCount: Int, modelContext: ModelContext) {
+    func lock(_ entry: DayEntry, requiredCount: Int, settings: SettingsStore, modelContext: ModelContext) {
         entry.updateItemCountPreservingItems(to: requiredCount)
         entry.isLocked = true
         entry.wasCompleted = true
         entry.updatedAt = Date()
         try? modelContext.save()
         searchSnapshots[entry.id] = nil
+        AppleSyncManager.shared.captureSnapshotOnLockIfNeeded(
+            entry: entry,
+            modelContext: modelContext,
+            settings: settings,
+            isConnected: settings.appleIdConnected
+        )
     }
 
     func unlock(_ entry: DayEntry, settings: SettingsStore, modelContext: ModelContext) {

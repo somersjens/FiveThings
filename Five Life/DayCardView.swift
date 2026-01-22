@@ -701,7 +701,7 @@ struct DayCardView: View {
     }
 
     private func triggerLockFlow() {
-        vm.lock(entry, requiredCount: requiredCount, modelContext: modelContext)
+        vm.lock(entry, requiredCount: requiredCount, settings: settings, modelContext: modelContext)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
             showSuccess = true
         }

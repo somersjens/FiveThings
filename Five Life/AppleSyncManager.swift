@@ -2,7 +2,7 @@
 import Foundation
 import SwiftData
 
-struct DayEntrySnapshot: Codable {
+struct DayEntrySnapshot: Codable, Equatable {
     var id: UUID
     var day: Date
     var itemCount: Int
@@ -107,10 +107,9 @@ final class AppleSyncManager {
     func captureMidnightSnapshotIfNeeded(modelContext: ModelContext,
                                          settings: SettingsStore,
                                          isConnected: Bool) {
-        performMidnightMaintenance(modelContext: modelContext,
-                                   settings: settings,
-                                   isConnected: isConnected,
-                                   shouldSaveSnapshot: true)
+        handleNextDayTransition(modelContext: modelContext,
+                                settings: settings,
+                                isConnected: isConnected)
     }
 
     func captureSnapshotNow(modelContext: ModelContext, settings: SettingsStore, isConnected: Bool) {
@@ -118,6 +117,9 @@ final class AppleSyncManager {
                                    settings: settings,
                                    isConnected: isConnected,
                                    shouldSaveSnapshot: true)
+        if isConnected {
+            settings.appleSnapshotDeletionPending = false
+        }
     }
 
     func catchUpSnapshotIfNeeded(modelContext: ModelContext,
@@ -127,11 +129,45 @@ final class AppleSyncManager {
         let calendar = Calendar.current
         let todayStart = calendar.startOfDay(for: Date())
         let lastSnapshotStart = calendar.startOfDay(for: settings.appleLastSnapshotAt)
-        guard lastSnapshotStart < todayStart else { return }
+        if lastSnapshotStart < todayStart {
+            handleNextDayTransition(modelContext: modelContext,
+                                    settings: settings,
+                                    isConnected: isConnected)
+        }
+        captureSnapshotForLockedEntriesIfNeeded(modelContext: modelContext,
+                                                settings: settings,
+                                                isConnected: isConnected)
+    }
+
+    func captureSnapshotOnLockIfNeeded(entry: DayEntry,
+                                       modelContext: ModelContext,
+                                       settings: SettingsStore,
+                                       isConnected: Bool) {
+        guard isConnected, entry.isLocked else { return }
+        let existingSnapshot = loadSnapshot()
+        let entrySnapshot = DayEntrySnapshot(from: entry)
+        if let existingSnapshot,
+           let existingEntry = existingSnapshot.entries.first(where: { $0.id == entry.id }),
+           snapshotsMatchIgnoringUpdatedAt(existingEntry, entrySnapshot) {
+            return
+        }
+        let entries = fetchEntries(modelContext: modelContext)
+        let snapshotEntries = snapshotEntries(from: entries, preservingMissingEntriesFrom: existingSnapshot)
+        saveSnapshot(AppleSnapshot(entries: snapshotEntries, savedAt: Date()))
+        settings.appleLastSnapshotAt = Date()
+    }
+
+    func handleNextDayTransition(modelContext: ModelContext,
+                                 settings: SettingsStore,
+                                 isConnected: Bool) {
+        let shouldSaveSnapshot = settings.appleSnapshotDeletionPending && isConnected
         performMidnightMaintenance(modelContext: modelContext,
                                    settings: settings,
                                    isConnected: isConnected,
-                                   shouldSaveSnapshot: true)
+                                   shouldSaveSnapshot: shouldSaveSnapshot)
+        if shouldSaveSnapshot {
+            settings.appleSnapshotDeletionPending = false
+        }
     }
 
     func performMidnightMaintenance(modelContext: ModelContext,
@@ -139,8 +175,13 @@ final class AppleSyncManager {
                                     isConnected: Bool,
                                     shouldSaveSnapshot: Bool) {
         ensureTodayEntry(modelContext: modelContext, settings: settings)
-        lockCompletedEntriesIfNeeded(modelContext: modelContext)
+        let didLockEntries = lockCompletedEntriesIfNeeded(modelContext: modelContext)
         pruneEmptyEntriesIfNeeded(modelContext: modelContext, keepingAtMost: 3)
+        if didLockEntries {
+            captureSnapshotForLockedEntriesIfNeeded(modelContext: modelContext,
+                                                    settings: settings,
+                                                    isConnected: isConnected)
+        }
         guard shouldSaveSnapshot, isConnected else { return }
         let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
@@ -157,7 +198,10 @@ final class AppleSyncManager {
 
     private func saveSnapshot(from entries: [DayEntry]) {
         let snapshots = entries.map { DayEntrySnapshot(from: $0) }
-        let snapshot = AppleSnapshot(entries: snapshots, savedAt: Date())
+        saveSnapshot(AppleSnapshot(entries: snapshots, savedAt: Date()))
+    }
+
+    private func saveSnapshot(_ snapshot: AppleSnapshot) {
         guard let data = try? configuredEncoder().encode(snapshot) else { return }
         store.set(data, forKey: snapshotKey)
         store.synchronize()
@@ -349,7 +393,8 @@ final class AppleSyncManager {
         try? modelContext.save()
     }
 
-    private func lockCompletedEntriesIfNeeded(modelContext: ModelContext) {
+    @discardableResult
+    private func lockCompletedEntriesIfNeeded(modelContext: ModelContext) -> Bool {
         let entries = fetchEntries(modelContext: modelContext)
         var didChange = false
         entries.forEach { entry in
@@ -364,6 +409,7 @@ final class AppleSyncManager {
         if didChange {
             try? modelContext.save()
         }
+        return didChange
     }
 
     private func pruneEmptyEntriesIfNeeded(modelContext: ModelContext, keepingAtMost limit: Int) {
@@ -382,5 +428,60 @@ final class AppleSyncManager {
     private func isEntryEmptyForLimit(_ entry: DayEntry) -> Bool {
         guard !entry.isLocked, !entry.wasCompleted, entry.score == nil else { return false }
         return entry.items.allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
+    private func captureSnapshotForLockedEntriesIfNeeded(modelContext: ModelContext,
+                                                         settings: SettingsStore,
+                                                         isConnected: Bool) {
+        guard isConnected else { return }
+        let entries = fetchEntries(modelContext: modelContext)
+        guard entries.contains(where: { $0.isLocked }) else { return }
+        let existingSnapshot = loadSnapshot()
+        guard lockedEntriesNeedSnapshot(entries: entries, existingSnapshot: existingSnapshot) else { return }
+        let snapshotEntries = snapshotEntries(from: entries, preservingMissingEntriesFrom: existingSnapshot)
+        saveSnapshot(AppleSnapshot(entries: snapshotEntries, savedAt: Date()))
+        settings.appleLastSnapshotAt = Date()
+    }
+
+    private func lockedEntriesNeedSnapshot(entries: [DayEntry],
+                                           existingSnapshot: AppleSnapshot?) -> Bool {
+        guard let existingSnapshot else {
+            return entries.contains(where: { $0.isLocked })
+        }
+        let snapshotByID = Dictionary(uniqueKeysWithValues: existingSnapshot.entries.map { ($0.id, $0) })
+        for entry in entries where entry.isLocked {
+            let entrySnapshot = DayEntrySnapshot(from: entry)
+            guard let existing = snapshotByID[entry.id] else {
+                return true
+            }
+            if !snapshotsMatchIgnoringUpdatedAt(existing, entrySnapshot) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func snapshotEntries(from entries: [DayEntry],
+                                 preservingMissingEntriesFrom existingSnapshot: AppleSnapshot?) -> [DayEntrySnapshot] {
+        var snapshots = entries.map { DayEntrySnapshot(from: $0) }
+        guard let existingSnapshot else { return snapshots }
+        let existingIDs = Set(snapshots.map { $0.id })
+        let preserved = existingSnapshot.entries.filter { !existingIDs.contains($0.id) }
+        if !preserved.isEmpty {
+            snapshots.append(contentsOf: preserved)
+        }
+        return snapshots
+    }
+
+    private func snapshotsMatchIgnoringUpdatedAt(_ lhs: DayEntrySnapshot,
+                                                 _ rhs: DayEntrySnapshot) -> Bool {
+        lhs.id == rhs.id
+            && lhs.day == rhs.day
+            && lhs.itemCount == rhs.itemCount
+            && lhs.items == rhs.items
+            && lhs.isLocked == rhs.isLocked
+            && lhs.wasCompleted == rhs.wasCompleted
+            && lhs.score == rhs.score
+            && lhs.createdAt == rhs.createdAt
     }
 }
