@@ -27,6 +27,7 @@ struct ContentView: View {
     @State private var pendingSettingsClose = false
     @State private var suppressSettingsAutoScroll = false
     @State private var dismissedEmptyLimitNotice = false
+    @State private var seeYouTomorrowKey = "cards.see.you.tomorrow.1"
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -431,298 +432,7 @@ struct ContentView: View {
             let scale = ResponsiveTypeScale.scale(for: proxy.size.width)
             NavigationStack {
                 ZStack {
-                    ScrollViewReader { proxy in
-                        ScrollView(showsIndicators: false) {
-                        let unfinishedEntries = unfinished
-                        let finishedEntries = finished
-                        LazyVStack(alignment: .leading, spacing: 14) {
-                            Color.clear
-                                .frame(height: 1)
-                                .id(settingsTopID)
-
-                            if showSettings {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text(L10n.string("settings.title", language: settings.language))
-                                            .font(.title3.weight(.semibold))
-                                            .onTapGesture(count: 5) {
-                                                withAnimation(.easeInOut(duration: 0.2)) {
-                                                    showSecretMenu = true
-                                                }
-                                            }
-                                        Spacer()
-                                        Image(systemName: "gearshape.fill")
-                                            .font(.system(size: settingsGearSize * scale,
-                                                          weight: .semibold))
-                                            .foregroundStyle(Color(.systemGray))
-                                            .onTapGesture {
-                                                pendingSettingsClose = true
-                                            }
-                                    }
-                                    .frame(height: 44)
-                                    .padding(.horizontal, 28)
-                                    .padding(.top, 4)
-
-                                    VStack(spacing: 16) {
-                                        SettingsView(settings: settings,
-                                                     showSecretMenu: $showSecretMenu,
-                                                     showsNavigation: false)
-
-                                        Button {
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                                showExportOptions.toggle()
-                                            }
-                                        } label: {
-                                            Text(L10n.string("export.title", language: settings.language))
-                                                .font(.headline)
-                                                .frame(maxWidth: .infinity)
-                                                .padding(.vertical, 10)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                                        .fill(Color.brandAccent.opacity(0.2))
-                                                )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .frame(maxWidth: 260)
-                                        .padding(.bottom, 6)
-
-                                        if showExportOptions {
-                                            HStack(spacing: 12) {
-                                                Button {
-                                                    handleExport(format: .pdf)
-                                                } label: {
-                                                    Text(L10n.string("export.pdf", language: settings.language))
-                                                        .font(.headline)
-                                                        .foregroundStyle(.primary)
-                                                        .frame(width: 80, height: 36)
-                                                        .background(
-                                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                                .fill(Color.brandAccent.opacity(0.2))
-                                                        )
-                                                }
-                                                .buttonStyle(.plain)
-
-                                                Button {
-                                                    handleExport(format: .csv)
-                                                } label: {
-                                                    Text(L10n.string("export.csv", language: settings.language))
-                                                        .font(.headline)
-                                                        .foregroundStyle(.primary)
-                                                        .frame(width: 80, height: 36)
-                                                        .background(
-                                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                                .fill(Color.brandAccent.opacity(0.2))
-                                                        )
-                                                }
-                                                .buttonStyle(.plain)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .center)
-                                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                                        }
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.horizontal, 14)
-                                    .padding(.top, 8)
-                                    .padding(.bottom, 14)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(settingsCardInnerBackground)
-                                    )
-                                    .padding(.horizontal, 14)
-                                    .padding(.bottom, 14)
-                                }
-                                .padding(.top, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .fill(settingsCardOuterBackground)
-                                        .shadow(radius: 6, y: 2)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
-                                )
-                                .transition(.move(edge: .top).combined(with: .opacity))
-                            }
-
-                        // Unfinished section
-                        let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
-                        let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
-                        let pinnedCardCount = 3
-                        let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(pinnedCardCount))
-                        let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(pinnedCardCount))
-                        let pinnedFinishedEntries = Array(
-                            finishedEntries.prefix(max(0, pinnedCardCount - pinnedUnfinishedEntries.count))
-                        )
-                        let remainingFinishedEntries = Array(finishedEntries.dropFirst(pinnedFinishedEntries.count))
-                        if !unfinishedEntries.isEmpty {
-                            VStack(alignment: .leading, spacing: 10) {
-                                ForEach(pinnedUnfinishedEntries) { entry in
-                                    DayCardView(settings: settings,
-                                                vm: vm,
-                                                searchHighlightsEnabled: false,
-                                                entry: entry)
-                                        .transition(.identity)
-
-                                    if !dismissedEmptyLimitNotice,
-                                       let thirdEmptyEntryID,
-                                       entry.id == thirdEmptyEntryID {
-                                        emptyLimitNotice(scale: scale)
-                                    }
-                                }
-
-                                if !remainingUnfinishedEntries.isEmpty {
-                                    LazyVStack(alignment: .leading, spacing: 10) {
-                                        ForEach(remainingUnfinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: false,
-                                                        entry: entry)
-                                                .transition(.identity)
-
-                                            if !dismissedEmptyLimitNotice,
-                                               let thirdEmptyEntryID,
-                                               entry.id == thirdEmptyEntryID {
-                                                emptyLimitNotice(scale: scale)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .animation(.easeInOut(duration: 0.25),
-                                       value: unfinishedEntries.map(\.id))
-                            .animation(.easeInOut(duration: settingsOpenAnimationDuration),
-                                       value: showSettings)
-                        } else {
-                            Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
-                                .font(.title3.weight(.semibold))
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .multilineTextAlignment(.center)
-                                .padding(.vertical, 8)
-                        }
-
-                        // Thick divider
-                        Rectangle()
-                            .fill(Color.brandAccent)
-                            .frame(height: 5)
-                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                            .padding(.top, 8)
-
-                        if settings.statisticsEnabled {
-                            statisticsRow(scale: scale)
-                        }
-
-                        // Search + sort (finished only)
-                        SearchAndSortBar(settings: settings,
-                                         text: $vm.searchText,
-                                         newestFirst: $vm.newestFirst,
-                                         finishedLimit: $vm.finishedLimit)
-
-                        // Finished section
-                        VStack(alignment: .leading, spacing: 10) {
-                            if finishedEntries.isEmpty {
-                                Text(L10n.string("cards.none", language: settings.language))
-                                    .foregroundStyle(.primary)
-                                    .padding(.horizontal, 4)
-                            } else {
-                                ForEach(pinnedFinishedEntries) { entry in
-                                    DayCardView(settings: settings,
-                                                vm: vm,
-                                                searchHighlightsEnabled: true,
-                                                entry: entry)
-                                        .transition(.opacity)
-                                }
-
-                                if !remainingFinishedEntries.isEmpty {
-                                    LazyVStack(alignment: .leading, spacing: 10) {
-                                        ForEach(remainingFinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: true,
-                                                        entry: entry)
-                                                .transition(.opacity)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .animation(.easeInOut(duration: 0.25),
-                                   value: finishedEntries.map(\.id))
-                        .animation(.easeInOut(duration: 0.25), value: vm.searchText)
-                        .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
-                        .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
-
-                        if vm.finishedLimit != .all {
-                            filterActiveNotice(scale: scale, limit: vm.finishedLimit)
-                                .padding(.top, 6)
-                        }
-
-                        // Footer links
-                        VStack(spacing: 10) {
-                            Divider().opacity(0.6)
-                            footerLinks
-                        }
-                        .padding(.top, 10)
-                    }
-                        .padding(16)
-                    }
-                    .onTapGesture {
-                        if showExportOptions {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                showExportOptions = false
-                            }
-                        }
-                    }
-                    .onChange(of: showSettings) { _, expanded in
-                        if expanded {
-                            if suppressSettingsAutoScroll {
-                                suppressSettingsAutoScroll = false
-                            } else {
-                                scrollSettingsIntoView(using: proxy)
-                            }
-                        } else {
-                            showSecretMenu = false
-                            if showExportOptions {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    showExportOptions = false
-                                }
-                            }
-                            // Apply notification changes after closing settings
-                            Task {
-                                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                                    language: settings.language,
-                                                                    dailyCount: settings.dailyItemCount)
-                                let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                                      shouldSchedule: shouldScheduleNext,
-                                                                      language: settings.language)
-                            }
-                        }
-                    }
-                    .onChange(of: showSecretMenu) { _, _ in
-                        if showSettings {
-                            scrollSettingsIntoView(using: proxy)
-                        }
-                    }
-                    .onChange(of: showExportOptions) { _, _ in
-                        if showSettings {
-                            scrollSettingsIntoView(using: proxy)
-                        }
-                    }
-                    .onChange(of: pendingSettingsOpen) { _, shouldOpen in
-                        if shouldOpen {
-                            openSettingsAfterScroll(using: proxy)
-                        }
-                    }
-                    .onChange(of: pendingSettingsClose) { _, shouldClose in
-                        if shouldClose {
-                            closeSettingsAfterScroll(using: proxy)
-                        }
-                    }
-                    .onChange(of: scrollToTopTrigger) { _, _ in
-                        scrollToTop(using: proxy)
-                    }
-                }
-
+                    mainContent(scale: scale)
                     if !hasSeenAccessScreen {
                         AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
                             .transition(.opacity)
@@ -800,12 +510,20 @@ struct ContentView: View {
                 }
                 .onChange(of: settings.language) { _, _ in
                     refreshEntryLists()
+                    if unfinished.isEmpty {
+                        seeYouTomorrowKey = settings.nextSeeYouTomorrowKey()
+                    }
                 }
                 .onChange(of: settings.moonEnabled) { _, _ in
                     refreshEntryLists()
                 }
                 .onChange(of: settings.holidaysEnabled) { _, _ in
                     refreshEntryLists()
+                }
+                .onChange(of: unfinished.isEmpty) { _, isEmpty in
+                    if isEmpty {
+                        seeYouTomorrowKey = settings.nextSeeYouTomorrowKey()
+                    }
                 }
                 .onAppear {
                     if !hasAppeared {
@@ -814,6 +532,9 @@ struct ContentView: View {
                             isUnlocked = false
                             updateUnlockStateIfNeeded()
                         }
+                    }
+                    if unfinished.isEmpty {
+                        seeYouTomorrowKey = settings.nextSeeYouTomorrowKey()
                     }
                 }
                 .onChange(of: settings.faceIdLockEnabled) { _, _ in
@@ -845,6 +566,340 @@ struct ContentView: View {
             }
             .environment(\.responsiveTypeScale, scale)
         }
+    }
+
+    @ViewBuilder
+    private func mainContent(scale: CGFloat) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                contentStack(scale: scale)
+            }
+            .onTapGesture {
+                if showExportOptions {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showExportOptions = false
+                    }
+                }
+            }
+            .onChange(of: showSettings) { _, expanded in
+                if expanded {
+                    if suppressSettingsAutoScroll {
+                        suppressSettingsAutoScroll = false
+                    } else {
+                        scrollSettingsIntoView(using: proxy)
+                    }
+                } else {
+                    showSecretMenu = false
+                    if showExportOptions {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showExportOptions = false
+                        }
+                    }
+                    // Apply notification changes after closing settings
+                    Task {
+                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                            language: settings.language,
+                                                            dailyCount: settings.dailyItemCount)
+                        let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                        await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                              shouldSchedule: shouldScheduleNext,
+                                                              language: settings.language)
+                    }
+                }
+            }
+            .onChange(of: showSecretMenu) { _, _ in
+                if showSettings {
+                    scrollSettingsIntoView(using: proxy)
+                }
+            }
+            .onChange(of: showExportOptions) { _, _ in
+                if showSettings {
+                    scrollSettingsIntoView(using: proxy)
+                }
+            }
+            .onChange(of: pendingSettingsOpen) { _, shouldOpen in
+                if shouldOpen {
+                    openSettingsAfterScroll(using: proxy)
+                }
+            }
+            .onChange(of: pendingSettingsClose) { _, shouldClose in
+                if shouldClose {
+                    closeSettingsAfterScroll(using: proxy)
+                }
+            }
+            .onChange(of: scrollToTopTrigger) { _, _ in
+                scrollToTop(using: proxy)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func contentStack(scale: CGFloat) -> some View {
+        LazyVStack(alignment: .leading, spacing: 14) {
+            Color.clear
+                .frame(height: 1)
+                .id(settingsTopID)
+
+            settingsSection(scale: scale)
+            unfinishedSection(scale: scale)
+            thickDivider
+            statisticsSection(scale: scale)
+            searchAndSortSection
+            finishedSection
+            filterNoticeSection(scale: scale)
+            footerSection
+        }
+        .padding(16)
+    }
+
+    @ViewBuilder
+    private func settingsSection(scale: CGFloat) -> some View {
+        if showSettings {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(L10n.string("settings.title", language: settings.language))
+                        .font(.title3.weight(.semibold))
+                        .onTapGesture(count: 5) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showSecretMenu = true
+                            }
+                        }
+                    Spacer()
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: settingsGearSize * scale,
+                                      weight: .semibold))
+                        .foregroundStyle(Color(.systemGray))
+                        .onTapGesture {
+                            pendingSettingsClose = true
+                        }
+                }
+                .frame(height: 44)
+                .padding(.horizontal, 28)
+                .padding(.top, 4)
+
+                VStack(spacing: 16) {
+                    SettingsView(settings: settings,
+                                 showSecretMenu: $showSecretMenu,
+                                 showsNavigation: false)
+
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showExportOptions.toggle()
+                        }
+                    } label: {
+                        Text(L10n.string("export.title", language: settings.language))
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(Color.brandAccent.opacity(0.2))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: 260)
+                    .padding(.bottom, 6)
+
+                    if showExportOptions {
+                        HStack(spacing: 12) {
+                            Button {
+                                handleExport(format: .pdf)
+                            } label: {
+                                Text(L10n.string("export.pdf", language: settings.language))
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 80, height: 36)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(Color.brandAccent.opacity(0.2))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                handleExport(format: .csv)
+                            } label: {
+                                Text(L10n.string("export.csv", language: settings.language))
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 80, height: 36)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(Color.brandAccent.opacity(0.2))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 14)
+                .padding(.top, 8)
+                .padding(.bottom, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(settingsCardInnerBackground)
+                )
+                .padding(.horizontal, 14)
+                .padding(.bottom, 14)
+            }
+            .padding(.top, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(settingsCardOuterBackground)
+                    .shadow(radius: 6, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
+            )
+            .transition(.move(edge: .top).combined(with: .opacity))
+        }
+    }
+
+    @ViewBuilder
+    private func unfinishedSection(scale: CGFloat) -> some View {
+        let unfinishedEntries = unfinished
+        if !unfinishedEntries.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                unfinishedCards(entries: unfinishedEntries, scale: scale)
+            }
+            .animation(.easeInOut(duration: 0.25),
+                       value: unfinishedEntries.map(\.id))
+            .animation(.easeInOut(duration: settingsOpenAnimationDuration),
+                       value: showSettings)
+        } else {
+            Text(L10n.string(seeYouTomorrowKey, language: settings.language))
+                .font(.title3.weight(.semibold))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .multilineTextAlignment(.center)
+                .padding(.vertical, 8)
+        }
+    }
+
+    private func unfinishedCards(entries: [DayEntry], scale: CGFloat) -> some View {
+        let emptyUnfinishedEntries = entries.filter { isEntryEmptyForLimit($0) }
+        let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
+        let pinnedCardCount = 3
+        let pinnedUnfinishedEntries = Array(entries.prefix(pinnedCardCount))
+        let remainingUnfinishedEntries = Array(entries.dropFirst(pinnedCardCount))
+
+        return VStack(alignment: .leading, spacing: 10) {
+            ForEach(pinnedUnfinishedEntries) { entry in
+                DayCardView(settings: settings,
+                            vm: vm,
+                            searchHighlightsEnabled: false,
+                            entry: entry)
+                    .transition(.identity)
+
+                if !dismissedEmptyLimitNotice,
+                   let thirdEmptyEntryID,
+                   entry.id == thirdEmptyEntryID {
+                    emptyLimitNotice(scale: scale)
+                }
+            }
+
+            if !remainingUnfinishedEntries.isEmpty {
+                LazyVStack(alignment: .leading, spacing: 10) {
+                    ForEach(remainingUnfinishedEntries) { entry in
+                        DayCardView(settings: settings,
+                                    vm: vm,
+                                    searchHighlightsEnabled: false,
+                                    entry: entry)
+                            .transition(.identity)
+
+                        if !dismissedEmptyLimitNotice,
+                           let thirdEmptyEntryID,
+                           entry.id == thirdEmptyEntryID {
+                            emptyLimitNotice(scale: scale)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var thickDivider: some View {
+        Rectangle()
+            .fill(Color.brandAccent)
+            .frame(height: 5)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private func statisticsSection(scale: CGFloat) -> some View {
+        if settings.statisticsEnabled {
+            statisticsRow(scale: scale)
+        }
+    }
+
+    private var searchAndSortSection: some View {
+        SearchAndSortBar(settings: settings,
+                         text: $vm.searchText,
+                         newestFirst: $vm.newestFirst,
+                         finishedLimit: $vm.finishedLimit)
+    }
+
+    private var finishedSection: some View {
+        let finishedEntries = finished
+        let pinnedCardCount = 3
+        let pinnedUnfinishedEntries = Array(unfinished.prefix(pinnedCardCount))
+        let pinnedFinishedEntries = Array(
+            finishedEntries.prefix(max(0, pinnedCardCount - pinnedUnfinishedEntries.count))
+        )
+        let remainingFinishedEntries = Array(finishedEntries.dropFirst(pinnedFinishedEntries.count))
+
+        return VStack(alignment: .leading, spacing: 10) {
+            if finishedEntries.isEmpty {
+                Text(L10n.string("cards.none", language: settings.language))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 4)
+            } else {
+                ForEach(pinnedFinishedEntries) { entry in
+                    DayCardView(settings: settings,
+                                vm: vm,
+                                searchHighlightsEnabled: true,
+                                entry: entry)
+                        .transition(.opacity)
+                }
+
+                if !remainingFinishedEntries.isEmpty {
+                    LazyVStack(alignment: .leading, spacing: 10) {
+                        ForEach(remainingFinishedEntries) { entry in
+                            DayCardView(settings: settings,
+                                        vm: vm,
+                                        searchHighlightsEnabled: true,
+                                        entry: entry)
+                                .transition(.opacity)
+                        }
+                    }
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.25),
+                   value: finishedEntries.map(\.id))
+        .animation(.easeInOut(duration: 0.25), value: vm.searchText)
+        .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
+        .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
+    }
+
+    @ViewBuilder
+    private func filterNoticeSection(scale: CGFloat) -> some View {
+        if vm.finishedLimit != .all {
+            filterActiveNotice(scale: scale, limit: vm.finishedLimit)
+                .padding(.top, 6)
+        }
+    }
+
+    private var footerSection: some View {
+        VStack(spacing: 10) {
+            Divider().opacity(0.6)
+            footerLinks
+        }
+        .padding(.top, 10)
     }
 
     private func scheduleMidnightRefresh() {
