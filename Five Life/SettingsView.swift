@@ -1110,9 +1110,7 @@ struct SettingsView: View {
 
         switch parseImportContents(contents) {
         case .success(let result):
-            deleteAllEntries()
-            result.entries.forEach { modelContext.insert($0) }
-            try? modelContext.save()
+            mergeImportedEntries(result.entries)
         case .failure(let error):
             if case .issues(let issues) = error {
                 importErrorMessage = importErrorMessage(for: issues)
@@ -1124,7 +1122,6 @@ struct SettingsView: View {
 
     private struct ImportResult {
         let entries: [DayEntry]
-        let score: Int?
     }
 
     private enum ImportIssue: Hashable {
@@ -1168,9 +1165,7 @@ struct SettingsView: View {
         var issues: Set<ImportIssue> = []
         var entriesByDate: [Date: [Int: String]] = [:]
         var maxNumberByDate: [Date: Int] = [:]
-        var scores: [Int] = []
-        var hasScoreColumn = false
-        var validRowCount = 0
+        var scoresByDate: [Date: Int] = [:]
 
         for line in lines {
             let fields = parseCSVLine(line)
@@ -1198,15 +1193,19 @@ struct SettingsView: View {
                 continue
             }
 
-            var scoreValue: Int?
             if fields.count == 4 {
-                hasScoreColumn = true
                 let scoreText = fields[3].trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !scoreText.isEmpty, let parsed = Int(scoreText) else {
-                    issues.insert(.score)
-                    continue
+                if !scoreText.isEmpty {
+                    guard let parsed = Int(scoreText) else {
+                        issues.insert(.score)
+                        continue
+                    }
+                    if let existingScore = scoresByDate[normalizedDate], existingScore != parsed {
+                        issues.insert(.score)
+                        continue
+                    }
+                    scoresByDate[normalizedDate] = parsed
                 }
-                scoreValue = parsed
             }
 
             var existing = entriesByDate[normalizedDate, default: [:]]
@@ -1214,25 +1213,12 @@ struct SettingsView: View {
             entriesByDate[normalizedDate] = existing
             maxNumberByDate[normalizedDate] = max(maxNumberByDate[normalizedDate] ?? 0, number)
 
-            if let scoreValue {
-                scores.append(scoreValue)
-            }
-            validRowCount += 1
-        }
-
-        if hasScoreColumn {
-            if scores.isEmpty || scores.count != validRowCount {
-                issues.insert(.score)
-            } else if Set(scores).count > 1 {
-                issues.insert(.score)
-            }
         }
 
         guard issues.isEmpty else {
             return .failure(.issues(issues))
         }
 
-        let uniformScore = scores.first
         let entries = entriesByDate.map { date, itemsByNumber in
             let maxNumber = maxNumberByDate[date] ?? 1
             let entry = DayEntry(day: date, itemCount: maxNumber)
@@ -1244,11 +1230,33 @@ struct SettingsView: View {
             }
             entry.isLocked = true
             entry.wasCompleted = true
-            entry.score = uniformScore
+            entry.score = scoresByDate[date]
             return entry
         }
 
-        return .success(ImportResult(entries: entries, score: uniformScore))
+        return .success(ImportResult(entries: entries))
+    }
+
+    private func mergeImportedEntries(_ entries: [DayEntry]) {
+        for entry in entries {
+            let normalizedDate = Calendar.current.startOfDay(for: entry.day)
+            let descriptor = FetchDescriptor<DayEntry>(
+                predicate: #Predicate { $0.day == normalizedDate }
+            )
+            if let existing = try? modelContext.fetch(descriptor).first {
+                existing.itemCount = entry.itemCount
+                existing.items = entry.items
+                existing.isLocked = true
+                existing.wasCompleted = true
+                if let score = entry.score {
+                    existing.score = score
+                }
+                existing.updatedAt = Date()
+            } else {
+                modelContext.insert(entry)
+            }
+        }
+        try? modelContext.save()
     }
 
     private func parseCSVLine(_ line: String) -> [String] {
