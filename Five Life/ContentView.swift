@@ -440,438 +440,511 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { proxy in
             let scale = ResponsiveTypeScale.scale(for: proxy.size.width)
+            let unfinishedEntries = unfinished
+            let finishedEntries = finished
+            let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
+            let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
+            let pinnedCardCount = 3
+            let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(pinnedCardCount))
+            let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(pinnedCardCount))
+            let pinnedFinishedEntries = Array(
+                finishedEntries.prefix(max(0, pinnedCardCount - pinnedUnfinishedEntries.count))
+            )
+            let remainingFinishedEntries = Array(finishedEntries.dropFirst(pinnedFinishedEntries.count))
             NavigationStack {
-                ZStack {
-                    ScrollViewReader { proxy in
-                        ScrollView(showsIndicators: false) {
-                        let unfinishedEntries = unfinished
-                        let finishedEntries = finished
-                        LazyVStack(alignment: .leading, spacing: 14) {
-                            Color.clear
-                                .frame(height: 1)
-                                .id(settingsTopID)
+                rootContent(
+                    scale: scale,
+                    unfinishedEntries: unfinishedEntries,
+                    finishedEntries: finishedEntries,
+                    thirdEmptyEntryID: thirdEmptyEntryID,
+                    pinnedUnfinishedEntries: pinnedUnfinishedEntries,
+                    remainingUnfinishedEntries: remainingUnfinishedEntries,
+                    pinnedFinishedEntries: pinnedFinishedEntries,
+                    remainingFinishedEntries: remainingFinishedEntries
+                )
+            }
+            .environment(\.responsiveTypeScale, scale)
+        }
+    }
 
-                            if showSettings {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text(L10n.string("settings.title", language: settings.language))
-                                            .font(.title3.weight(.semibold))
-                                            .onTapGesture(count: 5) {
-                                                withAnimation(.easeInOut(duration: 0.2)) {
-                                                    showSecretMenu = true
-                                                }
-                                            }
-                                        Spacer()
-                                        Image(systemName: "gearshape.fill")
-                                            .font(.system(size: settingsGearSize * scale,
-                                                          weight: .semibold))
-                                            .foregroundStyle(Color(.systemGray))
-                                            .onTapGesture {
-                                                pendingSettingsClose = true
-                                            }
-                                    }
-                                    .frame(height: 44)
-                                    .padding(.horizontal, 28)
-                                    .padding(.top, 4)
+    private func rootContent(
+        scale: CGFloat,
+        unfinishedEntries: [DayEntry],
+        finishedEntries: [DayEntry],
+        thirdEmptyEntryID: DayEntry.ID?,
+        pinnedUnfinishedEntries: [DayEntry],
+        remainingUnfinishedEntries: [DayEntry],
+        pinnedFinishedEntries: [DayEntry],
+        remainingFinishedEntries: [DayEntry]
+    ) -> some View {
+        ZStack {
+            scrollContent(
+                scale: scale,
+                unfinishedEntries: unfinishedEntries,
+                finishedEntries: finishedEntries,
+                thirdEmptyEntryID: thirdEmptyEntryID,
+                pinnedUnfinishedEntries: pinnedUnfinishedEntries,
+                remainingUnfinishedEntries: remainingUnfinishedEntries,
+                pinnedFinishedEntries: pinnedFinishedEntries,
+                remainingFinishedEntries: remainingFinishedEntries
+            )
 
-                                    VStack(spacing: 16) {
-                                        SettingsView(settings: settings,
-                                                     showSecretMenu: $showSecretMenu,
-                                                     showsNavigation: false)
+            if !hasSeenAccessScreen {
+                AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
+                    .transition(.opacity)
+            }
+        }
+        .background(mainBackground.ignoresSafeArea())
+        .safeAreaInset(edge: .top) {
+            if hasSeenAccessScreen {
+                headerView
+            }
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $shareSheetItem) { item in
+            ShareSheet(items: item.items)
+        }
+        .overlay {
+            if hasSeenAccessScreen {
+                lockOverlay(scale: scale)
+            }
+        }
+        .task {
+            vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            await notifier.refreshAuthorizationStatus()
+            await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                language: settings.language,
+                                                dailyCount: settings.dailyItemCount)
 
-                                        Button {
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                                showExportOptions.toggle()
-                                            }
-                                        } label: {
-                                            Text(L10n.string("export.title", language: settings.language))
-                                                .font(.headline)
-                                                .frame(maxWidth: .infinity)
-                                                .padding(.vertical, 10)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                                        .fill(Color.brandAccent.opacity(0.2))
-                                                )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .frame(maxWidth: 260)
-                                        .padding(.bottom, 6)
+            let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+            await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                  shouldSchedule: shouldScheduleNext,
+                                                  language: settings.language)
+            scheduleMidnightRefresh()
+            refreshEntryLists()
+        }
+        .onChange(of: entries.count) { _, _ in
+            // Keep “next day if needed” in sync when entries are created/locked/unlocked.
+            Task {
+                let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                      shouldSchedule: shouldScheduleNext,
+                                                      language: settings.language)
+            }
+            refreshEntryLists()
+        }
+        .onChange(of: entries.map(\.isLocked)) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: entries.map(\.day)) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: settings.dailyItemCount) { _, _ in
+            vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            refreshEntryLists()
+            Task {
+                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                    language: settings.language,
+                                                    dailyCount: settings.dailyItemCount)
+            }
+        }
+        .onChange(of: entries.map(\.updatedAt)) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: entries.map(\.wasCompleted)) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: vm.searchText) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: vm.newestFirst) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: vm.finishedLimit) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: settings.language) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: settings.moonEnabled) { _, _ in
+            refreshEntryLists()
+        }
+        .onChange(of: settings.holidaysEnabled) { _, _ in
+            refreshEntryLists()
+        }
+        .onAppear {
+            if !hasAppeared {
+                hasAppeared = true
+                if settings.faceIdLockEnabled {
+                    isUnlocked = false
+                    updateUnlockStateIfNeeded()
+                }
+            }
+        }
+        .onChange(of: settings.faceIdLockEnabled) { _, _ in
+            if settings.faceIdLockEnabled {
+                isUnlocked = false
+            }
+            updateUnlockStateIfNeeded()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active, settings.faceIdLockEnabled {
+                isUnlocked = false
+            }
+            if phase == .active {
+                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                AppleSyncManager.shared.catchUpSnapshotIfNeeded(
+                    modelContext: modelContext,
+                    settings: settings,
+                    isConnected: settings.appleIdConnected
+                )
+                scheduleMidnightRefresh()
+                updateUnlockStateIfNeeded()
+                refreshEntryLists()
+            } else {
+                vm.flushPendingSaves(modelContext: modelContext)
+                midnightTask?.cancel()
+                midnightTask = nil
+            }
+        }
+    }
 
-                                        if showExportOptions {
-                                            HStack(spacing: 12) {
-                                                Button {
-                                                    handleExport(format: .pdf)
-                                                } label: {
-                                                    Text(L10n.string("export.pdf", language: settings.language))
-                                                        .font(.headline)
-                                                        .foregroundStyle(.primary)
-                                                        .frame(width: 80, height: 36)
-                                                        .background(
-                                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                                .fill(Color.brandAccent.opacity(0.2))
-                                                        )
-                                                }
-                                                .buttonStyle(.plain)
+    private func scrollContent(
+        scale: CGFloat,
+        unfinishedEntries: [DayEntry],
+        finishedEntries: [DayEntry],
+        thirdEmptyEntryID: DayEntry.ID?,
+        pinnedUnfinishedEntries: [DayEntry],
+        remainingUnfinishedEntries: [DayEntry],
+        pinnedFinishedEntries: [DayEntry],
+        remainingFinishedEntries: [DayEntry]
+    ) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 14) {
+                    Color.clear
+                        .frame(height: 1)
+                        .id(settingsTopID)
 
-                                                Button {
-                                                    handleExport(format: .csv)
-                                                } label: {
-                                                    Text(L10n.string("export.csv", language: settings.language))
-                                                        .font(.headline)
-                                                        .foregroundStyle(.primary)
-                                                        .frame(width: 80, height: 36)
-                                                        .background(
-                                                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                                .fill(Color.brandAccent.opacity(0.2))
-                                                        )
-                                                }
-                                                .buttonStyle(.plain)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .center)
-                                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                                        }
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.horizontal, 14)
-                                    .padding(.top, 8)
-                                    .padding(.bottom, 14)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(settingsCardInnerBackground)
-                                    )
-                                    .padding(.horizontal, 14)
-                                    .padding(.bottom, 14)
-                                }
-                                .padding(.top, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .fill(settingsCardOuterBackground)
-                                        .shadow(radius: 6, y: 2)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
-                                )
-                                .transition(.move(edge: .top).combined(with: .opacity))
-                            }
-
-                        // Unfinished section
-                        let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
-                        let thirdEmptyEntryID = emptyUnfinishedEntries.count >= 3 ? emptyUnfinishedEntries[2].id : nil
-                        let pinnedCardCount = 3
-                        let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(pinnedCardCount))
-                        let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(pinnedCardCount))
-                        let pinnedFinishedEntries = Array(
-                            finishedEntries.prefix(max(0, pinnedCardCount - pinnedUnfinishedEntries.count))
-                        )
-                        let remainingFinishedEntries = Array(finishedEntries.dropFirst(pinnedFinishedEntries.count))
-                        if !unfinishedEntries.isEmpty {
-                            VStack(alignment: .leading, spacing: 10) {
-                                ForEach(pinnedUnfinishedEntries) { entry in
-                                    DayCardView(settings: settings,
-                                                vm: vm,
-                                                searchHighlightsEnabled: false,
-                                                entry: entry)
-                                        .transition(.identity)
-
-                                    if !dismissedEmptyLimitNotice,
-                                       let thirdEmptyEntryID,
-                                       entry.id == thirdEmptyEntryID {
-                                        emptyLimitNotice(scale: scale)
-                                    }
-                                }
-
-                                if !remainingUnfinishedEntries.isEmpty {
-                                    LazyVStack(alignment: .leading, spacing: 10) {
-                                        ForEach(remainingUnfinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: false,
-                                                        entry: entry)
-                                                .transition(.identity)
-
-                                            if !dismissedEmptyLimitNotice,
-                                               let thirdEmptyEntryID,
-                                               entry.id == thirdEmptyEntryID {
-                                                emptyLimitNotice(scale: scale)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            .animation(.easeInOut(duration: 0.25),
-                                       value: unfinishedEntries.map(\.id))
-                            .animation(.easeInOut(duration: settingsOpenAnimationDuration),
-                                       value: showSettings)
-                        } else {
-                            Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
-                                .font(.title3.weight(.semibold))
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .multilineTextAlignment(.center)
-                                .padding(.vertical, 8)
-                        }
-
-                        // Thick divider
-                        Rectangle()
-                            .fill(Color.brandAccent)
-                            .frame(height: 5)
-                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                            .padding(.top, 8)
-
-                        if settings.statisticsEnabled {
-                            statisticsRow(scale: scale)
-                        }
-
-                        // Search + sort (finished only)
-                        SearchAndSortBar(settings: settings,
-                                         text: $vm.searchText,
-                                         newestFirst: $vm.newestFirst,
-                                         finishedLimit: $vm.finishedLimit)
-
-                        // Finished section
-                        VStack(alignment: .leading, spacing: 10) {
-                            if finishedEntries.isEmpty && !shouldShowInfoCard {
-                                Text(L10n.string("cards.none", language: settings.language))
-                                    .foregroundStyle(.primary)
-                                    .padding(.horizontal, 4)
-                            } else {
-                                if shouldShowInfoCard, !vm.newestFirst {
-                                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
-                                                 items: infoCardEntries,
-                                                 infoAction: { hasDismissedInfoCard = true },
-                                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
-                                        .transition(.opacity)
-                                }
-
-                                ForEach(pinnedFinishedEntries) { entry in
-                                    DayCardView(settings: settings,
-                                                vm: vm,
-                                                searchHighlightsEnabled: true,
-                                                entry: entry)
-                                        .transition(.opacity)
-                                }
-
-                                if !remainingFinishedEntries.isEmpty {
-                                    LazyVStack(alignment: .leading, spacing: 10) {
-                                        ForEach(remainingFinishedEntries) { entry in
-                                            DayCardView(settings: settings,
-                                                        vm: vm,
-                                                        searchHighlightsEnabled: true,
-                                                        entry: entry)
-                                                .transition(.opacity)
-                                        }
-                                    }
-                                }
-
-                                if shouldShowInfoCard, vm.newestFirst {
-                                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
-                                                 items: infoCardEntries,
-                                                 infoAction: { hasDismissedInfoCard = true },
-                                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
-                                        .transition(.opacity)
-                                }
-                            }
-                        }
-                        .animation(.easeInOut(duration: 0.25),
-                                   value: finishedEntries.map(\.id))
-                        .animation(.easeInOut(duration: 0.25), value: vm.searchText)
-                        .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
-                        .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
-
-                        if vm.finishedLimit != .all {
-                            filterActiveNotice(scale: scale, limit: vm.finishedLimit)
-                                .padding(.top, 6)
-                        }
-
-                        // Footer links
-                        VStack(spacing: 10) {
-                            Divider().opacity(0.6)
-                            footerLinks
-                        }
-                        .padding(.top, 10)
+                    if showSettings {
+                        settingsSection(scale: scale)
                     }
-                        .padding(16)
+
+                    unfinishedSection(
+                        scale: scale,
+                        unfinishedEntries: unfinishedEntries,
+                        thirdEmptyEntryID: thirdEmptyEntryID,
+                        pinnedUnfinishedEntries: pinnedUnfinishedEntries,
+                        remainingUnfinishedEntries: remainingUnfinishedEntries
+                    )
+
+                    Rectangle()
+                        .fill(Color.brandAccent)
+                        .frame(height: 5)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .padding(.top, 8)
+
+                    if settings.statisticsEnabled {
+                        statisticsRow(scale: scale)
                     }
-                    .onTapGesture {
-                        if showExportOptions {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                showExportOptions = false
-                            }
-                        }
+
+                    SearchAndSortBar(settings: settings,
+                                     text: $vm.searchText,
+                                     newestFirst: $vm.newestFirst,
+                                     finishedLimit: $vm.finishedLimit)
+
+                    finishedSection(
+                        finishedEntries: finishedEntries,
+                        pinnedFinishedEntries: pinnedFinishedEntries,
+                        remainingFinishedEntries: remainingFinishedEntries
+                    )
+
+                    if vm.finishedLimit != .all {
+                        filterActiveNotice(scale: scale, limit: vm.finishedLimit)
+                            .padding(.top, 6)
                     }
-                    .onChange(of: showSettings) { _, expanded in
-                        if expanded {
-                            if suppressSettingsAutoScroll {
-                                suppressSettingsAutoScroll = false
-                            } else {
-                                scrollSettingsIntoView(using: proxy)
-                            }
-                        } else {
-                            showSecretMenu = false
-                            if showExportOptions {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    showExportOptions = false
-                                }
-                            }
-                            // Apply notification changes after closing settings
-                            Task {
-                                await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                                    language: settings.language,
-                                                                    dailyCount: settings.dailyItemCount)
-                                let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                                await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                                      shouldSchedule: shouldScheduleNext,
-                                                                      language: settings.language)
-                            }
-                        }
+
+                    VStack(spacing: 10) {
+                        Divider().opacity(0.6)
+                        footerLinks
                     }
-                    .onChange(of: showSecretMenu) { _, _ in
-                        if showSettings {
-                            scrollSettingsIntoView(using: proxy)
-                        }
-                    }
-                    .onChange(of: showExportOptions) { _, _ in
-                        if showSettings {
-                            scrollSettingsIntoView(using: proxy)
-                        }
-                    }
-                    .onChange(of: pendingSettingsOpen) { _, shouldOpen in
-                        if shouldOpen {
-                            openSettingsAfterScroll(using: proxy)
-                        }
-                    }
-                    .onChange(of: pendingSettingsClose) { _, shouldClose in
-                        if shouldClose {
-                            closeSettingsAfterScroll(using: proxy)
-                        }
-                    }
-                    .onChange(of: scrollToTopTrigger) { _, _ in
-                        scrollToTop(using: proxy)
+                    .padding(.top, 10)
+                }
+                .padding(16)
+            }
+            .onTapGesture {
+                if showExportOptions {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showExportOptions = false
                     }
                 }
-
-                    if !hasSeenAccessScreen {
-                        AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
-                            .transition(.opacity)
+            }
+            .onChange(of: showSettings) { _, expanded in
+                if expanded {
+                    if suppressSettingsAutoScroll {
+                        suppressSettingsAutoScroll = false
+                    } else {
+                        scrollSettingsIntoView(using: proxy)
                     }
-                }
-                .background(mainBackground.ignoresSafeArea())
-                .safeAreaInset(edge: .top) {
-                    if hasSeenAccessScreen {
-                        headerView
+                } else {
+                    showSecretMenu = false
+                    if showExportOptions {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showExportOptions = false
+                        }
                     }
-                }
-                .navigationTitle("")
-                .navigationBarTitleDisplayMode(.inline)
-                .sheet(item: $shareSheetItem) { item in
-                    ShareSheet(items: item.items)
-                }
-                .overlay {
-                    if hasSeenAccessScreen {
-                        lockOverlay(scale: scale)
-                    }
-                }
-                .task {
-                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                    await notifier.refreshAuthorizationStatus()
-                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                        language: settings.language,
-                                                        dailyCount: settings.dailyItemCount)
-
-                    let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
-                    await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                          shouldSchedule: shouldScheduleNext,
-                                                          language: settings.language)
-                    scheduleMidnightRefresh()
-                    refreshEntryLists()
-                }
-                .onChange(of: entries.count) { _, _ in
-                    // Keep “next day if needed” in sync when entries are created/locked/unlocked.
+                    // Apply notification changes after closing settings
                     Task {
+                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                            language: settings.language,
+                                                            dailyCount: settings.dailyItemCount)
                         let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
                         await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                               shouldSchedule: shouldScheduleNext,
                                                               language: settings.language)
                     }
-                    refreshEntryLists()
                 }
-                .onChange(of: entries.map(\.isLocked)) { _, _ in
-                    refreshEntryLists()
+            }
+            .onChange(of: showSecretMenu) { _, _ in
+                if showSettings {
+                    scrollSettingsIntoView(using: proxy)
                 }
-                .onChange(of: entries.map(\.day)) { _, _ in
-                    refreshEntryLists()
+            }
+            .onChange(of: showExportOptions) { _, _ in
+                if showSettings {
+                    scrollSettingsIntoView(using: proxy)
                 }
-                .onChange(of: settings.dailyItemCount) { _, _ in
-                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                    refreshEntryLists()
-                    Task {
-                        await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                            language: settings.language,
-                                                            dailyCount: settings.dailyItemCount)
+            }
+            .onChange(of: pendingSettingsOpen) { _, shouldOpen in
+                if shouldOpen {
+                    openSettingsAfterScroll(using: proxy)
+                }
+            }
+            .onChange(of: pendingSettingsClose) { _, shouldClose in
+                if shouldClose {
+                    closeSettingsAfterScroll(using: proxy)
+                }
+            }
+            .onChange(of: scrollToTopTrigger) { _, _ in
+                scrollToTop(using: proxy)
+            }
+        }
+    }
+
+    private func settingsSection(scale: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(L10n.string("settings.title", language: settings.language))
+                    .font(.title3.weight(.semibold))
+                    .onTapGesture(count: 5) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            showSecretMenu = true
+                        }
                     }
+                Spacer()
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: settingsGearSize * scale,
+                                  weight: .semibold))
+                    .foregroundStyle(Color(.systemGray))
+                    .onTapGesture {
+                        pendingSettingsClose = true
+                    }
+            }
+            .frame(height: 44)
+            .padding(.horizontal, 28)
+            .padding(.top, 4)
+
+            VStack(spacing: 16) {
+                SettingsView(settings: settings,
+                             showSecretMenu: $showSecretMenu,
+                             showsNavigation: false)
+
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        showExportOptions.toggle()
+                    }
+                } label: {
+                    Text(L10n.string("export.title", language: settings.language))
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Color.brandAccent.opacity(0.2))
+                        )
                 }
-                .onChange(of: entries.map(\.updatedAt)) { _, _ in
-                    refreshEntryLists()
+                .buttonStyle(.plain)
+                .frame(maxWidth: 260)
+                .padding(.bottom, 6)
+
+                if showExportOptions {
+                    HStack(spacing: 12) {
+                        Button {
+                            handleExport(format: .pdf)
+                        } label: {
+                            Text(L10n.string("export.pdf", language: settings.language))
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                                .frame(width: 80, height: 36)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(Color.brandAccent.opacity(0.2))
+                                )
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            handleExport(format: .csv)
+                        } label: {
+                            Text(L10n.string("export.csv", language: settings.language))
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                                .frame(width: 80, height: 36)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(Color.brandAccent.opacity(0.2))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                .onChange(of: entries.map(\.wasCompleted)) { _, _ in
-                    refreshEntryLists()
-                }
-                .onChange(of: vm.searchText) { _, _ in
-                    refreshEntryLists()
-                }
-                .onChange(of: vm.newestFirst) { _, _ in
-                    refreshEntryLists()
-                }
-                .onChange(of: vm.finishedLimit) { _, _ in
-                    refreshEntryLists()
-                }
-                .onChange(of: settings.language) { _, _ in
-                    refreshEntryLists()
-                }
-                .onChange(of: settings.moonEnabled) { _, _ in
-                    refreshEntryLists()
-                }
-                .onChange(of: settings.holidaysEnabled) { _, _ in
-                    refreshEntryLists()
-                }
-                .onAppear {
-                    if !hasAppeared {
-                        hasAppeared = true
-                        if settings.faceIdLockEnabled {
-                            isUnlocked = false
-                            updateUnlockStateIfNeeded()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 14)
+            .padding(.top, 8)
+            .padding(.bottom, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(settingsCardInnerBackground)
+            )
+            .padding(.horizontal, 14)
+            .padding(.bottom, 14)
+        }
+        .padding(.top, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(settingsCardOuterBackground)
+                .shadow(radius: 6, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
+        )
+        .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    private func unfinishedSection(
+        scale: CGFloat,
+        unfinishedEntries: [DayEntry],
+        thirdEmptyEntryID: DayEntry.ID?,
+        pinnedUnfinishedEntries: [DayEntry],
+        remainingUnfinishedEntries: [DayEntry]
+    ) -> some View {
+        Group {
+            if !unfinishedEntries.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(pinnedUnfinishedEntries) { entry in
+                        DayCardView(settings: settings,
+                                    vm: vm,
+                                    searchHighlightsEnabled: false,
+                                    entry: entry)
+                            .transition(.identity)
+
+                        if !dismissedEmptyLimitNotice,
+                           let thirdEmptyEntryID,
+                           entry.id == thirdEmptyEntryID {
+                            emptyLimitNotice(scale: scale)
+                        }
+                    }
+
+                    if !remainingUnfinishedEntries.isEmpty {
+                        LazyVStack(alignment: .leading, spacing: 10) {
+                            ForEach(remainingUnfinishedEntries) { entry in
+                                DayCardView(settings: settings,
+                                            vm: vm,
+                                            searchHighlightsEnabled: false,
+                                            entry: entry)
+                                    .transition(.identity)
+
+                                if !dismissedEmptyLimitNotice,
+                                   let thirdEmptyEntryID,
+                                   entry.id == thirdEmptyEntryID {
+                                    emptyLimitNotice(scale: scale)
+                                }
+                            }
                         }
                     }
                 }
-                .onChange(of: settings.faceIdLockEnabled) { _, _ in
-                    if settings.faceIdLockEnabled {
-                        isUnlocked = false
-                    }
-                    updateUnlockStateIfNeeded()
+                .animation(.easeInOut(duration: 0.25),
+                           value: unfinishedEntries.map(\.id))
+                .animation(.easeInOut(duration: settingsOpenAnimationDuration),
+                           value: showSettings)
+            } else {
+                Text(L10n.string("cards.see.you.tomorrow", language: settings.language))
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 8)
+            }
+        }
+    }
+
+    private func finishedSection(
+        finishedEntries: [DayEntry],
+        pinnedFinishedEntries: [DayEntry],
+        remainingFinishedEntries: [DayEntry]
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if finishedEntries.isEmpty && !shouldShowInfoCard {
+                Text(L10n.string("cards.none", language: settings.language))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 4)
+            } else {
+                if shouldShowInfoCard, !vm.newestFirst {
+                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
+                                 items: infoCardEntries,
+                                 infoAction: { hasDismissedInfoCard = true },
+                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                        .transition(.opacity)
                 }
-                .onChange(of: scenePhase) { _, phase in
-                    if phase != .active, settings.faceIdLockEnabled {
-                        isUnlocked = false
+
+                ForEach(pinnedFinishedEntries) { entry in
+                    DayCardView(settings: settings,
+                                vm: vm,
+                                searchHighlightsEnabled: true,
+                                entry: entry)
+                        .transition(.opacity)
+                }
+
+                if !remainingFinishedEntries.isEmpty {
+                    LazyVStack(alignment: .leading, spacing: 10) {
+                        ForEach(remainingFinishedEntries) { entry in
+                            DayCardView(settings: settings,
+                                        vm: vm,
+                                        searchHighlightsEnabled: true,
+                                        entry: entry)
+                                .transition(.opacity)
+                        }
                     }
-                    if phase == .active {
-                        vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                        AppleSyncManager.shared.catchUpSnapshotIfNeeded(
-                            modelContext: modelContext,
-                            settings: settings,
-                            isConnected: settings.appleIdConnected
-                        )
-                        scheduleMidnightRefresh()
-                        updateUnlockStateIfNeeded()
-                        refreshEntryLists()
-                    } else {
-                        vm.flushPendingSaves(modelContext: modelContext)
-                        midnightTask?.cancel()
-                        midnightTask = nil
-                    }
+                }
+
+                if shouldShowInfoCard, vm.newestFirst {
+                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
+                                 items: infoCardEntries,
+                                 infoAction: { hasDismissedInfoCard = true },
+                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                        .transition(.opacity)
                 }
             }
-            .environment(\.responsiveTypeScale, scale)
         }
+        .animation(.easeInOut(duration: 0.25),
+                   value: finishedEntries.map(\.id))
+        .animation(.easeInOut(duration: 0.25), value: vm.searchText)
+        .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
+        .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
     }
 
     private func scheduleMidnightRefresh() {
