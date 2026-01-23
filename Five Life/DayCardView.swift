@@ -104,7 +104,7 @@ struct DayCardView: View {
     }
 
     private var canRemoveOptionalRows: Bool {
-        entry.itemCount > settings.dailyItemCount
+        !entry.isLocked && entry.items.count > settings.dailyItemCount
     }
 
     private var shouldPulse: Bool {
