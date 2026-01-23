@@ -5,6 +5,7 @@
 "access.card.5" = "Deze app is gebouwd met respect voor je *privacy* en maakt dit makkelijker. Er zijn geen premium opties in de app; een symbolische €5-bijdrage (€4,99) aan de ontwikkeling is *volledig optioneel*.";
 "access.connect.apple" = "Connect met je Apple ID";
 "access.continue.without" = "Gebruik de app zonder";
+"access.back.main.menu" = "Terug naar hoofdmenu";
 "access.page.indicator" = "Pagina %d van %d";
 "access.payment.contribute" = "Doe een bijdrage van één euro";
 "access.payment.failed" = "Betaling mislukt. Probeer het later opnieuw.";

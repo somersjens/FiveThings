@@ -7,6 +7,7 @@ import SwiftData
 struct AccessScreenView: View {
     @ObservedObject var settings: SettingsStore
     @Binding var hasSeenAccessScreen: Bool
+    @Binding var showsReturnToMainMenuOnly: Bool
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @State private var currentCardIndex: Int = 0
@@ -40,6 +41,10 @@ struct AccessScreenView: View {
         L10n.string("access.continue.without", language: settings.language)
     }
 
+    private var backToMainMenuButtonTitle: String {
+        L10n.string("access.back.main.menu", language: settings.language)
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ScrollView(showsIndicators: false) {
@@ -64,36 +69,54 @@ struct AccessScreenView: View {
                         pageIndicators
 
                         VStack(spacing: 12 * accessScale) {
-                            Button {
-                                Task {
-                                    await handleAppleSignIn()
+                            if showsReturnToMainMenuOnly {
+                                Button {
+                                    hasSeenAccessScreen = true
+                                    showsReturnToMainMenuOnly = false
+                                } label: {
+                                    Text(backToMainMenuButtonTitle)
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12 * accessScale)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
+                                                .fill(Color.brandAccent)
+                                        )
+                                        .foregroundStyle(.white)
                                 }
-                            } label: {
-                                Text(connectButtonTitle)
-                                    .font(.headline)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12 * accessScale)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
-                                            .fill(Color.brandAccent)
-                                    )
-                                    .foregroundStyle(.white)
-                            }
-                            .disabled(isSigningInWithApple)
+                            } else {
+                                Button {
+                                    Task {
+                                        await handleAppleSignIn()
+                                    }
+                                } label: {
+                                    Text(connectButtonTitle)
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12 * accessScale)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
+                                                .fill(Color.brandAccent)
+                                        )
+                                        .foregroundStyle(.white)
+                                }
+                                .disabled(isSigningInWithApple)
 
-                            Button {
-                                settings.appleIdConnected = false
-                                hasSeenAccessScreen = true
-                            } label: {
-                                Text(continueButtonTitle)
-                                    .font(.headline)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12 * accessScale)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
-                                            .fill(Color.brandSecondarySurface)
-                                    )
-                                    .foregroundStyle(Color.brandAccent)
+                                Button {
+                                    settings.appleIdConnected = false
+                                    hasSeenAccessScreen = true
+                                    showsReturnToMainMenuOnly = false
+                                } label: {
+                                    Text(continueButtonTitle)
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12 * accessScale)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
+                                                .fill(Color.brandSecondarySurface)
+                                        )
+                                        .foregroundStyle(Color.brandAccent)
+                                }
                             }
                         }
                         .frame(maxWidth: maxContentWidth * accessScale)
@@ -221,6 +244,7 @@ struct AccessScreenView: View {
                                                                settings: settings,
                                                                context: .initialConnect)
             hasSeenAccessScreen = true
+            showsReturnToMainMenuOnly = false
         } catch {
             settings.appleIdConnected = false
         }

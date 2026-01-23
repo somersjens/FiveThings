@@ -5,6 +5,7 @@
 "access.card.5" = "This app is built with respect for your *privacy* and makes things easier. There are no premium options; a symbolic contribution of *€5* (or your local equivalent) to support development is completely *optional*.";
 "access.connect.apple" = "Connect with your Apple ID";
 "access.continue.without" = "Use the app without";
+"access.back.main.menu" = "Back to main menu";
 "access.page.indicator" = "Page %d of %d";
 "access.payment.contribute" = "Make a one euro contribution";
 "access.payment.failed" = "Payment failed. Please try again later.";

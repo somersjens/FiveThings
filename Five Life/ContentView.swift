@@ -27,6 +27,7 @@ struct ContentView: View {
     @State private var pendingSettingsClose = false
     @State private var suppressSettingsAutoScroll = false
     @State private var dismissedEmptyLimitNotice = false
+    @State private var showsReturnToMainMenuOnly = false
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     @AppStorage("hasDismissedInfoCard") private var hasDismissedInfoCard: Bool = false
     @AppStorage("seeYouTomorrowIndexEnglish") private var seeYouTomorrowIndexEnglish: Int = 0
@@ -529,7 +530,9 @@ struct ContentView: View {
             )
 
             if !hasSeenAccessScreen {
-                AccessScreenView(settings: settings, hasSeenAccessScreen: $hasSeenAccessScreen)
+                AccessScreenView(settings: settings,
+                                 hasSeenAccessScreen: $hasSeenAccessScreen,
+                                 showsReturnToMainMenuOnly: $showsReturnToMainMenuOnly)
                     .transition(.opacity)
             }
         }
@@ -725,13 +728,33 @@ struct ContentView: View {
                         }
                     }
                 Spacer()
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: settingsGearSize * scale,
-                                  weight: .semibold))
-                    .foregroundStyle(Color(.systemGray))
-                    .onTapGesture {
+                HStack(spacing: 12) {
+                    Button {
+                        showsReturnToMainMenuOnly = true
+                        hasSeenAccessScreen = false
                         pendingSettingsClose = true
+                    } label: {
+                        Image("Settings_clover")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: settingsGearSize * scale,
+                                   height: settingsGearSize * scale)
+                            .foregroundStyle(Color(.systemGray))
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L10n.string("access.back.main.menu", language: settings.language))
+
+                    Button {
+                        pendingSettingsClose = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: settingsGearSize * scale,
+                                          weight: .semibold))
+                            .foregroundStyle(Color(.systemGray))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .frame(height: 44)
             .padding(.horizontal, 28)
