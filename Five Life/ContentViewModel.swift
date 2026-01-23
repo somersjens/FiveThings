@@ -68,6 +68,7 @@ final class ContentViewModel: ObservableObject {
     }
 
     func lock(_ entry: DayEntry, requiredCount: Int, settings: SettingsStore, modelContext: ModelContext) {
+        entry.pruneEmptyOptionalItems(keepingAtLeast: requiredCount)
         entry.updateItemCountPreservingItems(to: requiredCount)
         entry.isLocked = true
         entry.wasCompleted = true
