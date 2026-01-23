@@ -728,7 +728,7 @@ struct ContentView: View {
                         }
                     }
                 Spacer()
-                HStack(spacing: 12) {
+                HStack(spacing: 12 * 1.2) {
                     Button {
                         showsReturnToMainMenuOnly = true
                         hasSeenAccessScreen = false
@@ -738,8 +738,8 @@ struct ContentView: View {
                             .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: settingsGearSize * scale,
-                                   height: settingsGearSize * scale)
+                            .frame(width: settingsGearSize * scale * 1.2,
+                                   height: settingsGearSize * scale * 1.2)
                             .foregroundStyle(Color(.systemGray))
                     }
                     .buttonStyle(.plain)
@@ -904,46 +904,40 @@ struct ContentView: View {
         remainingFinishedEntries: [DayEntry]
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            if finishedEntries.isEmpty && !shouldShowInfoCard {
-                Text(L10n.string("cards.none", language: settings.language))
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 4)
-            } else {
-                if shouldShowInfoCard, !vm.newestFirst {
-                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
-                                 items: infoCardEntries,
-                                 infoAction: { hasDismissedInfoCard = true },
-                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
-                        .transition(.opacity)
-                }
+            if shouldShowInfoCard, !vm.newestFirst {
+                InfoCardView(title: L10n.string("info.card.title", language: settings.language),
+                             items: infoCardEntries,
+                             infoAction: { hasDismissedInfoCard = true },
+                             infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                    .transition(.opacity)
+            }
 
-                ForEach(pinnedFinishedEntries) { entry in
-                    DayCardView(settings: settings,
-                                vm: vm,
-                                searchHighlightsEnabled: true,
-                                entry: entry)
-                        .transition(.opacity)
-                }
+            ForEach(pinnedFinishedEntries) { entry in
+                DayCardView(settings: settings,
+                            vm: vm,
+                            searchHighlightsEnabled: true,
+                            entry: entry)
+                    .transition(.opacity)
+            }
 
-                if !remainingFinishedEntries.isEmpty {
-                    LazyVStack(alignment: .leading, spacing: 10) {
-                        ForEach(remainingFinishedEntries) { entry in
-                            DayCardView(settings: settings,
-                                        vm: vm,
-                                        searchHighlightsEnabled: true,
-                                        entry: entry)
-                                .transition(.opacity)
-                        }
+            if !remainingFinishedEntries.isEmpty {
+                LazyVStack(alignment: .leading, spacing: 10) {
+                    ForEach(remainingFinishedEntries) { entry in
+                        DayCardView(settings: settings,
+                                    vm: vm,
+                                    searchHighlightsEnabled: true,
+                                    entry: entry)
+                            .transition(.opacity)
                     }
                 }
+            }
 
-                if shouldShowInfoCard, vm.newestFirst {
-                    InfoCardView(title: L10n.string("info.card.title", language: settings.language),
-                                 items: infoCardEntries,
-                                 infoAction: { hasDismissedInfoCard = true },
-                                 infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
-                        .transition(.opacity)
-                }
+            if shouldShowInfoCard, vm.newestFirst {
+                InfoCardView(title: L10n.string("info.card.title", language: settings.language),
+                             items: infoCardEntries,
+                             infoAction: { hasDismissedInfoCard = true },
+                             infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                    .transition(.opacity)
             }
         }
         .animation(.easeInOut(duration: 0.25),

@@ -502,7 +502,7 @@ struct SettingsView: View {
                 reminderSettingsSection
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: settings.language)
+        .animation(.easeInOut(duration: 0.12), value: settings.language)
     }
 
     private var inlineSettings: some View {
@@ -531,7 +531,7 @@ struct SettingsView: View {
                 .frame(height: 1)
             reminderSettingsSection
         }
-        .animation(.easeInOut(duration: 0.2), value: settings.language)
+        .animation(.easeInOut(duration: 0.12), value: settings.language)
     }
 
     var body: some View {

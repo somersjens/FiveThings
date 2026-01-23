@@ -11,7 +11,6 @@
 "access.payment.failed" = "Payment failed. Please try again later.";
 "access.payment.title" = "In-App Payment";
 "access.payment.unavailable" = "The product is not available yet.";
-"cards.none" = "No cards found.";
 "cards.see.you.tomorrow.1" = "All finished. Well done";
 "cards.see.you.tomorrow.2" = "Have a good night";
 "cards.see.you.tomorrow.3" = "You did great today";
