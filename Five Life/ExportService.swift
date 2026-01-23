@@ -426,8 +426,16 @@ enum ExportService {
     }
 
     private static func makeTemporaryURL(withExtension fileExtension: String) -> URL {
-        let dateStamp = ISO8601DateFormatter().string(from: Date())
-        let filename = "FiveThings-Export-\(dateStamp).\(fileExtension)"
+        let dateStamp = exportTimestamp(for: Date())
+        let filename = "Happy_Five_Export_\(dateStamp).\(fileExtension)"
         return FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+    }
+
+    private static func exportTimestamp(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "dd_MM_yyyy_HH:mm:ss"
+        return formatter.string(from: date)
     }
 }
