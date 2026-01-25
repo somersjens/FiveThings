@@ -182,6 +182,8 @@
 "settings.faceid.required.message" = "Activeer Face ID in iOS-instellingen om deze optie opnieuw te gebruiken.";
 "settings.go.to.settings" = "Ga naar Instellingen";
 "settings.holidays" = "Feestdagen";
+"settings.day.create.hint" = "Klik op het vinkje om deze datum aan te maken";
+"settings.day.delete.hint" = "Klik op het kruisje om deze datum te verwijderen";
 "settings.info.add.day" = "Op basis van de datum die je invoert, herkent de app of je een item wilt toevoegen of verwijderen.";
 "settings.info.apple.id" = "Als je telefoon wordt gestolen of je een nieuwe hebt, blijven je notities gewoon bewaard.";
 "settings.info.entries.per.day" = "Vijf is het magische getal, maar minder of meer kan natuurlijk ook!";

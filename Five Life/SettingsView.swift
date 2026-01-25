@@ -371,6 +371,18 @@ struct SettingsView: View {
                 }
             }
 
+            if let rangeWarning = addDayRangeWarning {
+                Text(rangeWarning)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+            }
+
+            if let instruction = addDayInstructionText {
+                Text("(\(instruction.text))")
+                    .font(.footnote)
+                    .foregroundStyle(instruction.isError ? .red : .green)
+            }
+
             if let message = addDayMessage {
                 Text(message)
                     .font(.footnote)
@@ -389,6 +401,30 @@ struct SettingsView: View {
             return L10n.string("settings.day.delete", language: settings.language)
         }
         return L10n.string("settings.day.add", language: settings.language)
+    }
+
+    private var addDayRangeWarning: String? {
+        guard addDayDigits.count == 8,
+              let selectedDay = parseAddDayDate() else {
+            return nil
+        }
+        return isAddDayWithinRange(selectedDay)
+            ? nil
+            : L10n.string("settings.day.range", language: settings.language)
+    }
+
+    private var addDayInstructionText: (text: String, isError: Bool)? {
+        guard addDayDigits.count == 8,
+              let selectedDay = parseAddDayDate(),
+              isAddDayWithinRange(selectedDay) else {
+            return nil
+        }
+
+        if addDayHasExistingEntry {
+            return (L10n.string("settings.day.delete.hint", language: settings.language), true)
+        }
+
+        return (L10n.string("settings.day.create.hint", language: settings.language), false)
     }
 
     private var addDayFormat: AddDayDateFormat {

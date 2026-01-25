@@ -170,8 +170,11 @@
 "settings.day.add" = "Add this day";
 "settings.day.add.delete" = "Add/Delete a day";
 "settings.day.added" = "Day added.";
+"settings.day.create.hint" = "Click the checkmark to create this date";
 "settings.day.delete" = "Delete this day";
 "settings.day.deleted" = "Day deleted.";
+"settings.day.delete.hint" = "Click the cross to delete this date";
+"settings.day.range" = "Maximum +/- 100 year";
 "settings.delete.all" = "Delete all entries";
 "settings.delete.confirm" = "Are you sure";
 "settings.entries.per.day" = "Entries per day";
