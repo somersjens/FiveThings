@@ -363,10 +363,10 @@ final class SettingsStore: ObservableObject {
         set { languageRaw = newValue.rawValue; objectWillChange.send() }
     }
 
-    @AppStorage("moonEnabled") var moonEnabled: Bool = false
+    @AppStorage("moonEnabled") var moonEnabled: Bool = true
     @AppStorage("holidaysEnabled") var holidaysEnabled: Bool = false
     @AppStorage("faceIdLockEnabled") var faceIdLockEnabled: Bool = false
-    @AppStorage("statisticsEnabled") var statisticsEnabled: Bool = false
+    @AppStorage("statisticsEnabled") var statisticsEnabled: Bool = true
     @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
     @AppStorage("appleIdConnected") var appleIdConnected: Bool = false
     @AppStorage("appleUserIdentifier") var appleUserIdentifier: String = ""

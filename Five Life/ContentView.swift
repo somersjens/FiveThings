@@ -323,7 +323,6 @@ struct ContentView: View {
         }
         .font(.footnote.weight(.semibold))
         .foregroundStyle(highlightFooterLinks ? .orange : .secondary)
-        .scaleEffect(highlightFooterLinks ? 1.2 : 1)
         .animation(.easeInOut(duration: 0.25), value: highlightFooterLinks)
         .id(footerLinksID)
     }
@@ -443,6 +442,7 @@ struct ContentView: View {
                     scrollToTopTrigger += 1
                 } label: {
                     Image(systemName: "arrow.up")
+                        .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(highlightScrollToTop ? .orange : .secondary)
                         .frame(width: 32, height: 32)
                         .scaleEffect(highlightScrollToTop ? 1.2 : 1)
