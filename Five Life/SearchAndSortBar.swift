@@ -6,6 +6,9 @@ struct SearchAndSortBar: View {
     @Binding var text: String
     @Binding var newestFirst: Bool
     @Binding var finishedLimit: ContentViewModel.FinishedCardsLimit
+    let highlightSearchPlaceholder: Bool
+    let highlightSortArrow: Bool
+    let highlightFilterLimit: Bool
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @ScaledMetric(relativeTo: .footnote) private var filterFontSize: CGFloat = 12
     @ScaledMetric(relativeTo: .headline) private var sortIconSize: CGFloat = 16
@@ -17,11 +20,15 @@ struct SearchAndSortBar: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.primary)
 
-                TextField(L10n.string("search.placeholder", language: settings.language),
-                          text: $text)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .foregroundStyle(.primary)
+                TextField(
+                    "",
+                    text: $text,
+                    prompt: Text(L10n.string("search.placeholder", language: settings.language))
+                        .foregroundStyle(highlightSearchPlaceholder ? Color.brandAccent : .secondary)
+                )
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .foregroundStyle(.primary)
 
                 if !text.isEmpty {
                     Button {
@@ -47,7 +54,7 @@ struct SearchAndSortBar: View {
                 Text(finishedLimit.displayText(language: settings.language))
                     .font(.system(size: filterFontSize * responsiveTypeScale, weight: .semibold))
                     .monospacedDigit()
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(highlightFilterLimit ? Color.brandAccent : .primary)
                     .frame(width: controlSize * responsiveTypeScale,
                            height: controlSize * responsiveTypeScale)
                     .background(.secondary.opacity(0.10))
@@ -63,6 +70,7 @@ struct SearchAndSortBar: View {
             } label: {
                 Image(systemName: newestFirst ? "arrow.down" : "arrow.up")
                     .font(.system(size: sortIconSize * responsiveTypeScale, weight: .semibold))
+                    .foregroundStyle(highlightSortArrow ? Color.brandAccent : .primary)
                     .padding(12)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))

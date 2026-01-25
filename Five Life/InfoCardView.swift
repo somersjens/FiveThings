@@ -8,6 +8,7 @@ struct InfoCardView: View {
     let items: [String]
     let infoAction: () -> Void
     let infoAccessibilityLabel: String
+    let linkAction: (String) -> Void
 
     @ScaledMetric(relativeTo: .body) private var rowSpacing: CGFloat = 10
     @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
@@ -79,7 +80,7 @@ struct InfoCardView: View {
                 .frame(width: 22, alignment: .leading)
                 .foregroundStyle(.primary)
 
-            Text(text)
+            Text(formattedRowText(text))
                 .font(.body)
                 .lineLimit(4)
                 .lineSpacing(0)
@@ -87,6 +88,15 @@ struct InfoCardView: View {
                 .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .multilineTextAlignment(.leading)
+                .environment(\.openURL, OpenURLAction { url in
+                    guard url.scheme == "info" else {
+                        return .systemAction
+                    }
+                    if let action = url.host, !action.isEmpty {
+                        linkAction(action)
+                    }
+                    return .handled
+                })
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 6)
@@ -97,5 +107,16 @@ struct InfoCardView: View {
                 .fill(rowBackgroundColor)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func formattedRowText(_ text: String) -> AttributedString {
+        var attributed = (try? AttributedString(markdown: text)) ?? AttributedString(text)
+        for run in attributed.runs {
+            if run.link != nil {
+                attributed[run.range].foregroundColor = Color.brandAccent
+                attributed[run.range].underlineStyle = nil
+            }
+        }
+        return attributed
     }
 }

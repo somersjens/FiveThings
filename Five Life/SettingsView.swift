@@ -9,6 +9,7 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
     @Binding var showSecretMenu: Bool
+    @Binding var requestedInfo: SettingsInfo?
     var showsNavigation: Bool = true
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
@@ -49,7 +50,7 @@ struct SettingsView: View {
     @State private var infoFrames: [SettingsInfo: CGRect] = [:]
     @State private var infoPopoverSize: CGSize = .zero
 
-    private enum SettingsInfo {
+    enum SettingsInfo {
         case language
         case addDay
         case entriesPerDay
@@ -637,6 +638,13 @@ struct SettingsView: View {
         }
         .onPreferenceChange(SettingsInfoPopoverSizePreferenceKey.self) { newSize in
             infoPopoverSize = newSize
+        }
+        .onChange(of: requestedInfo) { _, newValue in
+            guard let newValue else { return }
+            withAnimation(.easeInOut(duration: 0.18)) {
+                activeInfo = newValue
+            }
+            requestedInfo = nil
         }
         .task {
             await notifier.refreshAuthorizationStatus()

@@ -23,11 +23,19 @@ struct ContentView: View {
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
+    @State private var scrollToFooterTrigger = 0
     @State private var pendingSettingsOpen = false
     @State private var pendingSettingsClose = false
     @State private var suppressSettingsAutoScroll = false
     @State private var dismissedEmptyLimitNotice = false
     @State private var showsReturnToMainMenuOnly = false
+    @State private var highlightLockIcons = false
+    @State private var highlightSearchPlaceholder = false
+    @State private var highlightSortArrow = false
+    @State private var highlightFilterLimit = false
+    @State private var highlightScrollToTop = false
+    @State private var highlightFooterLinks = false
+    @State private var requestedSettingsInfo: SettingsView.SettingsInfo?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     @AppStorage("hasDismissedInfoCard") private var hasDismissedInfoCard: Bool = false
     @AppStorage("seeYouTomorrowIndexEnglish") private var seeYouTomorrowIndexEnglish: Int = 0
@@ -157,8 +165,15 @@ struct ContentView: View {
     }
 
     private var infoCardEntries: [String] {
-        (1...10)
-            .map { L10n.string("info.card.entry.\($0)", language: settings.language) }
+        let localizedCount = localizedCountText(settings.dailyItemCount)
+        return (1...10)
+            .map { index in
+                let key = "info.card.entry.\(index)"
+                if index == 1 {
+                    return L10n.string(key, language: settings.language, localizedCount)
+                }
+                return L10n.string(key, language: settings.language)
+            }
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
@@ -173,6 +188,7 @@ struct ContentView: View {
     }
 
     private let settingsTopID = "settingsTop"
+    private let footerLinksID = "footerLinks"
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
     private let settingsOpenAnimationDuration: Double = 0.35
@@ -273,7 +289,8 @@ struct ContentView: View {
             .multilineTextAlignment(.center)
         }
         .font(.footnote.weight(.semibold))
-        .foregroundStyle(.secondary)
+        .foregroundStyle(highlightFooterLinks ? Color.brandAccent : .secondary)
+        .id(footerLinksID)
     }
 
     private func emptyLimitNotice(scale: CGFloat) -> some View {
@@ -359,6 +376,19 @@ struct ContentView: View {
         }
     }
 
+    private func localizedCountText(_ count: Int) -> String {
+        let formatter = NumberFormatter()
+        let localeIdentifier = settings.language.localeIdentifier
+        if let numberingSystem = settings.language.numberingSystemOverride {
+            formatter.locale = Locale(identifier: "\(localeIdentifier)@numbers=\(numberingSystem)")
+        } else {
+            formatter.locale = Locale(identifier: localeIdentifier)
+        }
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: count)) ?? "\(count)"
+    }
+
     private var headerView: some View {
         ZStack {
             HStack {
@@ -378,7 +408,7 @@ struct ContentView: View {
                     scrollToTopTrigger += 1
                 } label: {
                     Image(systemName: "arrow.up")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(highlightScrollToTop ? Color.brandAccent : .secondary)
                         .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.plain)
@@ -641,7 +671,10 @@ struct ContentView: View {
                     SearchAndSortBar(settings: settings,
                                      text: $vm.searchText,
                                      newestFirst: $vm.newestFirst,
-                                     finishedLimit: $vm.finishedLimit)
+                                     finishedLimit: $vm.finishedLimit,
+                                     highlightSearchPlaceholder: highlightSearchPlaceholder,
+                                     highlightSortArrow: highlightSortArrow,
+                                     highlightFilterLimit: highlightFilterLimit)
 
                     finishedSection(
                         finishedEntries: finishedEntries,
@@ -719,6 +752,9 @@ struct ContentView: View {
             .onChange(of: scrollToTopTrigger) { _, _ in
                 scrollToTop(using: proxy)
             }
+            .onChange(of: scrollToFooterTrigger) { _, _ in
+                scrollToFooter(using: proxy)
+            }
         }
     }
 
@@ -768,6 +804,7 @@ struct ContentView: View {
             VStack(spacing: 16) {
                 SettingsView(settings: settings,
                              showSecretMenu: $showSecretMenu,
+                             requestedInfo: $requestedSettingsInfo,
                              showsNavigation: false)
 
                 Button {
@@ -860,6 +897,7 @@ struct ContentView: View {
                         DayCardView(settings: settings,
                                     vm: vm,
                                     searchHighlightsEnabled: false,
+                                    highlightLockIcon: highlightLockIcons,
                                     entry: entry)
                             .transition(.identity)
 
@@ -876,6 +914,7 @@ struct ContentView: View {
                                 DayCardView(settings: settings,
                                             vm: vm,
                                             searchHighlightsEnabled: false,
+                                            highlightLockIcon: highlightLockIcons,
                                             entry: entry)
                                     .transition(.identity)
 
@@ -913,7 +952,8 @@ struct ContentView: View {
                 InfoCardView(title: L10n.string("info.card.title", language: settings.language),
                              items: infoCardEntries,
                              infoAction: { hasDismissedInfoCard = true },
-                             infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                             infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
+                             linkAction: handleInfoCardLink)
                     .transition(.opacity)
             }
 
@@ -921,6 +961,7 @@ struct ContentView: View {
                 DayCardView(settings: settings,
                             vm: vm,
                             searchHighlightsEnabled: true,
+                            highlightLockIcon: highlightLockIcons,
                             entry: entry)
                     .transition(.opacity)
             }
@@ -931,6 +972,7 @@ struct ContentView: View {
                         DayCardView(settings: settings,
                                     vm: vm,
                                     searchHighlightsEnabled: true,
+                                    highlightLockIcon: highlightLockIcons,
                                     entry: entry)
                             .transition(.opacity)
                     }
@@ -941,7 +983,8 @@ struct ContentView: View {
                 InfoCardView(title: L10n.string("info.card.title", language: settings.language),
                              items: infoCardEntries,
                              infoAction: { hasDismissedInfoCard = true },
-                             infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language))
+                             infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
+                             linkAction: handleInfoCardLink)
                     .transition(.opacity)
             }
         }
@@ -1078,6 +1121,17 @@ struct ContentView: View {
         }
     }
 
+    private func scrollToFooter(using proxy: ScrollViewProxy) {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = Task { @MainActor in
+            let animation = Animation.easeInOut(duration: scrollToTopDuration)
+            await Task.yield()
+            withAnimation(animation) {
+                proxy.scrollTo(footerLinksID, anchor: .bottom)
+            }
+        }
+    }
+
     private func openSettingsAfterScroll(using proxy: ScrollViewProxy) {
         settingsScrollTask?.cancel()
         settingsScrollTask = Task { @MainActor in
@@ -1106,6 +1160,52 @@ struct ContentView: View {
                 showSettings = false
             }
             pendingSettingsClose = false
+        }
+    }
+
+    private func handleInfoCardLink(_ action: String) {
+        switch action {
+        case "lock":
+            pulseHighlight($highlightLockIcons)
+        case "settings":
+            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
+                showSettings = true
+            }
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                requestedSettingsInfo = .entriesPerDay
+            }
+        case "search":
+            pulseHighlight($highlightSearchPlaceholder)
+        case "sort":
+            pulseHighlight($highlightSortArrow)
+        case "filter":
+            pulseHighlight($highlightFilterLimit)
+        case "top":
+            pulseHighlight($highlightScrollToTop)
+        case "footer":
+            scrollToFooterTrigger += 1
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                pulseHighlight($highlightFooterLinks)
+            }
+        default:
+            break
+        }
+    }
+
+    private func pulseHighlight(_ binding: Binding<Bool>, cycles: Int = 3) {
+        Task { @MainActor in
+            for _ in 0..<cycles {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    binding.wrappedValue = true
+                }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    binding.wrappedValue = false
+                }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
         }
     }
 }

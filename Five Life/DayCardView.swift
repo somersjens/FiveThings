@@ -10,6 +10,7 @@ struct DayCardView: View {
     @ObservedObject var settings: SettingsStore
     @ObservedObject var vm: ContentViewModel
     let searchHighlightsEnabled: Bool
+    let highlightLockIcon: Bool
 
     @Bindable var entry: DayEntry
 
@@ -267,6 +268,7 @@ struct DayCardView: View {
             } label: {
                 Image(systemName: entry.isLocked ? "lock.fill" : (shouldPulse ? "lock.open.fill" : "lock.open"))
                     .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
+                    .foregroundStyle(highlightLockIcon ? Color.brandAccent : .primary)
                     .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
                     .background(.thinMaterial)
                     .clipShape(Circle())
