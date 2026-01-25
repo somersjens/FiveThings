@@ -113,6 +113,7 @@
 "holiday.veterans_day" = "Veterans Day";
 "holiday.world_environment_day" = "World Environment Day";
 "holiday.yom_kippur" = "Jom Kipoer";
+"holiday.enabled_list" = "new_years_day,liberation_day,sinterklaas,christmas_day_one,christmas_day_two,kings_day,good_friday,easter_sunday,easter_monday,ascension_day,pentecost_sunday,pentecost_monday,eid_al_fitr,eid_al_adha,rosh_hashanah,yom_kippur,hanukkah,lunar_new_year";
 "lock.faceid.action" = "Ontgrendel";
 "lock.faceid.reason" = "Ontgrendel je kaarten met Face ID.";
 "lock.faceid.title" = "Ontgrendel met Face ID";

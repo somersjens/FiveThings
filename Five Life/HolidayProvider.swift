@@ -7,6 +7,46 @@ struct HolidayItem {
 }
 
 enum HolidayProvider {
+    private enum HolidayID: String, CaseIterable {
+        case newYearsDay = "new_years_day"
+        case independenceDay = "independence_day"
+        case veteransDay = "veterans_day"
+        case christmasDay = "christmas_day"
+        case mlkDay = "mlk_day"
+        case presidentsDay = "presidents_day"
+        case memorialDay = "memorial_day"
+        case laborDay = "labor_day"
+        case thanksgiving = "thanksgiving"
+        case valentinesDay = "valentines_day"
+        case internationalWomensDay = "international_womens_day"
+        case earthDay = "earth_day"
+        case worldEnvironmentDay = "world_environment_day"
+        case internationalDayOfPeace = "international_day_of_peace"
+        case halloween = "halloween"
+        case liberationDay = "liberation_day"
+        case sinterklaas = "sinterklaas"
+        case christmasDayOne = "christmas_day_one"
+        case christmasDayTwo = "christmas_day_two"
+        case kingsDay = "kings_day"
+        case goodFriday = "good_friday"
+        case easterSunday = "easter_sunday"
+        case easterMonday = "easter_monday"
+        case ascensionDay = "ascension_day"
+        case pentecostSunday = "pentecost_sunday"
+        case pentecostMonday = "pentecost_monday"
+        case eidAlFitr = "eid_al_fitr"
+        case eidAlAdha = "eid_al_adha"
+        case roshHashanah = "rosh_hashanah"
+        case yomKippur = "yom_kippur"
+        case hanukkah = "hanukkah"
+        case lunarNewYear = "lunar_new_year"
+    }
+
+    private struct HolidayDefinition {
+        let id: HolidayID
+        let dates: (Int, Calendar) -> [Date]
+    }
+
     private struct HolidayCacheKey: Hashable {
         let year: Int
         let language: AppLanguage
@@ -39,18 +79,13 @@ enum HolidayProvider {
                                         language: AppLanguage,
                                         calendar: Calendar) -> [Date: [String]] {
         var items: [HolidayItem] = []
-
-        switch language {
-        case .english, .englishUK:
-            items.append(contentsOf: englishHolidays(for: year, language: language, calendar: calendar))
-            items.append(contentsOf: internationalHolidays(for: year, language: language, calendar: calendar))
-        case .dutch:
-            items.append(contentsOf: dutchHolidays(for: year, language: language, calendar: calendar))
-        default:
-            items.append(contentsOf: internationalHolidays(for: year, language: language, calendar: calendar))
+        let enabledIDs = enabledHolidayIDs(for: language)
+        for definition in holidayDefinitions where enabledIDs.contains(definition.id) {
+            let name = holidayName(for: definition.id, language: language)
+            for date in definition.dates(year, calendar) {
+                items.append(HolidayItem(date: date, name: name))
+            }
         }
-
-        items.append(contentsOf: religiousHolidays(for: year, language: language, calendar: calendar))
 
         var map: [Date: [String]] = [:]
         for item in items {
@@ -64,192 +99,186 @@ enum HolidayProvider {
         return map
     }
 
-    private static func englishHolidays(for year: Int, language: AppLanguage, calendar: Calendar) -> [HolidayItem] {
-        var items: [HolidayItem] = []
-        items.append(contentsOf: fixedDateHolidays(year: year, calendar: calendar, names: [
-            (1, 1, L10n.string("holiday.new_years_day", language: language)),
-            (7, 4, L10n.string("holiday.independence_day", language: language)),
-            (11, 11, L10n.string("holiday.veterans_day", language: language)),
-            (12, 25, L10n.string("holiday.christmas_day", language: language))
-        ]))
-
-        if let mlk = nthWeekday(inMonth: 1, year: year, weekday: 2, occurrence: 3, calendar: calendar) {
-            items.append(HolidayItem(date: mlk, name: L10n.string("holiday.mlk_day", language: language)))
-        }
-        if let presidents = nthWeekday(inMonth: 2, year: year, weekday: 2, occurrence: 3, calendar: calendar) {
-            items.append(HolidayItem(date: presidents, name: L10n.string("holiday.presidents_day", language: language)))
-        }
-        if let memorial = lastWeekday(inMonth: 5, year: year, weekday: 2, calendar: calendar) {
-            items.append(HolidayItem(date: memorial, name: L10n.string("holiday.memorial_day", language: language)))
-        }
-        if let labor = nthWeekday(inMonth: 9, year: year, weekday: 2, occurrence: 1, calendar: calendar) {
-            items.append(HolidayItem(date: labor, name: L10n.string("holiday.labor_day", language: language)))
-        }
-        if let thanksgiving = nthWeekday(inMonth: 11, year: year, weekday: 5, occurrence: 4, calendar: calendar) {
-            items.append(HolidayItem(date: thanksgiving, name: L10n.string("holiday.thanksgiving", language: language)))
-        }
-
-        return items
+    private static var holidayDefinitions: [HolidayDefinition] {
+        [
+            HolidayDefinition(id: .newYearsDay, dates: fixedDate(month: 1, day: 1)),
+            HolidayDefinition(id: .independenceDay, dates: fixedDate(month: 7, day: 4)),
+            HolidayDefinition(id: .veteransDay, dates: fixedDate(month: 11, day: 11)),
+            HolidayDefinition(id: .christmasDay, dates: fixedDate(month: 12, day: 25)),
+            HolidayDefinition(id: .mlkDay, dates: nthWeekdayDate(month: 1, weekday: 2, occurrence: 3)),
+            HolidayDefinition(id: .presidentsDay, dates: nthWeekdayDate(month: 2, weekday: 2, occurrence: 3)),
+            HolidayDefinition(id: .memorialDay, dates: lastWeekdayDate(month: 5, weekday: 2)),
+            HolidayDefinition(id: .laborDay, dates: nthWeekdayDate(month: 9, weekday: 2, occurrence: 1)),
+            HolidayDefinition(id: .thanksgiving, dates: nthWeekdayDate(month: 11, weekday: 5, occurrence: 4)),
+            HolidayDefinition(id: .valentinesDay, dates: fixedDate(month: 2, day: 14)),
+            HolidayDefinition(id: .internationalWomensDay, dates: fixedDate(month: 3, day: 8)),
+            HolidayDefinition(id: .earthDay, dates: fixedDate(month: 4, day: 22)),
+            HolidayDefinition(id: .worldEnvironmentDay, dates: fixedDate(month: 6, day: 5)),
+            HolidayDefinition(id: .internationalDayOfPeace, dates: fixedDate(month: 9, day: 21)),
+            HolidayDefinition(id: .halloween, dates: fixedDate(month: 10, day: 31)),
+            HolidayDefinition(id: .liberationDay, dates: fixedDate(month: 5, day: 5)),
+            HolidayDefinition(id: .sinterklaas, dates: fixedDate(month: 12, day: 5)),
+            HolidayDefinition(id: .christmasDayOne, dates: fixedDate(month: 12, day: 25)),
+            HolidayDefinition(id: .christmasDayTwo, dates: fixedDate(month: 12, day: 26)),
+            HolidayDefinition(id: .kingsDay, dates: adjustedKingsDayDate()),
+            HolidayDefinition(id: .goodFriday, dates: easterRelativeDates(offset: -2)),
+            HolidayDefinition(id: .easterSunday, dates: easterRelativeDates(offset: 0)),
+            HolidayDefinition(id: .easterMonday, dates: easterRelativeDates(offset: 1)),
+            HolidayDefinition(id: .ascensionDay, dates: easterRelativeDates(offset: 39)),
+            HolidayDefinition(id: .pentecostSunday, dates: easterRelativeDates(offset: 49)),
+            HolidayDefinition(id: .pentecostMonday, dates: easterRelativeDates(offset: 50)),
+            HolidayDefinition(id: .eidAlFitr, dates: islamicDate(month: 10, day: 1)),
+            HolidayDefinition(id: .eidAlAdha, dates: islamicDate(month: 12, day: 10)),
+            HolidayDefinition(id: .roshHashanah, dates: hebrewDate(month: 1, day: 1)),
+            HolidayDefinition(id: .yomKippur, dates: hebrewDate(month: 1, day: 10)),
+            HolidayDefinition(id: .hanukkah, dates: hebrewDate(month: 3, day: 25)),
+            HolidayDefinition(id: .lunarNewYear, dates: chineseDate(month: 1, day: 1))
+        ]
     }
 
-    private static func internationalHolidays(for year: Int,
-                                              language: AppLanguage,
-                                              calendar: Calendar) -> [HolidayItem] {
-        fixedDateHolidays(year: year, calendar: calendar, names: [
-            (2, 14, L10n.string("holiday.valentines_day", language: language)),
-            (3, 8, L10n.string("holiday.international_womens_day", language: language)),
-            (4, 22, L10n.string("holiday.earth_day", language: language)),
-            (6, 5, L10n.string("holiday.world_environment_day", language: language)),
-            (9, 21, L10n.string("holiday.international_day_of_peace", language: language)),
-            (10, 31, L10n.string("holiday.halloween", language: language))
-        ])
+    private static let englishHolidayIDs: [HolidayID] = [
+        .newYearsDay,
+        .independenceDay,
+        .veteransDay,
+        .christmasDay,
+        .mlkDay,
+        .presidentsDay,
+        .memorialDay,
+        .laborDay,
+        .thanksgiving
+    ]
+
+    private static let internationalHolidayIDs: [HolidayID] = [
+        .valentinesDay,
+        .internationalWomensDay,
+        .earthDay,
+        .worldEnvironmentDay,
+        .internationalDayOfPeace,
+        .halloween
+    ]
+
+    private static let dutchHolidayIDs: [HolidayID] = [
+        .newYearsDay,
+        .liberationDay,
+        .sinterklaas,
+        .christmasDayOne,
+        .christmasDayTwo,
+        .kingsDay
+    ]
+
+    private static let religiousHolidayIDs: [HolidayID] = [
+        .goodFriday,
+        .easterSunday,
+        .easterMonday,
+        .ascensionDay,
+        .pentecostSunday,
+        .pentecostMonday,
+        .eidAlFitr,
+        .eidAlAdha,
+        .roshHashanah,
+        .yomKippur,
+        .hanukkah,
+        .lunarNewYear
+    ]
+
+    private static func holidayName(for id: HolidayID, language: AppLanguage) -> String {
+        L10n.string("holiday.\(id.rawValue)", language: language)
     }
 
-    private static func dutchHolidays(for year: Int, language: AppLanguage, calendar: Calendar) -> [HolidayItem] {
-        var items: [HolidayItem] = []
-        items.append(contentsOf: fixedDateHolidays(year: year, calendar: calendar, names: [
-            (1, 1, L10n.string("holiday.new_years_day", language: language)),
-            (5, 5, L10n.string("holiday.liberation_day", language: language)),
-            (12, 5, L10n.string("holiday.sinterklaas", language: language)),
-            (12, 25, L10n.string("holiday.christmas_day_one", language: language)),
-            (12, 26, L10n.string("holiday.christmas_day_two", language: language))
-        ]))
-
-        if let kingsDay = adjustedKingsDay(for: year, calendar: calendar) {
-            items.append(HolidayItem(date: kingsDay, name: L10n.string("holiday.kings_day", language: language)))
+    private static func enabledHolidayIDs(for language: AppLanguage) -> Set<HolidayID> {
+        let list = L10n.string("holiday.enabled_list", language: language)
+        let ids = list
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .compactMap { HolidayID(rawValue: String($0)) }
+        if list == "holiday.enabled_list" || ids.isEmpty {
+            return defaultHolidayIDs(for: language)
         }
-
-        return items
+        return Set(ids)
     }
 
-    private static func religiousHolidays(for year: Int,
-                                          language: AppLanguage,
-                                          calendar: Calendar) -> [HolidayItem] {
-        var items: [HolidayItem] = []
+    private static func defaultHolidayIDs(for language: AppLanguage) -> Set<HolidayID> {
+        switch language {
+        case .english, .englishUK:
+            return Set(englishHolidayIDs + internationalHolidayIDs + religiousHolidayIDs)
+        case .dutch:
+            return Set(dutchHolidayIDs + religiousHolidayIDs)
+        default:
+            return Set(internationalHolidayIDs + religiousHolidayIDs)
+        }
+    }
 
-        if let easter = easterSunday(for: year) {
-            let names = christianHolidayNames(language: language)
-            if let goodFriday = calendar.date(byAdding: .day, value: -2, to: easter) {
-                items.append(HolidayItem(date: goodFriday, name: names.goodFriday))
+    private static func fixedDate(month: Int, day: Int) -> (Int, Calendar) -> [Date] {
+        { year, calendar in
+            guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day)) else {
+                return []
             }
-            items.append(HolidayItem(date: easter, name: names.easterSunday))
-            if let easterMonday = calendar.date(byAdding: .day, value: 1, to: easter) {
-                items.append(HolidayItem(date: easterMonday, name: names.easterMonday))
+            return [date]
+        }
+    }
+
+    private static func nthWeekdayDate(month: Int, weekday: Int, occurrence: Int) -> (Int, Calendar) -> [Date] {
+        { year, calendar in
+            guard let date = nthWeekday(inMonth: month, year: year, weekday: weekday, occurrence: occurrence, calendar: calendar) else {
+                return []
             }
-            if let ascension = calendar.date(byAdding: .day, value: 39, to: easter) {
-                items.append(HolidayItem(date: ascension, name: names.ascensionDay))
+            return [date]
+        }
+    }
+
+    private static func lastWeekdayDate(month: Int, weekday: Int) -> (Int, Calendar) -> [Date] {
+        { year, calendar in
+            guard let date = lastWeekday(inMonth: month, year: year, weekday: weekday, calendar: calendar) else {
+                return []
             }
-            if let pentecostSunday = calendar.date(byAdding: .day, value: 49, to: easter) {
-                items.append(HolidayItem(date: pentecostSunday, name: names.pentecostSunday))
+            return [date]
+        }
+    }
+
+    private static func adjustedKingsDayDate() -> (Int, Calendar) -> [Date] {
+        { year, calendar in
+            guard let date = adjustedKingsDay(for: year, calendar: calendar) else { return [] }
+            return [date]
+        }
+    }
+
+    private static func easterRelativeDates(offset: Int) -> (Int, Calendar) -> [Date] {
+        { year, calendar in
+            guard let easter = easterSunday(for: year),
+                  let date = calendar.date(byAdding: .day, value: offset, to: easter) else {
+                return []
             }
-            if let pentecostMonday = calendar.date(byAdding: .day, value: 50, to: easter) {
-                items.append(HolidayItem(date: pentecostMonday, name: names.pentecostMonday))
+            return [date]
+        }
+    }
+
+    private static func islamicDate(month: Int, day: Int) -> (Int, Calendar) -> [Date] {
+        { year, _ in
+            let calendar = Calendar(identifier: .islamicUmmAlQura)
+            return datesMatching(calendar: calendar, year: year) { comps in
+                guard let compsMonth = comps.month, let compsDay = comps.day else { return false }
+                return compsMonth == month && compsDay == day
             }
         }
-
-        items.append(contentsOf: islamicHolidays(for: year, language: language))
-        items.append(contentsOf: jewishHolidays(for: year, language: language))
-        items.append(contentsOf: lunarNewYear(for: year, language: language))
-
-        return items
     }
 
-    private static func islamicHolidays(for year: Int, language: AppLanguage) -> [HolidayItem] {
-        let calendar = Calendar(identifier: .islamicUmmAlQura)
-        let names = islamicHolidayNames(language: language)
-        var items: [HolidayItem] = []
-
-        let matches = datesMatching(calendar: calendar, year: year) { comps in
-            guard let month = comps.month, let day = comps.day else { return false }
-            return (month == 10 && day == 1) || (month == 12 && day == 10)
-        }
-
-        for date in matches {
-            let comps = calendar.dateComponents([.month, .day], from: date)
-            if comps.month == 10 && comps.day == 1 {
-                items.append(HolidayItem(date: date, name: names.eidAlFitr))
-            }
-            if comps.month == 12 && comps.day == 10 {
-                items.append(HolidayItem(date: date, name: names.eidAlAdha))
+    private static func hebrewDate(month: Int, day: Int) -> (Int, Calendar) -> [Date] {
+        { year, _ in
+            let calendar = Calendar(identifier: .hebrew)
+            return datesMatching(calendar: calendar, year: year) { comps in
+                guard let compsMonth = comps.month, let compsDay = comps.day else { return false }
+                return compsMonth == month && compsDay == day
             }
         }
-
-        return items
     }
 
-    private static func jewishHolidays(for year: Int, language: AppLanguage) -> [HolidayItem] {
-        let calendar = Calendar(identifier: .hebrew)
-        let names = jewishHolidayNames(language: language)
-        var items: [HolidayItem] = []
-
-        let matches = datesMatching(calendar: calendar, year: year) { comps in
-            guard let month = comps.month, let day = comps.day else { return false }
-            return (month == 1 && day == 1)
-                || (month == 1 && day == 10)
-                || (month == 3 && day == 25)
-        }
-
-        for date in matches {
-            let comps = calendar.dateComponents([.month, .day], from: date)
-            if comps.month == 1 && comps.day == 1 {
-                items.append(HolidayItem(date: date, name: names.roshHashanah))
+    private static func chineseDate(month: Int, day: Int) -> (Int, Calendar) -> [Date] {
+        { year, _ in
+            let calendar = Calendar(identifier: .chinese)
+            return datesMatching(calendar: calendar, year: year) { comps in
+                guard let compsMonth = comps.month, let compsDay = comps.day else { return false }
+                return compsMonth == month && compsDay == day
             }
-            if comps.month == 1 && comps.day == 10 {
-                items.append(HolidayItem(date: date, name: names.yomKippur))
-            }
-            if comps.month == 3 && comps.day == 25 {
-                items.append(HolidayItem(date: date, name: names.hanukkah))
-            }
-        }
-
-        return items
-    }
-
-    private static func lunarNewYear(for year: Int, language: AppLanguage) -> [HolidayItem] {
-        let calendar = Calendar(identifier: .chinese)
-        let name = L10n.string("holiday.lunar_new_year", language: language)
-        let matches = datesMatching(calendar: calendar, year: year) { comps in
-            guard let month = comps.month, let day = comps.day else { return false }
-            return month == 1 && day == 1
-        }
-        return matches.map { HolidayItem(date: $0, name: name) }
-    }
-
-    private static func christianHolidayNames(language: AppLanguage) -> (goodFriday: String,
-                                                                        easterSunday: String,
-                                                                        easterMonday: String,
-                                                                        ascensionDay: String,
-                                                                        pentecostSunday: String,
-                                                                        pentecostMonday: String) {
-        (
-            L10n.string("holiday.good_friday", language: language),
-            L10n.string("holiday.easter_sunday", language: language),
-            L10n.string("holiday.easter_monday", language: language),
-            L10n.string("holiday.ascension_day", language: language),
-            L10n.string("holiday.pentecost_sunday", language: language),
-            L10n.string("holiday.pentecost_monday", language: language)
-        )
-    }
-
-    private static func islamicHolidayNames(language: AppLanguage) -> (eidAlFitr: String, eidAlAdha: String) {
-        (
-            L10n.string("holiday.eid_al_fitr", language: language),
-            L10n.string("holiday.eid_al_adha", language: language)
-        )
-    }
-
-    private static func jewishHolidayNames(language: AppLanguage) -> (roshHashanah: String, yomKippur: String, hanukkah: String) {
-        (
-            L10n.string("holiday.rosh_hashanah", language: language),
-            L10n.string("holiday.yom_kippur", language: language),
-            L10n.string("holiday.hanukkah", language: language)
-        )
-    }
-
-    private static func fixedDateHolidays(year: Int, calendar: Calendar, names: [(Int, Int, String)]) -> [HolidayItem] {
-        names.compactMap { month, day, name in
-            guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day)) else { return nil }
-            return HolidayItem(date: date, name: name)
         }
     }
 

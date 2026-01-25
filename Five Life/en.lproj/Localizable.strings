@@ -113,6 +113,7 @@
 "holiday.veterans_day" = "Veterans Day";
 "holiday.world_environment_day" = "World Environment Day";
 "holiday.yom_kippur" = "Yom Kippur";
+"holiday.enabled_list" = "new_years_day,independence_day,veterans_day,christmas_day,mlk_day,presidents_day,memorial_day,labor_day,thanksgiving,valentines_day,international_womens_day,earth_day,world_environment_day,international_day_of_peace,halloween,good_friday,easter_sunday,easter_monday,ascension_day,pentecost_sunday,pentecost_monday,eid_al_fitr,eid_al_adha,rosh_hashanah,yom_kippur,hanukkah,lunar_new_year";
 "lock.faceid.action" = "Unlock";
 "lock.faceid.reason" = "Unlock your cards with Face ID.";
 "lock.faceid.title" = "Unlock with Face ID";
