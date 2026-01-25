@@ -1206,11 +1206,15 @@ struct SettingsView: View {
                        height: stepperButtonSize * responsiveTypeScale)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color(.systemGray5))
+                        .fill(stepperButtonBackground)
                 )
         }
         .disabled(isDisabled)
         .foregroundStyle(isDisabled ? Color.gray.opacity(0.6) : Color.brandAccent)
+    }
+
+    private var stepperButtonBackground: Color {
+        colorScheme == .dark ? settingsCardOuterBackground : Color(.systemGray5)
     }
 
     private func showAddDayMessage(_ message: String, isError: Bool = true) {
