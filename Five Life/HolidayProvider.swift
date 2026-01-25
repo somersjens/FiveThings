@@ -41,11 +41,13 @@ enum HolidayProvider {
         var items: [HolidayItem] = []
 
         switch language {
-        case .english:
+        case .english, .englishUK:
             items.append(contentsOf: englishHolidays(for: year, language: language, calendar: calendar))
             items.append(contentsOf: internationalHolidays(for: year, language: language, calendar: calendar))
         case .dutch:
             items.append(contentsOf: dutchHolidays(for: year, language: language, calendar: calendar))
+        default:
+            items.append(contentsOf: internationalHolidays(for: year, language: language, calendar: calendar))
         }
 
         items.append(contentsOf: religiousHolidays(for: year, language: language, calendar: calendar))

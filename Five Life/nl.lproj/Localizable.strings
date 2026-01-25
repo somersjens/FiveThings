@@ -113,9 +113,9 @@
 "lock.faceid.action" = "Ontgrendel";
 "lock.faceid.reason" = "Ontgrendel je kaarten met Face ID.";
 "lock.faceid.title" = "Ontgrendel met Face ID";
-"notifications.daily.1.body" = "Dit is je %@ herinnering om %d dingen over vandaag op te schrijven.";
+"notifications.daily.1.body" = "Dit is je %@-herinnering om %d dingen over vandaag op te schrijven.";
 "notifications.daily.1.title" = "Dagelijkse reminder";
-"notifications.daily.2.body" = "Het is %@, perfecte timing om %d dingen over vandaag te noteren.";
+"notifications.daily.2.body" = "Het is %@, perfecte moment om %d dingen over vandaag op te schrijven.";
 "notifications.daily.2.title" = "Dagafsluiter";
 "notifications.daily.3.body" = "%@ reminder: schrijf %d highlights van vandaag op.";
 "notifications.daily.3.title" = "Hoogtepunten";

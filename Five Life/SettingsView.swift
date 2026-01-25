@@ -40,6 +40,7 @@ struct SettingsView: View {
     @State private var showImportPicker: Bool = false
     @State private var importErrorMessage: String?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
+    @State private var showLanguagePicker: Bool = false
     private let defaultDailyReminderTime = ReminderTime(hour: 22, minute: 0)
     private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
     private let secretRowHeightMultiplier: CGFloat = 1.5
@@ -82,22 +83,46 @@ struct SettingsView: View {
         HStack {
             infoTitle(L10n.string("settings.app.language", language: settings.language), info: .language)
             Spacer()
-            Menu {
-                Picker("", selection: Binding(
-                    get: { settings.language },
-                    set: { settings.language = $0 }
-                )) {
-                    ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang)
-                    }
-                }
-                .labelsHidden()
+            Button {
+                showLanguagePicker = true
             } label: {
-                settingsPickerLabel(text: settings.language.displayName)
+                settingsPickerLabel(text: settings.language.displayName, flag: settings.language.flagEmoji)
             }
         }
         .frame(minHeight: scaledSettingsRowHeight)
         .tint(.brandAccent)
+        .sheet(isPresented: $showLanguagePicker) {
+            NavigationStack {
+                VStack(spacing: 16) {
+                    Picker("", selection: Binding(
+                        get: { settings.language },
+                        set: { settings.language = $0 }
+                    )) {
+                        ForEach(AppLanguage.orderedByCountryName) { lang in
+                            HStack {
+                                Text(lang.displayName)
+                                Spacer()
+                                Text(lang.flagEmoji)
+                            }
+                            .tag(lang)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.vertical, 8)
+                .navigationTitle(L10n.string("settings.app.language", language: settings.language))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L10n.string("common.done", language: settings.language)) {
+                            showLanguagePicker = false
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private var deleteAllEntriesSection: some View {
@@ -159,7 +184,7 @@ struct SettingsView: View {
                     settings.dailyItemCount = max(1, settings.dailyItemCount - 1)
                 }
 
-                Text("\(settings.dailyItemCount)")
+                Text(localizedCountText(settings.dailyItemCount))
                     .font(.body.monospacedDigit())
                     .foregroundStyle(Color.brandAccent)
 
@@ -835,15 +860,32 @@ struct SettingsView: View {
         addDayHasExistingEntry = ((try? modelContext.fetch(descriptor))?.first) != nil
     }
 
-    private func settingsPickerLabel(text: String) -> some View {
+    private func settingsPickerLabel(text: String, flag: String) -> some View {
         HStack(spacing: 6) {
             Text(text)
                 .foregroundStyle(.primary)
                 .contentTransition(.opacity)
                 .animation(.easeInOut(duration: 0.2), value: text)
+            Text(flag)
             Image(systemName: "chevron.down")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.brandAccent)
+        }
+    }
+
+    private func localizedCountText(_ count: Int) -> String {
+        switch count {
+        case 1: return L10n.string("number.one", language: settings.language)
+        case 2: return L10n.string("number.two", language: settings.language)
+        case 3: return L10n.string("number.three", language: settings.language)
+        case 4: return L10n.string("number.four", language: settings.language)
+        case 5: return L10n.string("number.five", language: settings.language)
+        case 6: return L10n.string("number.six", language: settings.language)
+        case 7: return L10n.string("number.seven", language: settings.language)
+        case 8: return L10n.string("number.eight", language: settings.language)
+        case 9: return L10n.string("number.nine", language: settings.language)
+        case 10: return L10n.string("number.ten", language: settings.language)
+        default: return "\(count)"
         }
     }
 

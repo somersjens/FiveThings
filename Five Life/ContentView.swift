@@ -214,6 +214,8 @@ struct ContentView: View {
             return seeYouTomorrowIndexEnglish
         case .dutch:
             return seeYouTomorrowIndexDutch
+        default:
+            return seeYouTomorrowIndexEnglish
         }
     }
 
@@ -223,6 +225,8 @@ struct ContentView: View {
             seeYouTomorrowIndexEnglish = index
         case .dutch:
             seeYouTomorrowIndexDutch = index
+        default:
+            seeYouTomorrowIndexEnglish = index
         }
     }
 
