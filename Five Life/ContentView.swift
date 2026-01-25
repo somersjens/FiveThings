@@ -172,9 +172,30 @@ struct ContentView: View {
                 if index == 1 {
                     return L10n.string(key, language: settings.language, localizedCount)
                 }
+                if index == 4 {
+                    return infoCardEntryFour
+                }
                 return L10n.string(key, language: settings.language)
             }
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
+    private var infoCardEntryFour: String {
+        let sortKey = vm.newestFirst ? "info.card.sort.newest" : "info.card.sort.oldest"
+        let sortText = L10n.string(sortKey, language: settings.language)
+        let limitText: String
+        switch vm.finishedLimit {
+        case .all:
+            limitText = L10n.string("info.card.limit.not.limited", language: settings.language)
+        default:
+            limitText = L10n.string("info.card.limit.days",
+                                    language: settings.language,
+                                    vm.finishedLimit.rawValue)
+        }
+        return L10n.string("info.card.entry.4",
+                           language: settings.language,
+                           sortText,
+                           limitText)
     }
 
     private var dailyTitle: String {

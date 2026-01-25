@@ -36,7 +36,11 @@
 "info.card.entry.1" = "Write down %@ things that made you happy today, then tap the **[lock](info://lock)** to finish.";
 "info.card.entry.2" = "Open **[Settings](info://settings)** by tapping the app name, then tap any option for more info.";
 "info.card.entry.3" = "Use the **[search bar](info://search)** to search your completed cards by keyword.";
-"info.card.entry.4" = "The list is sorted **[newest](info://sort)** (or; **[oldest](info://sort)**) first and limited to the last **[30 days](info://filter)** (or; is not limited).";
+"info.card.entry.4" = "The list is sorted **[%@](info://sort)** and is **[%@](info://filter)**.";
+"info.card.sort.newest" = "newest first";
+"info.card.sort.oldest" = "oldest first";
+"info.card.limit.days" = "limited to %d days";
+"info.card.limit.not.limited" = "not limited";
 "info.card.entry.5" = "Tap the **[arrow](info://top)** in the top-right to jump to the top.";
 "info.card.entry.6" = "Ideas to improve the app? Let me know via the **[footer links](info://footer)** at the bottom.";
 "info.card.entry.7" = "";
