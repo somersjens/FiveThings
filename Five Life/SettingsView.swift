@@ -35,7 +35,7 @@ struct SettingsView: View {
     @State private var addDayMessageIsError: Bool = true
     @State private var addDayMessageTask: Task<Void, Never>?
     @State private var addDayHasExistingEntry = false
-    @FocusState private var addDayFieldFocused: Bool
+    @State private var addDayFieldFocused: Bool = false
     @State private var isSigningInWithApple: Bool = false
     @State private var showImportPicker: Bool = false
     @State private var importErrorMessage: String?
@@ -378,9 +378,9 @@ struct SettingsView: View {
             }
 
             if let instruction = addDayInstructionText {
-                Text("(\(instruction.text))")
+                Text(instruction.text)
                     .font(.footnote)
-                    .foregroundStyle(instruction.isError ? .red : .green)
+                    .foregroundStyle(instruction.isError ? .red : Color.brandAccent)
             }
 
             if let message = addDayMessage {
@@ -434,39 +434,29 @@ struct SettingsView: View {
     private var addDayInputField: some View {
         let format = addDayFormat
         return ZStack(alignment: .leading) {
-            TextField("", text: $addDayText)
-                .keyboardType(.numberPad)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .font(.body.monospacedDigit())
-                .foregroundStyle(.clear)
-                .tint(Color(.darkGray))
-                .multilineTextAlignment(.leading)
-                .focused($addDayFieldFocused)
-                .accessibilityLabel(L10n.string("common.date", language: settings.language))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onChange(of: addDayText) { oldValue, newValue in
-                    let filtered = newValue.filter(\.isWholeNumber)
-                    var nextDigits = String(filtered.prefix(8))
-                    if newValue.count < oldValue.count,
-                       oldValue.hasSuffix(format.separator),
-                       !newValue.hasSuffix(format.separator),
-                       format.separatorPositions.contains(nextDigits.count),
-                       !nextDigits.isEmpty {
-                        nextDigits = String(nextDigits.dropLast())
-                    }
-                    addDayDigits = nextDigits
-                    addDayMessage = nil
-                    updateAddDayExistingEntry()
-                    let formatted = formattedAddDayDigits(nextDigits)
-                    if newValue != formatted {
-                        addDayText = formatted
-                    }
-                    if nextDigits.count == 8 {
-                        addDayFieldFocused = false
-                    }
+            AddDayTextField(text: $addDayText,
+                            isFocused: $addDayFieldFocused,
+                            accessibilityLabel: L10n.string("common.date", language: settings.language),
+                            accessibilityHint: format.accessibilityHint) { oldValue, newValue in
+                let filtered = newValue.filter(\.isWholeNumber)
+                var nextDigits = String(filtered.prefix(8))
+                if newValue.count < oldValue.count,
+                   oldValue.hasSuffix(format.separator),
+                   !newValue.hasSuffix(format.separator),
+                   format.separatorPositions.contains(nextDigits.count),
+                   !nextDigits.isEmpty {
+                    nextDigits = String(nextDigits.dropLast())
                 }
-                .accessibilityHint(format.accessibilityHint)
+                addDayDigits = nextDigits
+                addDayMessage = nil
+                updateAddDayExistingEntry()
+                let formatted = formattedAddDayDigits(nextDigits)
+                if nextDigits.count == 8 {
+                    addDayFieldFocused = false
+                }
+                return formatted
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(addDayDisplayText(addDayDigits))
                 .font(.body.monospacedDigit())
@@ -1100,6 +1090,115 @@ struct SettingsView: View {
             AddDayDateFormat(order: [.year, .month, .day],
                              separator: separator,
                              placeholders: [.day: placeholder.2, .month: placeholder.1, .year: placeholder.0])
+        }
+    }
+
+    private struct AddDayTextField: UIViewRepresentable {
+        @Binding var text: String
+        @Binding var isFocused: Bool
+        let accessibilityLabel: String
+        let accessibilityHint: String
+        let onChange: (_ oldValue: String, _ newValue: String) -> String
+
+        func makeUIView(context: Context) -> UITextField {
+            let textField = UITextField()
+            textField.keyboardType = .numberPad
+            textField.autocorrectionType = .no
+            textField.autocapitalizationType = .none
+            textField.font = UIFont.monospacedDigitSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize,
+                                                              weight: .regular)
+            textField.textColor = UIColor.clear
+            textField.tintColor = UIColor.darkGray
+            textField.delegate = context.coordinator
+            textField.accessibilityLabel = accessibilityLabel
+            textField.accessibilityHint = accessibilityHint
+            return textField
+        }
+
+        func updateUIView(_ uiView: UITextField, context: Context) {
+            if uiView.text != text {
+                uiView.text = text
+                context.coordinator.previousText = text
+            }
+
+            if isFocused, !uiView.isFirstResponder {
+                uiView.becomeFirstResponder()
+            } else if !isFocused, uiView.isFirstResponder {
+                uiView.resignFirstResponder()
+            }
+        }
+
+        func makeCoordinator() -> Coordinator {
+            Coordinator(self)
+        }
+
+        final class Coordinator: NSObject, UITextFieldDelegate {
+            private let parent: AddDayTextField
+            var previousText: String
+
+            init(_ parent: AddDayTextField) {
+                self.parent = parent
+                self.previousText = parent.text
+            }
+
+            func textField(_ textField: UITextField,
+                           shouldChangeCharactersIn range: NSRange,
+                           replacementString string: String) -> Bool {
+                let oldValue = previousText
+                let currentText = textField.text ?? ""
+                let updatedText = (currentText as NSString).replacingCharacters(in: range, with: string)
+                let cursorPosition = range.location + (string as NSString).length
+                let digitsBeforeCursor = digitCount(in: updatedText, upTo: cursorPosition)
+                let formatted = parent.onChange(oldValue, updatedText)
+                previousText = formatted
+                textField.text = formatted
+                parent.text = formatted
+                setCursorPosition(in: textField, digitsBeforeCursor: digitsBeforeCursor, formatted: formatted)
+                return false
+            }
+
+            func textFieldDidBeginEditing(_ textField: UITextField) {
+                if !parent.isFocused {
+                    parent.isFocused = true
+                }
+            }
+
+            func textFieldDidEndEditing(_ textField: UITextField) {
+                if parent.isFocused {
+                    parent.isFocused = false
+                }
+            }
+
+            private func digitCount(in text: String, upTo cursorPosition: Int) -> Int {
+                guard cursorPosition > 0 else { return 0 }
+                let safePosition = max(0, min(cursorPosition, text.count))
+                let prefix = String(text.prefix(safePosition))
+                return prefix.filter(\.isWholeNumber).count
+            }
+
+            private func setCursorPosition(in textField: UITextField, digitsBeforeCursor: Int, formatted: String) {
+                let targetOffset = cursorOffset(for: digitsBeforeCursor, formatted: formatted)
+                if let position = textField.position(from: textField.beginningOfDocument, offset: targetOffset) {
+                    textField.selectedTextRange = textField.textRange(from: position, to: position)
+                }
+            }
+
+            private func cursorOffset(for digitsCount: Int, formatted: String) -> Int {
+                guard digitsCount > 0 else { return 0 }
+                let nsText = formatted as NSString
+                var digitsSeen = 0
+                for index in 0..<nsText.length {
+                    let scalarValue = nsText.character(at: index)
+                    if let scalar = UnicodeScalar(scalarValue),
+                       CharacterSet.decimalDigits.contains(scalar) {
+                        digitsSeen += 1
+                        if digitsSeen >= digitsCount {
+                            return index + 1
+                        }
+                    }
+                }
+                return nsText.length
+            }
         }
     }
 
