@@ -29,6 +29,7 @@ struct ContentView: View {
     @State private var suppressSettingsAutoScroll = false
     @State private var pendingSettingsInfoRequest: SettingsView.SettingsInfo?
     @State private var settingsInfoTask: Task<Void, Never>?
+    @State private var pendingInfoCardScroll = false
     @State private var dismissedEmptyLimitNotice = false
     @State private var showsReturnToMainMenuOnly = false
     @State private var highlightLockIcons = false
@@ -213,6 +214,7 @@ struct ContentView: View {
 
     private let settingsTopID = "settingsTop"
     private let footerLinksID = "footerLinks"
+    private let infoCardID = "infoCard"
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
     private let scrollToFooterDuration: Double = 0.6
@@ -747,6 +749,11 @@ struct ContentView: View {
                     showSecretMenu = false
                     pendingSettingsInfoRequest = nil
                     settingsInfoTask?.cancel()
+                    if pendingInfoCardScroll {
+                        pendingInfoCardScroll = false
+                        scheduleInfoCardScroll(using: proxy,
+                                               delay: settingsOpenAnimationDuration + 0.05)
+                    }
                     if showExportOptions {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             showExportOptions = false
@@ -807,9 +814,16 @@ struct ContentView: View {
                 Spacer()
                 HStack(spacing: 12 * 1.2) {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            hasDismissedInfoCard.toggle()
+                        hasDismissedInfoCard = false
+                        if vm.newestFirst {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                vm.newestFirst = false
+                            }
+                        } else {
+                            vm.newestFirst = false
                         }
+                        pendingInfoCardScroll = true
+                        pendingSettingsClose = true
                     } label: {
                         Image(systemName: "info")
                             .font(.system(size: settingsGearSize * scale,
@@ -1006,6 +1020,7 @@ struct ContentView: View {
                              numberText: { "\(localizedCountText($0))." },
                              linkHighlightDuration: highlightPulseDuration,
                              linkHighlightCycles: 3)
+                    .id(infoCardID)
                     .transition(.opacity)
             }
 
@@ -1040,6 +1055,7 @@ struct ContentView: View {
                              numberText: { "\(localizedCountText($0))." },
                              linkHighlightDuration: highlightPulseDuration,
                              linkHighlightCycles: 3)
+                    .id(infoCardID)
                     .transition(.opacity)
             }
         }
@@ -1183,6 +1199,18 @@ struct ContentView: View {
             await Task.yield()
             withAnimation(animation) {
                 proxy.scrollTo(footerLinksID, anchor: .bottom)
+            }
+        }
+    }
+
+    private func scheduleInfoCardScroll(using proxy: ScrollViewProxy, delay: Double) {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = Task { @MainActor in
+            let sleepTime = UInt64(delay * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: sleepTime)
+            let animation = Animation.easeInOut(duration: scrollToFooterDuration)
+            withAnimation(animation) {
+                proxy.scrollTo(infoCardID, anchor: .top)
             }
         }
     }
