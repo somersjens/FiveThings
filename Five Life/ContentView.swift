@@ -184,22 +184,27 @@ struct ContentView: View {
     }
 
     private var infoCardEntryFour: String {
-        let sortKey = vm.newestFirst ? "info.card.sort.newest" : "info.card.sort.oldest"
-        let sortText = L10n.string(sortKey, language: settings.language)
-        let limitText: String
+        let entryKey: String
+        switch (vm.newestFirst, vm.finishedLimit) {
+        case (true, .all):
+            entryKey = "info.card.entry.4a"
+        case (false, .all):
+            entryKey = "info.card.entry.4b"
+        case (true, _):
+            entryKey = "info.card.entry.4c"
+        case (false, _):
+            entryKey = "info.card.entry.4d"
+        }
+
         switch vm.finishedLimit {
         case .all:
-            limitText = L10n.string("info.card.limit.not.limited", language: settings.language)
+            return L10n.string(entryKey, language: settings.language)
         default:
             let localizedDays = localizedCountText(vm.finishedLimit.rawValue)
-            limitText = L10n.string("info.card.limit.days",
-                                    language: settings.language,
-                                    localizedDays)
+            return L10n.string(entryKey,
+                               language: settings.language,
+                               localizedDays)
         }
-        return L10n.string("info.card.entry.4",
-                           language: settings.language,
-                           sortText,
-                           limitText)
     }
 
     private var dailyTitle: String {
