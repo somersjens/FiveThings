@@ -104,6 +104,15 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    var isRightToLeft: Bool {
+        switch self {
+        case .arabic:
+            return true
+        default:
+            return false
+        }
+    }
+
     var countryName: String {
         switch self {
         case .english: return "United States"

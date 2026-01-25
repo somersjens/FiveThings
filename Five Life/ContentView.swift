@@ -459,6 +459,9 @@ struct ContentView: View {
                 HStack(spacing: 6) {
                     Text(lifeTitle)
                         .font(.title.bold())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .allowsTightening(true)
 
                     Image("NoBackground")
                         .resizable()
@@ -467,6 +470,8 @@ struct ContentView: View {
                         .accessibilityHidden(true)
                 }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 56)
             .buttonStyle(.plain)
             .accessibilityLabel(L10n.string("settings.show", language: settings.language))
         }
@@ -573,6 +578,7 @@ struct ContentView: View {
                     remainingFinishedEntries: remainingFinishedEntries
                 )
             }
+            .environment(\.layoutDirection, settings.language.isRightToLeft ? .rightToLeft : .leftToRight)
             .environment(\.responsiveTypeScale, scale)
         }
     }
