@@ -43,7 +43,7 @@
 "info.card.limit.not.limited" = "not limited";
 "info.card.entry.5" = "Tap the **[arrow](info://top)** in the top-right to jump to the top.";
 "info.card.entry.6" = "Ideas to improve the app? Let me know via the **[footer links](info://footer)** at the bottom.";
-"info.card.entry.7" = "";
+"info.card.entry.7" = "Tapping the **[green text](info://highlight)** highlights the feature in orange. Close this card by tapping the “i” in the top-right.";
 "info.card.entry.8" = "";
 "info.card.entry.9" = "";
 "info.card.entry.10" = "";

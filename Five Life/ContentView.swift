@@ -1003,7 +1003,9 @@ struct ContentView: View {
                              infoAction: { hasDismissedInfoCard = true },
                              infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
                              linkAction: handleInfoCardLink,
-                             numberText: { "\(localizedCountText($0))." })
+                             numberText: { "\(localizedCountText($0))." },
+                             linkHighlightDuration: highlightPulseDuration,
+                             linkHighlightCycles: 3)
                     .transition(.opacity)
             }
 
@@ -1035,7 +1037,9 @@ struct ContentView: View {
                              infoAction: { hasDismissedInfoCard = true },
                              infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
                              linkAction: handleInfoCardLink,
-                             numberText: { "\(localizedCountText($0))." })
+                             numberText: { "\(localizedCountText($0))." },
+                             linkHighlightDuration: highlightPulseDuration,
+                             linkHighlightCycles: 3)
                     .transition(.opacity)
             }
         }
@@ -1239,6 +1243,8 @@ struct ContentView: View {
                 try? await Task.sleep(nanoseconds: UInt64((scrollToFooterDuration + 0.1) * 1_000_000_000))
                 pulseHighlight($highlightFooterLinks)
             }
+        case "highlight":
+            break
         default:
             break
         }

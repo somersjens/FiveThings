@@ -10,11 +10,14 @@ struct InfoCardView: View {
     let infoAccessibilityLabel: String
     let linkAction: (String) -> Void
     let numberText: (Int) -> String
+    let linkHighlightDuration: Double
+    let linkHighlightCycles: Int
 
     @ScaledMetric(relativeTo: .body) private var rowSpacing: CGFloat = 10
     @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
     @ScaledMetric(relativeTo: .footnote) private var headerIconFontSize: CGFloat = 14
     @ScaledMetric(relativeTo: .subheadline) private var titleFontSize: CGFloat = 16
+    @State private var highlightLinks = false
 
     private var scaledRowSpacing: CGFloat { rowSpacing * responsiveTypeScale }
     private var scaledHeaderIconSize: CGFloat { headerIconSize * responsiveTypeScale }
@@ -30,6 +33,10 @@ struct InfoCardView: View {
 
     private var rowBackgroundColor: Color {
         colorScheme == .dark ? Color.brandSurface : Color(.systemGray6)
+    }
+
+    private var linkHighlightColor: Color {
+        highlightLinks ? .orange : Color.brandAccent
     }
 
     var body: some View {
@@ -92,6 +99,9 @@ struct InfoCardView: View {
                         return .systemAction
                     }
                     if let action = url.host, !action.isEmpty {
+                        if action == "highlight" {
+                            pulseLinkHighlight()
+                        }
                         linkAction(action)
                     }
                     return .handled
@@ -112,10 +122,25 @@ struct InfoCardView: View {
         var attributed = (try? AttributedString(markdown: text)) ?? AttributedString(text)
         for run in attributed.runs {
             if run.link != nil {
-                attributed[run.range].foregroundColor = Color.brandAccent
+                attributed[run.range].foregroundColor = linkHighlightColor
                 attributed[run.range].underlineStyle = nil
             }
         }
         return attributed
+    }
+
+    private func pulseLinkHighlight() {
+        Task { @MainActor in
+            for _ in 0..<linkHighlightCycles {
+                withAnimation(.easeInOut(duration: linkHighlightDuration)) {
+                    highlightLinks = true
+                }
+                try? await Task.sleep(nanoseconds: UInt64(linkHighlightDuration * 1_000_000_000))
+                withAnimation(.easeInOut(duration: linkHighlightDuration)) {
+                    highlightLinks = false
+                }
+                try? await Task.sleep(nanoseconds: UInt64(linkHighlightDuration * 1_000_000_000))
+            }
+        }
     }
 }
