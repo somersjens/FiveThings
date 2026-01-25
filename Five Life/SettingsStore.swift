@@ -139,7 +139,8 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
 
     var languageName: String {
         switch self {
-        case .english, .englishUK: return "English"
+        case .english: return "English (US)"
+        case .englishUK: return "English (UK)"
         case .arabic: return "Arabic"
         case .bengali: return "Bengali"
         case .chineseSimplified: return "Chinese (Simplified)"
@@ -163,13 +164,15 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .malay: return "Malay"
         case .norwegian: return "Norwegian"
         case .polish: return "Polish"
-        case .portugueseBrazil, .portuguesePortugal: return "Portuguese"
+        case .portugueseBrazil: return "Portuguese (Brazil)"
+        case .portuguesePortugal: return "Portuguese (Portugal)"
         case .romanian: return "Romanian"
         case .russian: return "Russian"
         case .serbian: return "Serbian"
         case .slovak: return "Slovak"
         case .slovenian: return "Slovenian"
-        case .spanishMexico, .spanishSpain: return "Spanish"
+        case .spanishMexico: return "Spanish (Mexico)"
+        case .spanishSpain: return "Spanish (Spain)"
         case .swedish: return "Swedish"
         case .tamil: return "Tamil"
         case .thai: return "Thai"
@@ -180,7 +183,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
     }
 
     var displayName: String {
-        localizedCountryName
+        languageName
     }
 
     var localizedCountryName: String {
@@ -279,11 +282,11 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    static var orderedByCountryName: [AppLanguage] {
+    static var orderedByLanguageName: [AppLanguage] {
         allCases.sorted {
-            let comparison = $0.countryName.localizedCaseInsensitiveCompare($1.countryName)
+            let comparison = $0.languageName.localizedCaseInsensitiveCompare($1.languageName)
             if comparison == .orderedSame {
-                return $0.languageName.localizedCaseInsensitiveCompare($1.languageName) == .orderedAscending
+                return $0.countryName.localizedCaseInsensitiveCompare($1.countryName) == .orderedAscending
             }
             return comparison == .orderedAscending
         }
