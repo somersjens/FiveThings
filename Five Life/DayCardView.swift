@@ -427,13 +427,27 @@ struct DayCardView: View {
             ? L10n.string("daycard.placeholder.optional", language: settings.language)
             : L10n.string("daycard.placeholder.entry", language: settings.language)
         return HStack(alignment: .top, spacing: 6) {
-            Text("\(idx + 1).")
+            Text(localizedIndexString(idx + 1))
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 22, alignment: .leading)
                 .foregroundStyle(.primary)
 
             rowTextView(placeholderText: placeholderText, idx: idx)
         }
+    }
+
+    private func localizedIndexString(_ index: Int) -> String {
+        let formatter = NumberFormatter()
+        let localeIdentifier = settings.language.localeIdentifier
+        if let numberingSystem = settings.language.numberingSystemOverride {
+            formatter.locale = Locale(identifier: "\(localeIdentifier)@numbers=\(numberingSystem)")
+        } else {
+            formatter.locale = Locale(identifier: localeIdentifier)
+        }
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        let localizedNumber = formatter.string(from: NSNumber(value: index)) ?? "\(index)"
+        return "\(localizedNumber)."
     }
 
     private func rowTextField(placeholderText: String, idx: Int) -> some View {
