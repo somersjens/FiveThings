@@ -183,16 +183,25 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
     }
 
     var displayName: String {
-        languageName
+        "\(localizedLanguageName) (\(localizedCountryName))"
     }
 
     var localizedCountryName: String {
         let locale = Locale(identifier: localeIdentifier)
-        if let regionCode = locale.regionCode,
+        if let regionCode = locale.region?.identifier,
            let localized = locale.localizedString(forRegionCode: regionCode) {
             return localized
         }
         return countryName
+    }
+
+    var localizedLanguageName: String {
+        let locale = Locale(identifier: localeIdentifier)
+        if let languageCode = locale.languageCode,
+           let localized = locale.localizedString(forLanguageCode: languageCode) {
+            return localized
+        }
+        return languageName
     }
 
     var flagEmoji: String {
@@ -284,7 +293,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
 
     static var orderedByLanguageName: [AppLanguage] {
         allCases.sorted {
-            let comparison = $0.languageName.localizedCaseInsensitiveCompare($1.languageName)
+            let comparison = $0.displayName.localizedCaseInsensitiveCompare($1.displayName)
             if comparison == .orderedSame {
                 return $0.countryName.localizedCaseInsensitiveCompare($1.countryName) == .orderedAscending
             }

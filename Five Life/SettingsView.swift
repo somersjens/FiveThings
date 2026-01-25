@@ -86,7 +86,7 @@ struct SettingsView: View {
             Button {
                 showLanguagePicker = true
             } label: {
-                settingsPickerLabel(text: settings.language.languageName, flag: settings.language.flagEmoji)
+                settingsPickerLabel(text: settings.language.displayName, flag: settings.language.flagEmoji)
             }
         }
         .frame(minHeight: scaledSettingsRowHeight)
@@ -112,7 +112,7 @@ struct SettingsView: View {
                 )) {
                     ForEach(AppLanguage.orderedByLanguageName) { lang in
                         HStack {
-                            Text(lang.languageName)
+                            Text(lang.displayName)
                             Spacer()
                             Text(lang.flagEmoji)
                         }
