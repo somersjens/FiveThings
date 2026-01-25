@@ -1082,7 +1082,12 @@ struct SettingsView: View {
 
     private func localizedCountText(_ count: Int) -> String {
         let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: settings.language.localeIdentifier)
+        let localeIdentifier = settings.language.localeIdentifier
+        if let numberingSystem = settings.language.numberingSystemOverride {
+            formatter.locale = Locale(identifier: "\(localeIdentifier)@numbers=\(numberingSystem)")
+        } else {
+            formatter.locale = Locale(identifier: localeIdentifier)
+        }
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
         return formatter.string(from: NSNumber(value: count)) ?? "\(count)"
