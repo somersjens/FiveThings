@@ -86,7 +86,7 @@ struct SettingsView: View {
             Button {
                 showLanguagePicker = true
             } label: {
-                settingsPickerLabel(text: settings.language.displayName, flag: settings.language.flagEmoji)
+                settingsPickerLabel(text: settings.language.shortDisplayName, flag: settings.language.flagEmoji)
             }
         }
         .frame(minHeight: scaledSettingsRowHeight)

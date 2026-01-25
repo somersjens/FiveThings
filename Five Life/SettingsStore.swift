@@ -198,6 +198,10 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         "\(localizedLanguageName) (\(localizedCountryName))"
     }
 
+    var shortDisplayName: String {
+        localizedLanguageName
+    }
+
     var localizedCountryName: String {
         let locale = Locale(identifier: localeIdentifier)
         if let regionCode = locale.region?.identifier,
@@ -211,9 +215,14 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         let locale = Locale(identifier: localeIdentifier)
         if let languageCode = locale.language.languageCode?.identifier,
            let localized = locale.localizedString(forLanguageCode: languageCode) {
-            return localized
+            return capitalizedFirstLetter(localized, locale: locale)
         }
-        return languageName
+        return capitalizedFirstLetter(languageName, locale: locale)
+    }
+
+    private func capitalizedFirstLetter(_ value: String, locale: Locale) -> String {
+        guard let first = value.first else { return value }
+        return String(first).uppercased(with: locale) + value.dropFirst()
     }
 
     var flagEmoji: String {
