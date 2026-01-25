@@ -387,7 +387,7 @@ struct SettingsView: View {
             if let message = addDayMessage {
                 Text(message)
                     .font(.footnote)
-                    .foregroundStyle(addDayMessageIsError ? .red : .green)
+                    .foregroundStyle(addDayMessageIsError ? .red : Color.brandAccent)
                     .transition(.opacity)
             }
         }
@@ -708,6 +708,12 @@ struct SettingsView: View {
                 isDeleteAllConfirming = false
             }
         }
+        .onChange(of: settings.language) { _, _ in
+            resetAddDayInput()
+        }
+        .onAppear {
+            addDayFieldFocused = false
+        }
         .fileImporter(isPresented: $showImportPicker,
                       allowedContentTypes: [.commaSeparatedText],
                       allowsMultipleSelection: false) { result in
@@ -814,6 +820,16 @@ struct SettingsView: View {
         addDayDigits = ""
         addDayText = ""
         addDayHasExistingEntry = false
+    }
+
+    private func resetAddDayInput() {
+        addDayMessageTask?.cancel()
+        addDayDigits = ""
+        addDayText = ""
+        addDayMessage = nil
+        addDayMessageIsError = true
+        addDayHasExistingEntry = false
+        addDayFieldFocused = false
     }
 
     private func parseAddDayDate() -> Date? {
