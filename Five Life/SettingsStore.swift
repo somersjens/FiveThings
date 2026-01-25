@@ -370,6 +370,7 @@ final class SettingsStore: ObservableObject {
     @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
     @AppStorage("appleIdConnected") var appleIdConnected: Bool = false
     @AppStorage("appleUserIdentifier") var appleUserIdentifier: String = ""
+    @AppStorage("donationPaid") var donationPaid: Bool = false
     @AppStorage("appleLastSnapshotAt") private var appleLastSnapshotAtInterval: Double = 0
     @AppStorage("appleSnapshotDeletionPending") var appleSnapshotDeletionPending: Bool = false
     var appleLastSnapshotAt: Date {

@@ -14,6 +14,7 @@ struct AccessScreenView: View {
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     @State private var isSigningInWithApple: Bool = false
     @State private var isProcessingPayment: Bool = false
+    @State private var showConfetti: Bool = false
     @State private var paymentErrorMessage: String?
     @ScaledMetric(relativeTo: .body) private var maxContentWidth: CGFloat = 320
     @ScaledMetric(relativeTo: .body) private var cardHeight: CGFloat = 234
@@ -47,85 +48,91 @@ struct AccessScreenView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ScrollView(showsIndicators: false) {
-                VStack {
-                    Spacer(minLength: 0)
-                    VStack(spacing: 20 * accessScale) {
-                        Image(accessIconName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 96 * accessScale)
-                            .accessibilityHidden(true)
+            ZStack {
+                ScrollView(showsIndicators: false) {
+                    VStack {
+                        Spacer(minLength: 0)
+                        VStack(spacing: 20 * accessScale) {
+                            Image(accessIconName)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 96 * accessScale)
+                                .accessibilityHidden(true)
 
-                        TabView(selection: $currentCardIndex) {
-                            ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
-                                cardView(text: card, index: index, width: geometry.size.width)
-                                    .tag(index)
-                            }
-                        }
-                        .frame(height: cardHeight * responsiveTypeScale * accessScale, alignment: .top)
-                        .tabViewStyle(.page(indexDisplayMode: .never))
-
-                        pageIndicators
-
-                        VStack(spacing: 12 * accessScale) {
-                            if showsReturnToMainMenuOnly {
-                                Button {
-                                    hasSeenAccessScreen = true
-                                    showsReturnToMainMenuOnly = false
-                                } label: {
-                                    Text(backToMainMenuButtonTitle)
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 12 * accessScale)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
-                                                .fill(Color.brandAccent)
-                                        )
-                                        .foregroundStyle(.white)
+                            TabView(selection: $currentCardIndex) {
+                                ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
+                                    cardView(text: card, index: index, width: geometry.size.width)
+                                        .tag(index)
                                 }
-                            } else {
-                                Button {
-                                    Task {
-                                        await handleAppleSignIn()
+                            }
+                            .frame(height: cardHeight * responsiveTypeScale * accessScale, alignment: .top)
+                            .tabViewStyle(.page(indexDisplayMode: .never))
+
+                            pageIndicators
+
+                            VStack(spacing: 12 * accessScale) {
+                                if showsReturnToMainMenuOnly {
+                                    Button {
+                                        hasSeenAccessScreen = true
+                                        showsReturnToMainMenuOnly = false
+                                    } label: {
+                                        Text(backToMainMenuButtonTitle)
+                                            .font(.headline)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12 * accessScale)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
+                                                    .fill(Color.brandAccent)
+                                            )
+                                            .foregroundStyle(.white)
                                     }
-                                } label: {
-                                    Text(connectButtonTitle)
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 12 * accessScale)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
-                                                .fill(Color.brandAccent)
-                                        )
-                                        .foregroundStyle(.white)
-                                }
-                                .disabled(isSigningInWithApple)
+                                } else {
+                                    Button {
+                                        Task {
+                                            await handleAppleSignIn()
+                                        }
+                                    } label: {
+                                        Text(connectButtonTitle)
+                                            .font(.headline)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12 * accessScale)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
+                                                    .fill(Color.brandAccent)
+                                            )
+                                            .foregroundStyle(.white)
+                                    }
+                                    .disabled(isSigningInWithApple)
 
-                                Button {
-                                    settings.appleIdConnected = false
-                                    hasSeenAccessScreen = true
-                                    showsReturnToMainMenuOnly = false
-                                } label: {
-                                    Text(continueButtonTitle)
-                                        .font(.headline)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 12 * accessScale)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
-                                                .fill(Color.brandSecondarySurface)
-                                        )
-                                        .foregroundStyle(Color.brandAccent)
+                                    Button {
+                                        settings.appleIdConnected = false
+                                        hasSeenAccessScreen = true
+                                        showsReturnToMainMenuOnly = false
+                                    } label: {
+                                        Text(continueButtonTitle)
+                                            .font(.headline)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12 * accessScale)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 16 * accessScale, style: .continuous)
+                                                    .fill(Color.brandSecondarySurface)
+                                            )
+                                            .foregroundStyle(Color.brandAccent)
+                                    }
                                 }
                             }
+                            .frame(maxWidth: maxContentWidth * accessScale)
                         }
-                        .frame(maxWidth: maxContentWidth * accessScale)
+                        Spacer(minLength: 0)
                     }
-                    Spacer(minLength: 0)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: geometry.size.height)
+                    .padding(.horizontal, 30 * accessScale)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: geometry.size.height)
-                .padding(.horizontal, 30 * accessScale)
+                if showConfetti {
+                    CloverConfettiView()
+                        .transition(.opacity)
+                }
             }
             .background(Color.brandBackground.ignoresSafeArea())
             .alert(L10n.string("access.payment.title", language: settings.language), isPresented: Binding(
@@ -191,6 +198,9 @@ struct AccessScreenView: View {
 
     private var accessIconName: String {
         let maxIndex = min(currentCardIndex + 1, 5)
+        if maxIndex == 5, settings.donationPaid {
+            return "heart_clover"
+        }
         return "Access_\(maxIndex)"
     }
 
@@ -267,6 +277,7 @@ struct AccessScreenView: View {
             switch result {
             case .success(let verification):
                 _ = try verification.payloadValue
+                handlePaymentSuccess()
             case .userCancelled, .pending:
                 break
             @unknown default:
@@ -274,6 +285,22 @@ struct AccessScreenView: View {
             }
         } catch {
             paymentErrorMessage = L10n.string("access.payment.failed", language: settings.language)
+        }
+    }
+
+    private func handlePaymentSuccess() {
+        settings.donationPaid = true
+        withAnimation(.easeInOut(duration: 0.25)) {
+            showConfetti = true
+        }
+
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    showConfetti = false
+                }
+            }
         }
     }
 }
