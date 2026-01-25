@@ -27,6 +27,8 @@ struct ContentView: View {
     @State private var pendingSettingsOpen = false
     @State private var pendingSettingsClose = false
     @State private var suppressSettingsAutoScroll = false
+    @State private var pendingSettingsInfoRequest: SettingsView.SettingsInfo?
+    @State private var settingsInfoTask: Task<Void, Never>?
     @State private var dismissedEmptyLimitNotice = false
     @State private var showsReturnToMainMenuOnly = false
     @State private var highlightLockIcons = false
@@ -734,8 +736,14 @@ struct ContentView: View {
                     } else {
                         scrollSettingsIntoView(using: proxy)
                     }
+                    if let pendingInfo = pendingSettingsInfoRequest {
+                        let delay = scrollToTopDuration + settingsOpenAnimationDuration + 0.05
+                        scheduleSettingsInfoPopover(pendingInfo, delay: delay)
+                    }
                 } else {
                     showSecretMenu = false
+                    pendingSettingsInfoRequest = nil
+                    settingsInfoTask?.cancel()
                     if showExportOptions {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             showExportOptions = false
@@ -1193,13 +1201,11 @@ struct ContentView: View {
         case "lock":
             pulseHighlight($highlightLockIcons)
         case "settings":
-            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
-                showSettings = true
-            }
-            Task { @MainActor in
-                let delay = settingsOpenAnimationDuration + 0.05
-                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-                requestedSettingsInfo = .entriesPerDay
+            pendingSettingsInfoRequest = .entriesPerDay
+            if showSettings {
+                scheduleSettingsInfoPopover(.entriesPerDay, delay: 0.05)
+            } else {
+                pendingSettingsOpen = true
             }
         case "search":
             pulseHighlight($highlightSearchPlaceholder)
@@ -1217,6 +1223,16 @@ struct ContentView: View {
             }
         default:
             break
+        }
+    }
+
+    private func scheduleSettingsInfoPopover(_ info: SettingsView.SettingsInfo, delay: Double) {
+        settingsInfoTask?.cancel()
+        settingsInfoTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            requestedSettingsInfo = info
+            pendingSettingsInfoRequest = nil
         }
     }
 
