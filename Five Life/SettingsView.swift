@@ -434,6 +434,7 @@ struct SettingsView: View {
 
     private var addDayInputField: some View {
         let format = addDayFormat
+        let fieldWidth = addDayFieldWidth(for: format)
         return ZStack(alignment: .leading) {
             AddDayTextField(text: $addDayText,
                             isFocused: $addDayFieldFocused,
@@ -465,7 +466,7 @@ struct SettingsView: View {
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(width: 110, height: 21)
+        .frame(width: fieldWidth, height: 21)
         .padding(.vertical, 3)
         .padding(.horizontal, 8)
         .background(
@@ -476,6 +477,14 @@ struct SettingsView: View {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .strokeBorder(Color.gray.opacity(0.3), lineWidth: 1)
         )
+    }
+
+    private func addDayFieldWidth(for format: AddDayDateFormat) -> CGFloat {
+        let font = UIFont.monospacedDigitSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize,
+                                                    weight: .regular)
+        let formatText = format.formatString as NSString
+        let width = formatText.size(withAttributes: [.font: font]).width
+        return ceil(width + 2)
     }
 
     private var settingsCardOuterBackground: Color {
