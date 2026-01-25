@@ -197,7 +197,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
 
     var localizedLanguageName: String {
         let locale = Locale(identifier: localeIdentifier)
-        if let languageCode = locale.languageCode,
+        if let languageCode = locale.language.languageCode?.identifier,
            let localized = locale.localizedString(forLanguageCode: languageCode) {
             return localized
         }

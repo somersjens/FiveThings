@@ -391,8 +391,13 @@ struct SettingsView: View {
         return L10n.string("settings.day.add", language: settings.language)
     }
 
+    private var addDayFormat: AddDayDateFormat {
+        AddDayDateFormat.format(for: settings.language)
+    }
+
     private var addDayInputField: some View {
-        ZStack(alignment: .leading) {
+        let format = addDayFormat
+        return ZStack(alignment: .leading) {
             TextField("", text: $addDayText)
                 .keyboardType(.numberPad)
                 .textInputAutocapitalization(.never)
@@ -408,9 +413,9 @@ struct SettingsView: View {
                     let filtered = newValue.filter(\.isWholeNumber)
                     var nextDigits = String(filtered.prefix(8))
                     if newValue.count < oldValue.count,
-                       oldValue.hasSuffix("-"),
-                       !newValue.hasSuffix("-"),
-                       (nextDigits.count == 2 || nextDigits.count == 4),
+                       oldValue.hasSuffix(format.separator),
+                       !newValue.hasSuffix(format.separator),
+                       format.separatorPositions.contains(nextDigits.count),
                        !nextDigits.isEmpty {
                         nextDigits = String(nextDigits.dropLast())
                     }
@@ -425,6 +430,7 @@ struct SettingsView: View {
                         addDayFieldFocused = false
                     }
                 }
+                .accessibilityHint(format.accessibilityHint)
 
             Text(addDayDisplayText(addDayDigits))
                 .font(.body.monospacedDigit())
@@ -432,7 +438,7 @@ struct SettingsView: View {
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(width: 100, height: 21)
+        .frame(width: 110, height: 21)
         .padding(.vertical, 3)
         .padding(.horizontal, 8)
         .background(
@@ -777,13 +783,11 @@ struct SettingsView: View {
     }
 
     private func parseAddDayDate() -> Date? {
-        guard let first = intFromDigits(start: 0, length: 2),
-              let second = intFromDigits(start: 2, length: 2),
-              let year = intFromDigits(start: 4, length: 4) else {
+        guard let components = addDayFormat.components(from: addDayDigits) else {
             return nil
         }
 
-        return dateFrom(day: first, month: second, year: year)
+        return dateFrom(day: components.day, month: components.month, year: components.year)
     }
 
     private func isAddDayWithinRange(_ date: Date) -> Bool {
@@ -797,60 +801,52 @@ struct SettingsView: View {
     }
 
     private func formattedAddDayDigits(_ digits: String) -> String {
+        let format = addDayFormat
         var formatted = ""
-        let characters = Array(digits)
-        for index in 0..<characters.count {
-            if index == 2 || index == 4 {
-                formatted.append("-")
+        var remaining = digits
+
+        for (index, component) in format.order.enumerated() {
+            let length = format.length(for: component)
+            let segment = String(remaining.prefix(length))
+            formatted.append(segment)
+            remaining = String(remaining.dropFirst(segment.count))
+
+            if index < format.order.count - 1, segment.count == length {
+                formatted.append(format.separator)
             }
-            formatted.append(characters[index])
         }
-        if digits.count == 2 || digits.count == 4 {
-            formatted.append("-")
-        }
+
         return formatted
     }
 
     private func addDayDisplayText(_ digits: String) -> AttributedString {
+        let format = addDayFormat
         let digitColor = Color.primary
         let placeholderColor = Color(.systemGray3)
 
-        let dayDigits = String(digits.prefix(2))
-        let monthDigits = digits.count > 2 ? String(digits.dropFirst(2).prefix(2)) : ""
-        let yearDigits = digits.count > 4 ? String(digits.dropFirst(4).prefix(4)) : ""
-
-        let dayPlaceholder = String(repeating: "D", count: max(0, 2 - dayDigits.count))
-        let monthPlaceholder = String(repeating: "M", count: max(0, 2 - monthDigits.count))
-        let yearPlaceholder = String(repeating: "Y", count: max(0, 4 - yearDigits.count))
-
+        let segments = format.segmentStrings(for: digits)
         var output = AttributedString("")
-        var dayValue = AttributedString(dayDigits)
-        dayValue.foregroundColor = digitColor
-        var dayFiller = AttributedString(dayPlaceholder)
-        dayFiller.foregroundColor = placeholderColor
-        var dashOne = AttributedString("-")
-        dashOne.foregroundColor = placeholderColor
 
-        var monthValue = AttributedString(monthDigits)
-        monthValue.foregroundColor = digitColor
-        var monthFiller = AttributedString(monthPlaceholder)
-        monthFiller.foregroundColor = placeholderColor
-        var dashTwo = AttributedString("-")
-        dashTwo.foregroundColor = placeholderColor
+        for (index, component) in format.order.enumerated() {
+            let value = segments[component, default: ""]
+            var valueText = AttributedString(value)
+            valueText.foregroundColor = digitColor
 
-        var yearValue = AttributedString(yearDigits)
-        yearValue.foregroundColor = digitColor
-        var yearFiller = AttributedString(yearPlaceholder)
-        yearFiller.foregroundColor = placeholderColor
+            let placeholder = format.placeholder(for: component)
+            let remainingCount = max(0, placeholder.count - value.count)
+            let placeholderSuffix = String(placeholder.suffix(remainingCount))
+            var placeholderText = AttributedString(placeholderSuffix)
+            placeholderText.foregroundColor = placeholderColor
 
-        output += dayValue
-        output += dayFiller
-        output += dashOne
-        output += monthValue
-        output += monthFiller
-        output += dashTwo
-        output += yearValue
-        output += yearFiller
+            output += valueText
+            output += placeholderText
+
+            if index < format.order.count - 1 {
+                var separatorText = AttributedString(format.separator)
+                separatorText.foregroundColor = placeholderColor
+                output += separatorText
+            }
+        }
 
         return output
     }
@@ -864,6 +860,211 @@ struct SettingsView: View {
         let normalizedDay = Calendar.current.startOfDay(for: selectedDay)
         let descriptor = FetchDescriptor<DayEntry>(predicate: #Predicate { $0.day == normalizedDay })
         addDayHasExistingEntry = ((try? modelContext.fetch(descriptor))?.first) != nil
+    }
+
+    private struct AddDayDateFormat {
+        enum Component {
+            case day
+            case month
+            case year
+        }
+
+        let order: [Component]
+        let separator: String
+        let placeholders: [Component: String]
+
+        var accessibilityHint: String {
+            formatString
+        }
+
+        var separatorPositions: [Int] {
+            var positions: [Int] = []
+            var total = 0
+            for component in order.dropLast() {
+                total += length(for: component)
+                positions.append(total)
+            }
+            return positions
+        }
+
+        var formatString: String {
+            var output = ""
+            for (index, component) in order.enumerated() {
+                output.append(placeholder(for: component))
+                if index < order.count - 1 {
+                    output.append(separator)
+                }
+            }
+            return output
+        }
+
+        func length(for component: Component) -> Int {
+            switch component {
+            case .day, .month:
+                return 2
+            case .year:
+                return 4
+            }
+        }
+
+        func placeholder(for component: Component) -> String {
+            let expectedLength = length(for: component)
+            let base = placeholders[component] ?? defaultPlaceholder(for: component)
+            if base.count == expectedLength {
+                return base
+            }
+            return defaultPlaceholder(for: component)
+        }
+
+        func segmentStrings(for digits: String) -> [Component: String] {
+            var result: [Component: String] = [:]
+            var index = digits.startIndex
+            for component in order {
+                guard index < digits.endIndex else { break }
+                let length = length(for: component)
+                let end = digits.index(index, offsetBy: min(length, digits.distance(from: index, to: digits.endIndex)))
+                result[component] = String(digits[index..<end])
+                index = end
+            }
+            return result
+        }
+
+        func components(from digits: String) -> (day: Int, month: Int, year: Int)? {
+            guard digits.count == 8 else { return nil }
+            var values: [Component: Int] = [:]
+            var index = digits.startIndex
+            for component in order {
+                let length = length(for: component)
+                guard let end = digits.index(index, offsetBy: length, limitedBy: digits.endIndex) else { return nil }
+                let segment = String(digits[index..<end])
+                guard let value = Int(segment) else { return nil }
+                values[component] = value
+                index = end
+            }
+            guard let day = values[.day],
+                  let month = values[.month],
+                  let year = values[.year] else {
+                return nil
+            }
+            return (day: day, month: month, year: year)
+        }
+
+        private func defaultPlaceholder(for component: Component) -> String {
+            switch component {
+            case .day:
+                return "DD"
+            case .month:
+                return "MM"
+            case .year:
+                return "YYYY"
+            }
+        }
+
+        static func format(for language: AppLanguage) -> AddDayDateFormat {
+            switch language {
+            case .english:
+                return monthDayYear(separator: "/", placeholder: ("MM", "DD", "YYYY"))
+            case .englishUK:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .arabic:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .bengali:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .chineseSimplified:
+                return yearMonthDay(separator: "-", placeholder: ("YYYY", "MM", "DD"))
+            case .chineseTraditional:
+                return yearMonthDay(separator: "/", placeholder: ("YYYY", "MM", "DD"))
+            case .croatian:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "GGGG"))
+            case .czech:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "RRRR"))
+            case .danish:
+                return dayMonthYear(separator: "-", placeholder: ("DD", "MM", "ÅÅÅÅ"))
+            case .dutch:
+                return dayMonthYear(separator: "-", placeholder: ("DD", "MM", "JJJJ"))
+            case .filipino:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .finnish:
+                return dayMonthYear(separator: ".", placeholder: ("PP", "KK", "VVVV"))
+            case .french:
+                return dayMonthYear(separator: "/", placeholder: ("JJ", "MM", "AAAA"))
+            case .german:
+                return dayMonthYear(separator: ".", placeholder: ("TT", "MM", "JJJJ"))
+            case .greek:
+                return dayMonthYear(separator: "/", placeholder: ("ΗΗ", "ΜΜ", "ΕΕΕΕ"))
+            case .hebrew:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .hindi:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .hungarian:
+                return yearMonthDay(separator: ".", placeholder: ("ÉÉÉÉ", "HH", "NN"))
+            case .indonesian:
+                return dayMonthYear(separator: "/", placeholder: ("HH", "BB", "TTTT"))
+            case .italian:
+                return dayMonthYear(separator: "/", placeholder: ("GG", "MM", "AAAA"))
+            case .japanese:
+                return yearMonthDay(separator: "/", placeholder: ("YYYY", "MM", "DD"))
+            case .korean:
+                return yearMonthDay(separator: ".", placeholder: ("YYYY", "MM", "DD"))
+            case .malay:
+                return dayMonthYear(separator: "/", placeholder: ("HH", "BB", "TTTT"))
+            case .norwegian:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "ÅÅÅÅ"))
+            case .polish:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "RRRR"))
+            case .portugueseBrazil:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "AAAA"))
+            case .portuguesePortugal:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "AAAA"))
+            case .romanian:
+                return dayMonthYear(separator: ".", placeholder: ("ZZ", "LL", "AAAA"))
+            case .russian:
+                return dayMonthYear(separator: ".", placeholder: ("ДД", "ММ", "ГГГГ"))
+            case .serbian:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "YYYY"))
+            case .slovak:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "RRRR"))
+            case .slovenian:
+                return dayMonthYear(separator: ".", placeholder: ("DD", "MM", "YYYY"))
+            case .spanishMexico:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "AAAA"))
+            case .spanishSpain:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "AAAA"))
+            case .swedish:
+                return yearMonthDay(separator: "-", placeholder: ("ÅÅÅÅ", "MM", "DD"))
+            case .tamil:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .thai:
+                return dayMonthYear(separator: "/", placeholder: ("วว", "ดด", "ปปปป"))
+            case .turkish:
+                return dayMonthYear(separator: ".", placeholder: ("GG", "AA", "YYYY"))
+            case .ukrainian:
+                return dayMonthYear(separator: ".", placeholder: ("ДД", "ММ", "РРРР"))
+            case .vietnamese:
+                return dayMonthYear(separator: "/", placeholder: ("NN", "TT", "NNNN"))
+            }
+        }
+
+        private static func dayMonthYear(separator: String,
+                                         placeholder: (String, String, String)) -> AddDayDateFormat {
+            AddDayDateFormat(order: [.day, .month, .year],
+                             separator: separator,
+                             placeholders: [.day: placeholder.0, .month: placeholder.1, .year: placeholder.2])
+        }
+
+        private static func monthDayYear(separator: String,
+                                         placeholder: (String, String, String)) -> AddDayDateFormat {
+            AddDayDateFormat(order: [.month, .day, .year],
+                             separator: separator,
+                             placeholders: [.day: placeholder.1, .month: placeholder.0, .year: placeholder.2])
+        }
+
+        private static func yearMonthDay(separator: String,
+                                         placeholder: (String, String, String)) -> AddDayDateFormat {
+            AddDayDateFormat(order: [.year, .month, .day],
+                             separator: separator,
+                             placeholders: [.day: placeholder.2, .month: placeholder.1, .year: placeholder.0])
+        }
     }
 
     private func settingsPickerLabel(text: String, flag: String) -> some View {
