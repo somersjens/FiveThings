@@ -191,6 +191,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				"en-GB",
 				Base,
 				ar,
 				bn,
@@ -199,6 +200,8 @@
 				de,
 				el,
 				es,
+				"es-ES",
+				"es-MX",
 				fi,
 				fil,
 				fr,
@@ -215,6 +218,8 @@
 				nl,
 				pl,
 				pt,
+				"pt-BR",
+				"pt-PT",
 				ro,
 				ru,
 				sk,
