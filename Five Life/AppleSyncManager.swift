@@ -79,7 +79,8 @@ final class AppleSyncManager {
         switch context {
         case .initialConnect:
             if let snapshot = await loadSnapshotWithRetry(), !snapshot.entries.isEmpty {
-                replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
+                let mergedEntries = mergeAppleSnapshotEntries(snapshot.entries, with: localEntries)
+                replaceLocalEntries(with: mergedEntries, modelContext: modelContext)
                 ensureTodayEntry(modelContext: modelContext, settings: settings)
                 return
             }
@@ -90,7 +91,8 @@ final class AppleSyncManager {
                 let appleLineCount = storedLineCount(for: snapshot.entries)
                 let localLineCount = storedLineCount(for: localEntries)
                 if appleLineCount > localLineCount {
-                    replaceLocalEntries(with: snapshot.entries, modelContext: modelContext)
+                    let mergedEntries = mergeAppleSnapshotEntries(snapshot.entries, with: localEntries)
+                    replaceLocalEntries(with: mergedEntries, modelContext: modelContext)
                     ensureTodayEntry(modelContext: modelContext, settings: settings)
                     return
                 }
@@ -325,6 +327,51 @@ final class AppleSyncManager {
             createdAt: snapshot.createdAt,
             updatedAt: snapshot.updatedAt
         )
+    }
+
+    private func mergeAppleSnapshotEntries(_ appleEntries: [DayEntrySnapshot],
+                                           with localEntries: [DayEntry]) -> [DayEntrySnapshot] {
+        guard !appleEntries.isEmpty else {
+            return localEntries.map { DayEntrySnapshot(from: $0) }
+        }
+        let calendar = Calendar.current
+        var mergedByDay: [Date: DayEntrySnapshot] = [:]
+        for appleSnapshot in appleEntries {
+            let dayKey = calendar.startOfDay(for: appleSnapshot.day)
+            if let existing = mergedByDay[dayKey] {
+                mergedByDay[dayKey] = preferredSnapshot(appleSnapshot, existing)
+            } else {
+                mergedByDay[dayKey] = appleSnapshot
+            }
+        }
+        for localSnapshot in localEntries.map({ DayEntrySnapshot(from: $0) }) {
+            let dayKey = calendar.startOfDay(for: localSnapshot.day)
+            guard let appleSnapshot = mergedByDay[dayKey] else {
+                mergedByDay[dayKey] = localSnapshot
+                continue
+            }
+            if !isSnapshotMeaningful(appleSnapshot) && isSnapshotMeaningful(localSnapshot) {
+                mergedByDay[dayKey] = localSnapshot
+            }
+        }
+        return mergedByDay.values.sorted { $0.day < $1.day }
+    }
+
+    private func isSnapshotMeaningful(_ snapshot: DayEntrySnapshot) -> Bool {
+        if snapshot.isLocked || snapshot.wasCompleted || snapshot.score != nil {
+            return true
+        }
+        return snapshot.items.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
+    private func preferredSnapshot(_ lhs: DayEntrySnapshot,
+                                   _ rhs: DayEntrySnapshot) -> DayEntrySnapshot {
+        let lhsMeaningful = isSnapshotMeaningful(lhs)
+        let rhsMeaningful = isSnapshotMeaningful(rhs)
+        if lhsMeaningful != rhsMeaningful {
+            return lhsMeaningful ? lhs : rhs
+        }
+        return lhs.updatedAt >= rhs.updatedAt ? lhs : rhs
     }
 
     private func deleteAllEntries(modelContext: ModelContext) {
