@@ -268,10 +268,12 @@ struct DayCardView: View {
             } label: {
                 Image(systemName: entry.isLocked ? "lock.fill" : (shouldPulse ? "lock.open.fill" : "lock.open"))
                     .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
-                    .foregroundStyle(highlightLockIcon ? Color.brandAccent : .primary)
+                    .foregroundStyle(highlightLockIcon ? .orange : .primary)
                     .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
                     .background(.thinMaterial)
                     .clipShape(Circle())
+                    .scaleEffect(highlightLockIcon ? 1.2 : 1)
+                    .animation(.easeInOut(duration: 0.25), value: highlightLockIcon)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(entry.isLocked

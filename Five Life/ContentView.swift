@@ -212,7 +212,7 @@ struct ContentView: View {
     private let footerLinksID = "footerLinks"
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
-    private let settingsOpenAnimationDuration: Double = 0.35
+    private let settingsOpenAnimationDuration: Double = 0.45
     private let seeYouTomorrowMessageCount = 20
 
     private struct StatisticsSnapshot {
@@ -310,7 +310,9 @@ struct ContentView: View {
             .multilineTextAlignment(.center)
         }
         .font(.footnote.weight(.semibold))
-        .foregroundStyle(highlightFooterLinks ? Color.brandAccent : .secondary)
+        .foregroundStyle(highlightFooterLinks ? .orange : .secondary)
+        .scaleEffect(highlightFooterLinks ? 1.2 : 1)
+        .animation(.easeInOut(duration: 0.25), value: highlightFooterLinks)
         .id(footerLinksID)
     }
 
@@ -429,8 +431,10 @@ struct ContentView: View {
                     scrollToTopTrigger += 1
                 } label: {
                     Image(systemName: "arrow.up")
-                        .foregroundStyle(highlightScrollToTop ? Color.brandAccent : .secondary)
+                        .foregroundStyle(highlightScrollToTop ? .orange : .secondary)
                         .frame(width: 32, height: 32)
+                        .scaleEffect(highlightScrollToTop ? 1.2 : 1)
+                        .animation(.easeInOut(duration: 0.25), value: highlightScrollToTop)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.string("scroll.to.top", language: settings.language))
@@ -1193,7 +1197,8 @@ struct ContentView: View {
                 showSettings = true
             }
             Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 250_000_000)
+                let delay = settingsOpenAnimationDuration + 0.05
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 requestedSettingsInfo = .entriesPerDay
             }
         case "search":

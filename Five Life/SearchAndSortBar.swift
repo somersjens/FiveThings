@@ -24,7 +24,7 @@ struct SearchAndSortBar: View {
                     "",
                     text: $text,
                     prompt: Text(L10n.string("search.placeholder", language: settings.language))
-                        .foregroundStyle(highlightSearchPlaceholder ? Color.brandAccent : .secondary)
+                        .foregroundStyle(highlightSearchPlaceholder ? .orange : .secondary)
                 )
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
@@ -47,6 +47,8 @@ struct SearchAndSortBar: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(.secondary.opacity(0.10))
             )
+            .scaleEffect(highlightSearchPlaceholder ? 1.2 : 1)
+            .animation(.easeInOut(duration: 0.25), value: highlightSearchPlaceholder)
 
             Button {
                 finishedLimit = finishedLimit.next()
@@ -54,11 +56,13 @@ struct SearchAndSortBar: View {
                 Text(finishedLimit.displayText(language: settings.language))
                     .font(.system(size: filterFontSize * responsiveTypeScale, weight: .semibold))
                     .monospacedDigit()
-                    .foregroundStyle(highlightFilterLimit ? Color.brandAccent : .primary)
+                    .foregroundStyle(highlightFilterLimit ? .orange : .primary)
                     .frame(width: controlSize * responsiveTypeScale,
                            height: controlSize * responsiveTypeScale)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .scaleEffect(highlightFilterLimit ? 1.2 : 1)
+                    .animation(.easeInOut(duration: 0.25), value: highlightFilterLimit)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(L10n.string("filters.show.last",
@@ -70,10 +74,12 @@ struct SearchAndSortBar: View {
             } label: {
                 Image(systemName: newestFirst ? "arrow.down" : "arrow.up")
                     .font(.system(size: sortIconSize * responsiveTypeScale, weight: .semibold))
-                    .foregroundStyle(highlightSortArrow ? Color.brandAccent : .primary)
+                    .foregroundStyle(highlightSortArrow ? .orange : .primary)
                     .padding(12)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .scaleEffect(highlightSortArrow ? 1.2 : 1)
+                    .animation(.easeInOut(duration: 0.25), value: highlightSortArrow)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(newestFirst
