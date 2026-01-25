@@ -9,6 +9,7 @@ struct InfoCardView: View {
     let infoAction: () -> Void
     let infoAccessibilityLabel: String
     let linkAction: (String) -> Void
+    let numberText: (Int) -> String
 
     @ScaledMetric(relativeTo: .body) private var rowSpacing: CGFloat = 10
     @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
@@ -75,7 +76,7 @@ struct InfoCardView: View {
 
     private func rowView(number: Int, text: String) -> some View {
         HStack(alignment: .top, spacing: 6) {
-            Text("\(number).")
+            Text(numberText(number))
                 .font(.system(.body, design: .rounded).weight(.semibold))
                 .frame(width: 22, alignment: .leading)
                 .foregroundStyle(.primary)

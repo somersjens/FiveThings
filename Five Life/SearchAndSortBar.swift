@@ -47,8 +47,6 @@ struct SearchAndSortBar: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(.secondary.opacity(0.10))
             )
-            .scaleEffect(highlightSearchPlaceholder ? 1.2 : 1)
-            .animation(.easeInOut(duration: 0.25), value: highlightSearchPlaceholder)
 
             Button {
                 finishedLimit = finishedLimit.next()

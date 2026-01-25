@@ -39,7 +39,7 @@
 "info.card.entry.4" = "The list is sorted **[%@](info://sort)** and is **[%@](info://filter)**.";
 "info.card.sort.newest" = "newest first";
 "info.card.sort.oldest" = "oldest first";
-"info.card.limit.days" = "limited to %d days";
+"info.card.limit.days" = "limited to %@ days";
 "info.card.limit.not.limited" = "not limited";
 "info.card.entry.5" = "Tap the **[arrow](info://top)** in the top-right to jump to the top.";
 "info.card.entry.6" = "Ideas to improve the app? Let me know via the **[footer links](info://footer)** at the bottom.";

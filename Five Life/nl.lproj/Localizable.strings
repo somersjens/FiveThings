@@ -39,7 +39,7 @@
 "info.card.entry.4" = "De lijst is gesorteerd op **[%@](info://sort)** en is **[%@](info://filter)**.";
 "info.card.sort.newest" = "nieuwste eerst";
 "info.card.sort.oldest" = "oudste eerst";
-"info.card.limit.days" = "beperkt tot %d dagen";
+"info.card.limit.days" = "beperkt tot %@ dagen";
 "info.card.limit.not.limited" = "niet beperkt";
 "info.card.entry.5" = "Tik op de **[pijl](info://top)** rechtsboven om in één keer naar boven te gaan.";
 "info.card.entry.6" = "Ideeën om de app te verbeteren? Laat het weten via de **[footerlinks](info://footer)** onderaan.";

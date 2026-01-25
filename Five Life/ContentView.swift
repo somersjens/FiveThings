@@ -190,9 +190,10 @@ struct ContentView: View {
         case .all:
             limitText = L10n.string("info.card.limit.not.limited", language: settings.language)
         default:
+            let localizedDays = localizedCountText(vm.finishedLimit.rawValue)
             limitText = L10n.string("info.card.limit.days",
                                     language: settings.language,
-                                    vm.finishedLimit.rawValue)
+                                    localizedDays)
         }
         return L10n.string("info.card.entry.4",
                            language: settings.language,
@@ -214,7 +215,9 @@ struct ContentView: View {
     private let footerLinksID = "footerLinks"
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
+    private let scrollToFooterDuration: Double = 0.6
     private let settingsOpenAnimationDuration: Double = 0.45
+    private let highlightPulseDuration: Double = 0.5
     private let seeYouTomorrowMessageCount = 20
 
     private struct StatisticsSnapshot {
@@ -482,7 +485,7 @@ struct ContentView: View {
 
     private func statisticsBox(title: String, value: Int, scale: CGFloat) -> some View {
         VStack(spacing: 4) {
-            Text("\(value)")
+            Text(localizedCountText(value))
                 .font(.system(size: statsValueFontSize * scale,
                               weight: .bold,
                               design: .rounded))
@@ -986,7 +989,8 @@ struct ContentView: View {
                              items: infoCardEntries,
                              infoAction: { hasDismissedInfoCard = true },
                              infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
-                             linkAction: handleInfoCardLink)
+                             linkAction: handleInfoCardLink,
+                             numberText: { "\(localizedCountText($0))." })
                     .transition(.opacity)
             }
 
@@ -1017,7 +1021,8 @@ struct ContentView: View {
                              items: infoCardEntries,
                              infoAction: { hasDismissedInfoCard = true },
                              infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
-                             linkAction: handleInfoCardLink)
+                             linkAction: handleInfoCardLink,
+                             numberText: { "\(localizedCountText($0))." })
                     .transition(.opacity)
             }
         }
@@ -1157,7 +1162,7 @@ struct ContentView: View {
     private func scrollToFooter(using proxy: ScrollViewProxy) {
         settingsScrollTask?.cancel()
         settingsScrollTask = Task { @MainActor in
-            let animation = Animation.easeInOut(duration: scrollToTopDuration)
+            let animation = Animation.easeInOut(duration: scrollToFooterDuration)
             await Task.yield()
             withAnimation(animation) {
                 proxy.scrollTo(footerLinksID, anchor: .bottom)
@@ -1218,7 +1223,7 @@ struct ContentView: View {
         case "footer":
             scrollToFooterTrigger += 1
             Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 300_000_000)
+                try? await Task.sleep(nanoseconds: UInt64((scrollToFooterDuration + 0.1) * 1_000_000_000))
                 pulseHighlight($highlightFooterLinks)
             }
         default:
@@ -1239,14 +1244,14 @@ struct ContentView: View {
     private func pulseHighlight(_ binding: Binding<Bool>, cycles: Int = 3) {
         Task { @MainActor in
             for _ in 0..<cycles {
-                withAnimation(.easeInOut(duration: 0.25)) {
+                withAnimation(.easeInOut(duration: highlightPulseDuration)) {
                     binding.wrappedValue = true
                 }
-                try? await Task.sleep(nanoseconds: 250_000_000)
-                withAnimation(.easeInOut(duration: 0.25)) {
+                try? await Task.sleep(nanoseconds: UInt64(highlightPulseDuration * 1_000_000_000))
+                withAnimation(.easeInOut(duration: highlightPulseDuration)) {
                     binding.wrappedValue = false
                 }
-                try? await Task.sleep(nanoseconds: 250_000_000)
+                try? await Task.sleep(nanoseconds: UInt64(highlightPulseDuration * 1_000_000_000))
             }
         }
     }
