@@ -86,42 +86,47 @@ struct SettingsView: View {
             Button {
                 showLanguagePicker = true
             } label: {
-                settingsPickerLabel(text: settings.language.displayName, flag: settings.language.flagEmoji)
+                settingsPickerLabel(text: settings.language.localizedCountryName, flag: settings.language.flagEmoji)
             }
         }
         .frame(minHeight: scaledSettingsRowHeight)
         .tint(.brandAccent)
         .sheet(isPresented: $showLanguagePicker) {
-            NavigationStack {
-                VStack(spacing: 16) {
-                    Picker("", selection: Binding(
-                        get: { settings.language },
-                        set: { settings.language = $0 }
-                    )) {
-                        ForEach(AppLanguage.orderedByCountryName) { lang in
-                            HStack {
-                                Text(lang.displayName)
-                                Spacer()
-                                Text(lang.flagEmoji)
-                            }
-                            .tag(lang)
-                        }
+            VStack(spacing: 12) {
+                HStack {
+                    Text(L10n.string("settings.app.language", language: settings.language))
+                        .font(.headline)
+                    Spacer()
+                    Button(L10n.string("common.done", language: settings.language)) {
+                        showLanguagePicker = false
                     }
-                    .pickerStyle(.wheel)
-                    .labelsHidden()
-                    .frame(maxWidth: .infinity)
+                    .font(.headline)
+                    .foregroundStyle(Color.brandAccent)
                 }
-                .padding(.vertical, 8)
-                .navigationTitle(L10n.string("settings.app.language", language: settings.language))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(L10n.string("common.done", language: settings.language)) {
-                            showLanguagePicker = false
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+
+                Picker("", selection: Binding(
+                    get: { settings.language },
+                    set: { settings.language = $0 }
+                )) {
+                    ForEach(AppLanguage.orderedByCountryName) { lang in
+                        HStack {
+                            Text(lang.localizedCountryName)
+                            Spacer()
+                            Text(lang.flagEmoji)
                         }
+                        .tag(lang)
                     }
                 }
+                .pickerStyle(.wheel)
+                .labelsHidden()
+                .frame(maxWidth: .infinity)
             }
+            .padding(.bottom, 12)
+            .presentationDetents([.height(360)])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(24)
         }
     }
 

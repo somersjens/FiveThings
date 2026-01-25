@@ -180,7 +180,16 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
     }
 
     var displayName: String {
-        "\(countryName) (\(languageName))"
+        localizedCountryName
+    }
+
+    var localizedCountryName: String {
+        let locale = Locale(identifier: localeIdentifier)
+        if let regionCode = locale.regionCode,
+           let localized = locale.localizedString(forRegionCode: regionCode) {
+            return localized
+        }
+        return countryName
     }
 
     var flagEmoji: String {
