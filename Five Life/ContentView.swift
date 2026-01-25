@@ -684,9 +684,10 @@ struct ContentView: View {
                         await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
                                                             language: settings.language,
                                                             dailyCount: settings.dailyItemCount)
-                        let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                        let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
+                                                                      reminderTime: settings.nextDayReminderTime)
                         await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                              shouldSchedule: shouldScheduleNext,
+                                                              reminderDate: nextReminderDate,
                                                               language: settings.language)
                     }
                 }
@@ -965,11 +966,11 @@ struct ContentView: View {
                         isConnected: settings.appleIdConnected
                     )
                 }
-                let shouldScheduleNext = await MainActor.run {
-                    vm.shouldScheduleNextDayReminder(allEntries: entries)
+                let nextReminderDate = await MainActor.run {
+                    vm.nextDayReminderDate(allEntries: entries, reminderTime: settings.nextDayReminderTime)
                 }
                 await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                      shouldSchedule: shouldScheduleNext,
+                                                      reminderDate: nextReminderDate,
                                                       language: settings.language)
             }
         }

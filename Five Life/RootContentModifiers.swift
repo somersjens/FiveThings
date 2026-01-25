@@ -46,9 +46,10 @@ struct RootContentTaskModifier: ViewModifier {
                                                 language: settings.language,
                                                 dailyCount: settings.dailyItemCount)
 
-            let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+            let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
+                                                          reminderTime: settings.nextDayReminderTime)
             await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                  shouldSchedule: shouldScheduleNext,
+                                                  reminderDate: nextReminderDate,
                                                   language: settings.language)
             scheduleMidnightRefresh()
             refreshEntryLists()
@@ -66,16 +67,24 @@ struct RootContentEntriesChangeModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onChange(of: entries.count) { _, _ in
-                // Keep “next day if needed” in sync when entries are created/locked/unlocked.
+                // Keep “next day if needed” in sync when entries are created or removed.
                 Task {
-                    let shouldScheduleNext = vm.shouldScheduleNextDayReminder(allEntries: entries)
+                    let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
+                                                                  reminderTime: settings.nextDayReminderTime)
                     await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
-                                                          shouldSchedule: shouldScheduleNext,
+                                                          reminderDate: nextReminderDate,
                                                           language: settings.language)
                 }
                 refreshEntryLists()
             }
             .onChange(of: entries.map(\.isLocked)) { _, _ in
+                Task {
+                    let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
+                                                                  reminderTime: settings.nextDayReminderTime)
+                    await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                          reminderDate: nextReminderDate,
+                                                          language: settings.language)
+                }
                 refreshEntryLists()
             }
             .onChange(of: entries.map(\.day)) { _, _ in

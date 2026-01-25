@@ -77,12 +77,12 @@ final class NotificationManager: ObservableObject {
         try? await center.add(req)
     }
 
-    /// Schedules a daily reminder for “next day if needed” (we refresh this from the app when state changes).
-    func scheduleNextDayIfNeeded(time: ReminderTime?, shouldSchedule: Bool, language: AppLanguage) async {
+    /// Schedules a reminder for “next day if needed” (we refresh this from the app when state changes).
+    func scheduleNextDayIfNeeded(time: ReminderTime?, reminderDate: Date?, language: AppLanguage) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.nextDay])
 
-        guard let time, shouldSchedule else { return }
+        guard let time, let reminderDate else { return }
         let allowed = await requestAuthorizationIfNeeded()
         guard allowed else { return }
 
@@ -93,9 +93,9 @@ final class NotificationManager: ObservableObject {
         content.body = L10n.string("notifications.next.\(variantIndex).body", language: language, timeString)
         content.sound = notificationSound
 
-        var triggerComps = time.asDateComponents()
+        var triggerComps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)
         triggerComps.calendar = .current
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComps, repeats: true)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComps, repeats: false)
 
         let req = UNNotificationRequest(identifier: NotificationIDs.nextDay, content: content, trigger: trigger)
         try? await center.add(req)

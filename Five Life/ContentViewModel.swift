@@ -135,18 +135,25 @@ final class ContentViewModel: ObservableObject {
         try? modelContext.save()
     }
 
-    func shouldScheduleNextDayReminder(allEntries: [DayEntry]) -> Bool {
+    func nextDayReminderDate(allEntries: [DayEntry], reminderTime: ReminderTime?, now: Date = Date()) -> Date? {
+        guard let reminderTime else { return nil }
         let calendar = Calendar.current
-        let todayStart = startOfDay(Date())
-        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
-            return false
+        guard let nextReminder = calendar.nextDate(after: now,
+                                                   matching: reminderTime.asDateComponents(),
+                                                   matchingPolicy: .nextTimePreservingSmallerComponents) else {
+            return nil
         }
 
-        if let yesterdayEntry = allEntries.first(where: { $0.day == yesterday }) {
-            return !yesterdayEntry.isLocked
+        let nextReminderStart = startOfDay(nextReminder)
+        guard let targetDay = calendar.date(byAdding: .day, value: -1, to: nextReminderStart) else {
+            return nil
         }
 
-        return true
+        if let entry = allEntries.first(where: { $0.day == targetDay }) {
+            return entry.isLocked ? nil : nextReminder
+        }
+
+        return nextReminder
     }
 
     func limitedFinishedEntries(from entries: [DayEntry]) -> [DayEntry] {
