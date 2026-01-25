@@ -879,19 +879,11 @@ struct SettingsView: View {
     }
 
     private func localizedCountText(_ count: Int) -> String {
-        switch count {
-        case 1: return L10n.string("number.one", language: settings.language)
-        case 2: return L10n.string("number.two", language: settings.language)
-        case 3: return L10n.string("number.three", language: settings.language)
-        case 4: return L10n.string("number.four", language: settings.language)
-        case 5: return L10n.string("number.five", language: settings.language)
-        case 6: return L10n.string("number.six", language: settings.language)
-        case 7: return L10n.string("number.seven", language: settings.language)
-        case 8: return L10n.string("number.eight", language: settings.language)
-        case 9: return L10n.string("number.nine", language: settings.language)
-        case 10: return L10n.string("number.ten", language: settings.language)
-        default: return "\(count)"
-        }
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: settings.language.localeIdentifier)
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: count)) ?? "\(count)"
     }
 
     private func infoTitle(_ title: String, info: SettingsInfo) -> some View {
