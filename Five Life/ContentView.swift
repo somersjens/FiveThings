@@ -807,6 +807,19 @@ struct ContentView: View {
                 Spacer()
                 HStack(spacing: 12 * 1.2) {
                     Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            hasDismissedInfoCard.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "info")
+                            .font(.system(size: settingsGearSize * scale,
+                                          weight: .semibold))
+                            .foregroundStyle(Color(.systemGray))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L10n.string("info.card.button", language: settings.language))
+
+                    Button {
                         showsReturnToMainMenuOnly = true
                         hasSeenAccessScreen = false
                         pendingSettingsClose = true

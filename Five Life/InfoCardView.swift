@@ -63,11 +63,9 @@ struct InfoCardView: View {
             Spacer()
 
             Button(action: infoAction) {
-                Image(systemName: "info.circle")
+                Image(systemName: "info")
                     .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
                     .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
-                    .background(.thinMaterial)
-                    .clipShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(infoAccessibilityLabel)
