@@ -220,6 +220,7 @@ struct ContentView: View {
     private let settingsTopID = "settingsTop"
     private let footerLinksID = "footerLinks"
     private let infoCardID = "infoCard"
+    private let infoCardDismissAnimation = Animation.easeInOut(duration: 0.35)
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
     private let scrollToFooterDuration: Double = 0.6
@@ -876,7 +877,7 @@ struct ContentView: View {
                              showsNavigation: false)
 
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    withAnimation(.easeInOut(duration: 0.25)) {
                         showExportOptions.toggle()
                     }
                 } label: {
@@ -924,7 +925,7 @@ struct ContentView: View {
                         .buttonStyle(.plain)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .frame(maxWidth: .infinity)
@@ -1019,7 +1020,11 @@ struct ContentView: View {
             if shouldShowInfoCard, !vm.newestFirst {
                 InfoCardView(title: L10n.string("info.card.title", language: settings.language),
                              items: infoCardEntries,
-                             infoAction: { hasDismissedInfoCard = true },
+                             infoAction: {
+                                 withAnimation(infoCardDismissAnimation) {
+                                     hasDismissedInfoCard = true
+                                 }
+                             },
                              infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
                              linkAction: handleInfoCardLink,
                              numberText: { "\(localizedCountText($0))." },
@@ -1054,7 +1059,11 @@ struct ContentView: View {
             if shouldShowInfoCard, vm.newestFirst {
                 InfoCardView(title: L10n.string("info.card.title", language: settings.language),
                              items: infoCardEntries,
-                             infoAction: { hasDismissedInfoCard = true },
+                             infoAction: {
+                                 withAnimation(infoCardDismissAnimation) {
+                                     hasDismissedInfoCard = true
+                                 }
+                             },
                              infoAccessibilityLabel: L10n.string("info.card.button", language: settings.language),
                              linkAction: handleInfoCardLink,
                              numberText: { "\(localizedCountText($0))." },
@@ -1069,6 +1078,7 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.25), value: vm.searchText)
         .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
         .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
+        .animation(infoCardDismissAnimation, value: shouldShowInfoCard)
     }
 
     private func scheduleMidnightRefresh() {
