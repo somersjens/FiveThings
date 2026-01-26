@@ -67,12 +67,15 @@ struct DayCardView: View {
     }
 
     private var moonPhase: MoonPhaseKind? {
-        settings.moonEnabled ? MoonPhase.phase(on: entry.day) : nil
+        settings.moonEnabled ? MoonPhase.phase(on: entry.day, timeZone: settings.timeZone) : nil
     }
 
     private var moonDescription: String? {
         guard settings.moonEnabled else { return nil }
-        return MoonPhase.description(on: entry.day, language: settings.language, locale: settings.locale)
+        return MoonPhase.description(on: entry.day,
+                                     language: settings.language,
+                                     locale: settings.locale,
+                                     timeZone: settings.timeZone)
     }
 
     private var holidayNames: [String] {

@@ -322,6 +322,50 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    var timeZoneIdentifier: String {
+        switch self {
+        case .english: return "America/New_York"
+        case .englishUK: return "Europe/London"
+        case .arabic: return "Asia/Riyadh"
+        case .bengali: return "Asia/Dhaka"
+        case .chineseSimplified: return "Asia/Shanghai"
+        case .chineseTraditional: return "Asia/Taipei"
+        case .croatian: return "Europe/Zagreb"
+        case .czech: return "Europe/Prague"
+        case .danish: return "Europe/Copenhagen"
+        case .dutch: return "Europe/Amsterdam"
+        case .filipino: return "Asia/Manila"
+        case .finnish: return "Europe/Helsinki"
+        case .french: return "Europe/Paris"
+        case .german: return "Europe/Berlin"
+        case .greek: return "Europe/Athens"
+        case .hebrew: return "Asia/Jerusalem"
+        case .hindi, .tamil: return "Asia/Kolkata"
+        case .hungarian: return "Europe/Budapest"
+        case .indonesian: return "Asia/Jakarta"
+        case .italian: return "Europe/Rome"
+        case .japanese: return "Asia/Tokyo"
+        case .korean: return "Asia/Seoul"
+        case .malay: return "Asia/Kuala_Lumpur"
+        case .norwegian: return "Europe/Oslo"
+        case .polish: return "Europe/Warsaw"
+        case .portugueseBrazil: return "America/Sao_Paulo"
+        case .portuguesePortugal: return "Europe/Lisbon"
+        case .romanian: return "Europe/Bucharest"
+        case .russian: return "Europe/Moscow"
+        case .serbian: return "Europe/Belgrade"
+        case .slovak: return "Europe/Bratislava"
+        case .slovenian: return "Europe/Ljubljana"
+        case .spanishMexico: return "America/Mexico_City"
+        case .spanishSpain: return "Europe/Madrid"
+        case .swedish: return "Europe/Stockholm"
+        case .thai: return "Asia/Bangkok"
+        case .turkish: return "Europe/Istanbul"
+        case .ukrainian: return "Europe/Kyiv"
+        case .vietnamese: return "Asia/Ho_Chi_Minh"
+        }
+    }
+
     static var orderedByLanguageName: [AppLanguage] {
         allCases.sorted {
             let comparison = $0.displayName.localizedCaseInsensitiveCompare($1.displayName)
@@ -403,6 +447,9 @@ final class SettingsStore: ObservableObject {
     }
 
     var locale: Locale { Locale(identifier: language.localeIdentifier) }
+    var timeZone: TimeZone {
+        TimeZone(identifier: language.timeZoneIdentifier) ?? .current
+    }
 
     func clampDailyCount() {
         dailyItemCount = max(1, min(10, dailyItemCount))

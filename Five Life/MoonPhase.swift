@@ -43,16 +43,26 @@ enum MoonPhaseKind: String {
 }
 
 enum MoonPhase {
-    private static var phaseCache: [Date: MoonPhaseKind] = [:]
+    private struct PhaseCacheKey: Hashable {
+        let day: Date
+        let timeZoneIdentifier: String
+    }
+
+    private static var phaseCache: [PhaseCacheKey: MoonPhaseKind] = [:]
 
     /// Simple local approximation (no network).
-    static func phase(on date: Date) -> MoonPhaseKind {
-        let dayKey = cacheDayKey(for: date)
+    static func phase(on date: Date, timeZone: TimeZone) -> MoonPhaseKind {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let dayStart = calendar.startOfDay(for: date)
+        let midday = calendar.date(byAdding: .hour, value: 12, to: dayStart) ?? date
+
+        let dayKey = cacheDayKey(for: dayStart, timeZone: timeZone)
         if let cached = phaseCache[dayKey] {
             return cached
         }
 
-        let phaseValue = phaseFraction(on: date)
+        let phaseValue = phaseFraction(on: midday)
         let phase: MoonPhaseKind
         switch phaseValue {
         case 0..<0.0625, 0.9375...1.0:
@@ -76,9 +86,9 @@ enum MoonPhase {
         return phase
     }
 
-    static func description(on date: Date, language: AppLanguage, locale: Locale) -> String {
-        var calendar = Calendar.current
-        calendar.timeZone = TimeZone.current
+    static func description(on date: Date, language: AppLanguage, locale: Locale, timeZone: TimeZone) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
         let dayStart = calendar.startOfDay(for: date)
         guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart),
               let midday = calendar.date(byAdding: .hour, value: 12, to: dayStart) else {
@@ -90,7 +100,7 @@ enum MoonPhase {
             formatter.dateStyle = .none
             formatter.timeStyle = .short
             formatter.locale = locale
-            formatter.timeZone = calendar.timeZone
+            formatter.timeZone = timeZone
             let timeText = formatter.string(from: principal.date)
             let phaseName = principal.kind.localizedName(language: language)
             return L10n.string("moonphase.principal.format", language: language, phaseName, timeText, "\(principal.approxPercent)")
@@ -154,10 +164,11 @@ enum MoonPhase {
         (1.0 - cos(2.0 * Double.pi * phase)) / 2.0 * 100.0
     }
 
-    private static func cacheDayKey(for date: Date) -> Date {
+    private static func cacheDayKey(for date: Date, timeZone: TimeZone) -> PhaseCacheKey {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
-        return calendar.startOfDay(for: date)
+        calendar.timeZone = timeZone
+        let dayStart = calendar.startOfDay(for: date)
+        return PhaseCacheKey(day: dayStart, timeZoneIdentifier: timeZone.identifier)
     }
 
     private static func phaseFraction(on date: Date) -> Double {

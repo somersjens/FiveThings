@@ -137,7 +137,7 @@ struct ContentView: View {
         }
 
         if settings.moonEnabled {
-            let phase = MoonPhase.phase(on: searchSnapshot.day)
+            let phase = MoonPhase.phase(on: searchSnapshot.day, timeZone: settings.timeZone)
             let phaseName = phase.localizedName(language: settings.language)
             if phaseName.range(of: normalizedQuery, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
                 return true
