@@ -448,7 +448,7 @@ final class SettingsStore: ObservableObject {
 
     var locale: Locale { Locale(identifier: language.localeIdentifier) }
     var timeZone: TimeZone {
-        TimeZone(identifier: language.timeZoneIdentifier) ?? .current
+        .current
     }
 
     func clampDailyCount() {
