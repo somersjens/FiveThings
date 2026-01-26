@@ -64,8 +64,8 @@ struct InfoCardView: View {
     private var header: some View {
         HStack(alignment: .top, spacing: 8) {
             Text(title)
-                .font(.system(size: titleFontSize * responsiveTypeScale, weight: .semibold))
-                .foregroundStyle(.primary)
+                .font(.system(size: titleFontSize * responsiveTypeScale * 1.1, weight: .semibold))
+                .foregroundStyle(Color.brandAccent)
 
             Spacer()
 
