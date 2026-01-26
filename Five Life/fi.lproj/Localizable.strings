@@ -223,7 +223,7 @@
 "stats.entries" = "Merkintöjä";
 "stats.streak" = "Putki";
 "title.daily" = "%d asiaa joka päivä";
-"title.happy" = "Viisi Hyvää Asiaa";
+"title.happy" = "%@ Hyvää Asiaa";
 "export.order.ascending" = "nouseva";
 "export.order.descending" = "laskeva";
 "moonphase.first.quarter" = "Ensimmäinen neljännes";

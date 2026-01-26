@@ -223,7 +223,7 @@
 "stats.entries" = "Entrées";
 "stats.streak" = "Série";
 "title.daily" = "%d Choses tous les jours";
-"title.happy" = "Cinq Bonnes Choses";
+"title.happy" = "%@ Bonnes Choses";
 "export.order.ascending" = "croissant";
 "export.order.descending" = "décroissant";
 "moonphase.first.quarter" = "Premier quartier";

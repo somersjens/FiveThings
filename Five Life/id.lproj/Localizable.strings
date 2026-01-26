@@ -223,7 +223,7 @@
 "stats.entries" = "Entri";
 "stats.streak" = "Streak";
 "title.daily" = "%d Hal Setiap Hari";
-"title.happy" = "Lima Hal Baik";
+"title.happy" = "%@ Hal Baik";
 "export.order.ascending" = "naik";
 "export.order.descending" = "turun";
 "moonphase.first.quarter" = "Kuartal Pertama";

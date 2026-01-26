@@ -223,7 +223,7 @@
 "stats.entries" = "Poster";
 "stats.streak" = "Streak";
 "title.daily" = "%d saker varje dag";
-"title.happy" = "Fem Bra Saker";
+"title.happy" = "%@ Bra Saker";
 "export.order.ascending" = "stigande";
 "export.order.descending" = "fallande";
 "moonphase.first.quarter" = "Första kvarteret";

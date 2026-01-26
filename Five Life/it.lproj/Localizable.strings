@@ -223,7 +223,7 @@
 "stats.entries" = "Voci";
 "stats.streak" = "Serie";
 "title.daily" = "%d Cose ogni giorno";
-"title.happy" = "Cinque Cose Belle";
+"title.happy" = "%@ Cose Belle";
 "export.order.ascending" = "crescente";
 "export.order.descending" = "decrescente";
 "moonphase.first.quarter" = "Primo quarto";

@@ -223,7 +223,7 @@
 "stats.entries" = "Záznamy";
 "stats.streak" = "Série";
 "title.daily" = "%d věcí každý den";
-"title.happy" = "Pět Hezkých Věcí";
+"title.happy" = "%@ Hezkých Věcí";
 "export.order.ascending" = "vzestupně";
 "export.order.descending" = "sestupně";
 "moonphase.first.quarter" = "První čtvrť";

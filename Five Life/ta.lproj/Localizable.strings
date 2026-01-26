@@ -223,7 +223,7 @@
 "stats.entries" = "உள்ளீடுகள்";
 "stats.streak" = "தொடர்";
 "title.daily" = "தினசரி %d விஷயங்கள்";
-"title.happy" = "ஐந்து நல்ல விஷயங்கள்";
+"title.happy" = "%@ நல்ல விஷயங்கள்";
 "export.order.ascending" = "ஏறுவரிசை";
 "export.order.descending" = "இறங்குவரிசை";
 "moonphase.first.quarter" = "முதல் கால்";

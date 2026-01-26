@@ -42,7 +42,7 @@ enum ExportService {
                        language: AppLanguage,
                        format: ExportFormat,
                        filterContext: ExportFilterContext) throws -> URL {
-        let destination = makeTemporaryURL(withExtension: format.fileExtension)
+        let destination = makeTemporaryURL(withExtension: format.fileExtension, language: language)
         switch format {
         case .csv:
             let csvString = csvContent(entries: entries, language: language)
@@ -425,10 +425,28 @@ enum ExportService {
         return firstString.uppercased() + rest
     }
 
-    private static func makeTemporaryURL(withExtension fileExtension: String) -> URL {
+    private static func makeTemporaryURL(withExtension fileExtension: String,
+                                         language: AppLanguage) -> URL {
         let dateStamp = exportTimestamp(for: Date())
-        let filename = "Happy_Five_Export_\(dateStamp).\(fileExtension)"
+        let baseName = exportBaseName(language: language)
+        let filename = "\(baseName)_\(dateStamp).\(fileExtension)"
         return FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+    }
+
+    private static func exportBaseName(language: AppLanguage) -> String {
+        let happyTitleFormat = L10n.string("title.happy", language: language)
+        let happyTitle: String
+        if happyTitleFormat.contains("%@") {
+            let numberFive = L10n.string("number.five", language: language)
+            happyTitle = L10n.string("title.happy", language: language, numberFive)
+        } else {
+            happyTitle = happyTitleFormat
+        }
+        let rawName = "\(happyTitle) Export"
+        return rawName
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: "_")
     }
 
     private static func exportTimestamp(for date: Date) -> String {

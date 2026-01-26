@@ -223,7 +223,7 @@
 "stats.entries" = "Giriş";
 "stats.streak" = "Seri";
 "title.daily" = "Her Gün %d Şey";
-"title.happy" = "Beş Güzel Şey";
+"title.happy" = "%@ Güzel Şey";
 "export.order.ascending" = "artan";
 "export.order.descending" = "azalan";
 "moonphase.first.quarter" = "İlk Dördün";

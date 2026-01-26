@@ -223,7 +223,7 @@
 "stats.entries" = "Mga Entry";
 "stats.streak" = "Streak";
 "title.daily" = "%d Bagay Araw-araw";
-"title.happy" = "Limang Magandang Bagay";
+"title.happy" = "%@ Magandang Bagay";
 "export.order.ascending" = "pataas";
 "export.order.descending" = "pababa";
 "moonphase.first.quarter" = "Unang Kapat";

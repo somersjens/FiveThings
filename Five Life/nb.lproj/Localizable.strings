@@ -223,7 +223,7 @@
 "stats.entries" = "Oppføringer";
 "stats.streak" = "Streak";
 "title.daily" = "%d ting hver dag";
-"title.happy" = "Fem Gode Ting";
+"title.happy" = "%@ Gode Ting";
 "export.order.ascending" = "stigende";
 "export.order.descending" = "synkende";
 "moonphase.first.quarter" = "Første kvarter";

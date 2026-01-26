@@ -223,7 +223,7 @@
 "stats.entries" = "এন্ট্রি";
 "stats.streak" = "ধারাবাহিকতা";
 "title.daily" = "প্রতিদিন %dটা জিনিস";
-"title.happy" = "পাঁচটি ভালো জিনিস";
+"title.happy" = "%@ ভালো জিনিস";
 "export.order.ascending" = "ক্রমবর্ধমান";
 "export.order.descending" = "ক্রমহ্রাসমান";
 "moonphase.first.quarter" = "প্রথম চতুর্থাংশ";
