@@ -22,6 +22,7 @@ struct ContentView: View {
     @State private var showExportOptions: Bool = false
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
+    @State private var infoCardScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
     @State private var scrollToFooterTrigger = 0
     @State private var pendingSettingsOpen = false
@@ -761,11 +762,6 @@ struct ContentView: View {
                     showSecretMenu = false
                     pendingSettingsInfoRequest = nil
                     settingsInfoTask?.cancel()
-                    if pendingInfoCardScroll {
-                        pendingInfoCardScroll = false
-                        scheduleInfoCardScroll(using: proxy,
-                                               delay: settingsOpenAnimationDuration + 0.05)
-                    }
                     if showExportOptions {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             showExportOptions = false
@@ -1225,10 +1221,11 @@ struct ContentView: View {
     }
 
     private func scheduleInfoCardScroll(using proxy: ScrollViewProxy, delay: Double) {
-        settingsScrollTask?.cancel()
-        settingsScrollTask = Task { @MainActor in
+        infoCardScrollTask?.cancel()
+        infoCardScrollTask = Task { @MainActor in
             let sleepTime = UInt64(delay * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepTime)
+            await Task.yield()
             let animation = Animation.easeInOut(duration: scrollToFooterDuration)
             withAnimation(animation) {
                 proxy.scrollTo(infoCardID, anchor: .top)
@@ -1260,8 +1257,14 @@ struct ContentView: View {
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
+            let shouldScrollToInfoCard = pendingInfoCardScroll
+            pendingInfoCardScroll = false
             withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
                 showSettings = false
+            }
+            if shouldScrollToInfoCard {
+                scheduleInfoCardScroll(using: proxy,
+                                       delay: settingsOpenAnimationDuration + 0.05)
             }
             pendingSettingsClose = false
         }
