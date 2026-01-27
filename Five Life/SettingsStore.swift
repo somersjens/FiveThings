@@ -110,7 +110,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
 
     var isRightToLeft: Bool {
         switch self {
-        case .arabic:
+        case .arabic, .hebrew:
             return true
         default:
             return false
