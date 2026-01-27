@@ -1029,6 +1029,8 @@ struct SettingsView: View {
                 return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
             case .bengali:
                 return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "YYYY"))
+            case .catalan:
+                return dayMonthYear(separator: "/", placeholder: ("DD", "MM", "AAAA"))
             case .chineseSimplified:
                 return yearMonthDay(separator: "-", placeholder: ("YYYY", "MM", "DD"))
             case .chineseTraditional:
@@ -1046,6 +1048,8 @@ struct SettingsView: View {
             case .finnish:
                 return dayMonthYear(separator: ".", placeholder: ("PP", "KK", "VVVV"))
             case .french:
+                return dayMonthYear(separator: "/", placeholder: ("JJ", "MM", "AAAA"))
+            case .frenchCanada:
                 return dayMonthYear(separator: "/", placeholder: ("JJ", "MM", "AAAA"))
             case .german:
                 return dayMonthYear(separator: ".", placeholder: ("TT", "MM", "JJJJ"))

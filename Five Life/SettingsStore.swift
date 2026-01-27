@@ -8,6 +8,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
     case englishUK
     case arabic
     case bengali
+    case catalan
     case chineseSimplified
     case chineseTraditional
     case croatian
@@ -17,6 +18,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
     case filipino
     case finnish
     case french
+    case frenchCanada
     case german
     case greek
     case hebrew
@@ -53,6 +55,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .englishUK: return "en_GB"
         case .arabic: return "ar_SA"
         case .bengali: return "bn_BD"
+        case .catalan: return "ca_ES"
         case .chineseSimplified: return "zh_Hans_CN"
         case .chineseTraditional: return "zh_Hant_TW"
         case .croatian: return "hr_HR"
@@ -62,6 +65,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .filipino: return "fil_PH"
         case .finnish: return "fi_FI"
         case .french: return "fr_FR"
+        case .frenchCanada: return "fr_CA"
         case .german: return "de_DE"
         case .greek: return "el_GR"
         case .hebrew: return "he_IL"
@@ -119,6 +123,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .englishUK: return "United Kingdom"
         case .arabic: return "Saudi Arabia"
         case .bengali: return "Bangladesh"
+        case .catalan: return "Spain"
         case .chineseSimplified: return "China"
         case .chineseTraditional: return "Taiwan"
         case .croatian: return "Croatia"
@@ -128,6 +133,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .filipino: return "Philippines"
         case .finnish: return "Finland"
         case .french: return "France"
+        case .frenchCanada: return "Canada"
         case .german: return "Germany"
         case .greek: return "Greece"
         case .hebrew: return "Israel"
@@ -164,6 +170,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .englishUK: return "English (UK)"
         case .arabic: return "Arabic"
         case .bengali: return "Bengali"
+        case .catalan: return "Catalan"
         case .chineseSimplified: return "Chinese (Simplified)"
         case .chineseTraditional: return "Chinese (Traditional)"
         case .croatian: return "Croatian"
@@ -173,6 +180,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .filipino: return "Filipino"
         case .finnish: return "Finnish"
         case .french: return "French"
+        case .frenchCanada: return "French (Canada)"
         case .german: return "German"
         case .greek: return "Greek"
         case .hebrew: return "Hebrew"
@@ -240,6 +248,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .englishUK: return "🇬🇧"
         case .arabic: return "🇸🇦"
         case .bengali: return "🇧🇩"
+        case .catalan: return "🇪🇸"
         case .chineseSimplified: return "🇨🇳"
         case .chineseTraditional: return "🇹🇼"
         case .croatian: return "🇭🇷"
@@ -249,6 +258,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .filipino: return "🇵🇭"
         case .finnish: return "🇫🇮"
         case .french: return "🇫🇷"
+        case .frenchCanada: return "🇨🇦"
         case .german: return "🇩🇪"
         case .greek: return "🇬🇷"
         case .hebrew: return "🇮🇱"
@@ -284,6 +294,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .english, .englishUK: return "en"
         case .arabic: return "ar"
         case .bengali: return "bn"
+        case .catalan: return "ca"
         case .chineseSimplified: return "zh-Hans"
         case .chineseTraditional: return "zh-Hant"
         case .croatian: return "hr"
@@ -293,6 +304,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .filipino: return "fil"
         case .finnish: return "fi"
         case .french: return "fr"
+        case .frenchCanada: return "fr-CA"
         case .german: return "de"
         case .greek: return "el"
         case .hebrew: return "he"
@@ -328,6 +340,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .englishUK: return "Europe/London"
         case .arabic: return "Asia/Riyadh"
         case .bengali: return "Asia/Dhaka"
+        case .catalan: return "Europe/Madrid"
         case .chineseSimplified: return "Asia/Shanghai"
         case .chineseTraditional: return "Asia/Taipei"
         case .croatian: return "Europe/Zagreb"
@@ -337,6 +350,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         case .filipino: return "Asia/Manila"
         case .finnish: return "Europe/Helsinki"
         case .french: return "Europe/Paris"
+        case .frenchCanada: return "America/Toronto"
         case .german: return "Europe/Berlin"
         case .greek: return "Europe/Athens"
         case .hebrew: return "Asia/Jerusalem"
