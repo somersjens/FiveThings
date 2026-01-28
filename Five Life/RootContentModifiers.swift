@@ -50,7 +50,8 @@ struct RootContentTaskModifier: ViewModifier {
                                                           reminderTime: settings.nextDayReminderTime)
             await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                   reminderDate: nextReminderDate,
-                                                  language: settings.language)
+                                                  language: settings.language,
+                                                  dailyCount: settings.dailyItemCount)
             scheduleMidnightRefresh()
             refreshEntryLists()
         }
@@ -73,7 +74,8 @@ struct RootContentEntriesChangeModifier: ViewModifier {
                                                                   reminderTime: settings.nextDayReminderTime)
                     await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                           reminderDate: nextReminderDate,
-                                                          language: settings.language)
+                                                          language: settings.language,
+                                                          dailyCount: settings.dailyItemCount)
                 }
                 refreshEntryLists()
             }
@@ -83,7 +85,8 @@ struct RootContentEntriesChangeModifier: ViewModifier {
                                                                   reminderTime: settings.nextDayReminderTime)
                     await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                           reminderDate: nextReminderDate,
-                                                          language: settings.language)
+                                                          language: settings.language,
+                                                          dailyCount: settings.dailyItemCount)
                 }
                 refreshEntryLists()
             }

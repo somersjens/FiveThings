@@ -78,7 +78,7 @@ final class NotificationManager: ObservableObject {
     }
 
     /// Schedules a reminder for “next day if needed” (we refresh this from the app when state changes).
-    func scheduleNextDayIfNeeded(time: ReminderTime?, reminderDate: Date?, language: AppLanguage) async {
+    func scheduleNextDayIfNeeded(time: ReminderTime?, reminderDate: Date?, language: AppLanguage, dailyCount: Int) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.nextDay])
 
@@ -90,7 +90,11 @@ final class NotificationManager: ObservableObject {
         let content = UNMutableNotificationContent()
         content.title = L10n.string("notifications.next.\(variantIndex).title", language: language)
         let timeString = reminderTimeString(for: time)
-        content.body = L10n.string("notifications.next.\(variantIndex).body", language: language, timeString)
+        let clampedCount = max(1, dailyCount)
+        content.body = L10n.string("notifications.next.\(variantIndex).body",
+                                   language: language,
+                                   timeString,
+                                   clampedCount)
         content.sound = notificationSound
 
         var triggerComps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)

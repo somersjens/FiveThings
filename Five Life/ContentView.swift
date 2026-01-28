@@ -776,7 +776,8 @@ struct ContentView: View {
                                                                       reminderTime: settings.nextDayReminderTime)
                         await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                               reminderDate: nextReminderDate,
-                                                              language: settings.language)
+                                                              language: settings.language,
+                                                              dailyCount: settings.dailyItemCount)
                     }
                 }
             }
@@ -1106,7 +1107,8 @@ struct ContentView: View {
                 }
                 await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
                                                       reminderDate: nextReminderDate,
-                                                      language: settings.language)
+                                                      language: settings.language,
+                                                      dailyCount: settings.dailyItemCount)
             }
         }
     }
