@@ -84,7 +84,9 @@ final class AppleSyncManager {
                 ensureTodayEntry(modelContext: modelContext, settings: settings)
                 return
             }
-            resetToFreshStart(modelContext: modelContext, settings: settings)
+            resetToFreshStart(modelContext: modelContext,
+                              settings: settings,
+                              shouldSaveSnapshot: false)
         case .deferredConnect:
             let snapshot = await loadSnapshotWithRetry()
             if let snapshot, !snapshot.entries.isEmpty {
@@ -101,7 +103,9 @@ final class AppleSyncManager {
             if hasMeaningfulLocalData(localEntries, settings: settings) {
                 ensureTodayEntry(modelContext: modelContext, settings: settings)
             } else {
-                resetToFreshStart(modelContext: modelContext, settings: settings)
+                resetToFreshStart(modelContext: modelContext,
+                                  settings: settings,
+                                  shouldSaveSnapshot: false)
             }
         }
     }
@@ -284,11 +288,15 @@ final class AppleSyncManager {
         return decoder
     }
 
-    private func resetToFreshStart(modelContext: ModelContext, settings: SettingsStore) {
+    private func resetToFreshStart(modelContext: ModelContext,
+                                   settings: SettingsStore,
+                                   shouldSaveSnapshot: Bool) {
         deleteAllEntries(modelContext: modelContext)
         ensureTodayEntry(modelContext: modelContext, settings: settings)
+        guard shouldSaveSnapshot else { return }
         let entries = fetchEntries(modelContext: modelContext)
         saveSnapshot(from: entries)
+        settings.appleLastSnapshotAt = Date()
     }
 
     private func replaceLocalEntries(with snapshots: [DayEntrySnapshot], modelContext: ModelContext) {
