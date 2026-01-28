@@ -16,6 +16,7 @@ struct AccessScreenView: View {
     @State private var isProcessingPayment: Bool = false
     @State private var showConfetti: Bool = false
     @State private var paymentErrorMessage: String?
+    @State private var transactionUpdatesTask: Task<Void, Never>?
     @ScaledMetric(relativeTo: .body) private var maxContentWidth: CGFloat = 320
     @ScaledMetric(relativeTo: .body) private var cardHeight: CGFloat = 234
     @ScaledMetric(relativeTo: .body) private var cardFontSize: CGFloat = 18
@@ -135,6 +136,14 @@ struct AccessScreenView: View {
                 }
             }
             .background(Color.brandBackground.ignoresSafeArea())
+            .task {
+                await refreshPurchaseStatus()
+                startTransactionUpdates()
+            }
+            .onDisappear {
+                transactionUpdatesTask?.cancel()
+                transactionUpdatesTask = nil
+            }
             .alert(L10n.string("access.payment.title", language: settings.language), isPresented: Binding(
                 get: { paymentErrorMessage != nil },
                 set: { if !$0 { paymentErrorMessage = nil } }
@@ -276,7 +285,8 @@ struct AccessScreenView: View {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
-                _ = try verification.payloadValue
+                let transaction = try verification.payloadValue
+                await transaction.finish()
                 handlePaymentSuccess()
             case .userCancelled, .pending:
                 break
@@ -299,6 +309,32 @@ struct AccessScreenView: View {
             await MainActor.run {
                 withAnimation(.easeInOut(duration: 0.25)) {
                     showConfetti = false
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func refreshPurchaseStatus() async {
+        for await entitlement in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = entitlement else { continue }
+            if transaction.productID == inAppPaymentProductID {
+                settings.donationPaid = true
+                break
+            }
+        }
+    }
+
+    private func startTransactionUpdates() {
+        transactionUpdatesTask?.cancel()
+        transactionUpdatesTask = Task {
+            for await update in Transaction.updates {
+                guard case .verified(let transaction) = update else { continue }
+                if transaction.productID == inAppPaymentProductID {
+                    await MainActor.run {
+                        settings.donationPaid = true
+                    }
+                    await transaction.finish()
                 }
             }
         }
