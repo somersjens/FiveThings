@@ -877,7 +877,8 @@ struct ContentView: View {
                 SettingsView(settings: settings,
                              showSecretMenu: $showSecretMenu,
                              requestedInfo: $requestedSettingsInfo,
-                             showsNavigation: false)
+                             showsNavigation: false,
+                             isSettingsCardExpanded: showSettings)
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.25)) {

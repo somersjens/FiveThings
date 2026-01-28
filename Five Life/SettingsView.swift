@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Binding var showSecretMenu: Bool
     @Binding var requestedInfo: SettingsInfo?
     var showsNavigation: Bool = true
+    var isSettingsCardExpanded: Bool = true
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @Environment(\.colorScheme) private var colorScheme
@@ -500,14 +501,10 @@ struct SettingsView: View {
                     .layoutPriority(1)
                 Spacer()
                 if dailyReminderEnabled {
-                    DatePicker("",
-                               selection: $dailyReminderPickerDate,
-                               displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .onChange(of: dailyReminderPickerDate) { _, newValue in
-                            settings.dailyReminderTime = ReminderTime.from(date: newValue)
-                        }
+                    reminderTimePicker(isVisible: isSettingsCardExpanded,
+                                       selection: $dailyReminderPickerDate) { newValue in
+                        settings.dailyReminderTime = ReminderTime.from(date: newValue)
+                    }
                 }
                 Toggle("", isOn: $dailyReminderEnabled)
                     .labelsHidden()
@@ -523,14 +520,10 @@ struct SettingsView: View {
                     .layoutPriority(1)
                 Spacer()
                 if nextDayReminderEnabled {
-                    DatePicker("",
-                               selection: $nextDayReminderPickerDate,
-                               displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .onChange(of: nextDayReminderPickerDate) { _, newValue in
-                            settings.nextDayReminderTime = ReminderTime.from(date: newValue)
-                        }
+                    reminderTimePicker(isVisible: isSettingsCardExpanded,
+                                       selection: $nextDayReminderPickerDate) { newValue in
+                        settings.nextDayReminderTime = ReminderTime.from(date: newValue)
+                    }
                 }
                 Toggle("", isOn: $nextDayReminderEnabled)
                     .labelsHidden()
@@ -545,6 +538,24 @@ struct SettingsView: View {
             }
         }
         .tint(.brandAccent)
+    }
+
+    private func reminderTimePicker(
+        isVisible: Bool,
+        selection: Binding<Date>,
+        onChange: @escaping (Date) -> Void
+    ) -> some View {
+        DatePicker("",
+                   selection: selection,
+                   displayedComponents: .hourAndMinute)
+            .labelsHidden()
+            .datePickerStyle(.compact)
+            .opacity(isVisible ? 1 : 0)
+            .offset(y: isVisible ? 0 : -6)
+            .animation(.easeInOut(duration: 0.2).delay(isVisible ? 0.2 : 0), value: isVisible)
+            .onChange(of: selection.wrappedValue) { _, newValue in
+                onChange(newValue)
+            }
     }
 
     private var settingsForm: some View {
