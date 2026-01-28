@@ -119,7 +119,7 @@
 "lock.faceid.title" = "Face ID से अनलॉक";
 "notifications.daily.1.body" = "आपकी %@ याद दिलाने वाली सूचना: आज के %d अच्छे काम लिखें।";
 "notifications.daily.1.title" = "रोज़ाना याद दिलाना";
-"notifications.daily.2.body" = "अभी %@ है – अच्छी बातें लिखने का बहुत अच्छा समय है।";
+"notifications.daily.2.body" = "अभी %@ है – %d अच्छी बातें लिखने का बहुत अच्छा समय है।";
 "notifications.daily.2.title" = "दिन का अंत";
 "notifications.daily.3.body" = "%@ याद दिलाना: आज के %d सबसे अच्छे पलों को लिखें।";
 "notifications.daily.3.title" = "खास पल";
