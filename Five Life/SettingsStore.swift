@@ -96,18 +96,6 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    var numberingSystemOverride: String? {
-        switch self {
-        case .arabic: return "arab"
-        case .bengali: return "beng"
-        case .chineseSimplified, .chineseTraditional: return "hanidec"
-        case .hindi: return "deva"
-        case .japanese: return "hanidec"
-        case .thai: return "thai"
-        default: return nil
-        }
-    }
-
     var isRightToLeft: Bool {
         switch self {
         case .arabic, .hebrew:

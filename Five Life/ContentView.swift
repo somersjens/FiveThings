@@ -415,11 +415,7 @@ struct ContentView: View {
     private func localizedCountText(_ count: Int) -> String {
         let formatter = NumberFormatter()
         let localeIdentifier = settings.language.localeIdentifier
-        if let numberingSystem = settings.language.numberingSystemOverride {
-            formatter.locale = Locale(identifier: "\(localeIdentifier)@numbers=\(numberingSystem)")
-        } else {
-            formatter.locale = Locale(identifier: localeIdentifier)
-        }
+        formatter.locale = Locale(identifier: localeIdentifier)
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
         return formatter.string(from: NSNumber(value: count)) ?? "\(count)"

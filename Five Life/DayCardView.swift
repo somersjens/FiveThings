@@ -446,11 +446,7 @@ struct DayCardView: View {
     private func localizedIndexString(_ index: Int) -> String {
         let formatter = NumberFormatter()
         let localeIdentifier = settings.language.localeIdentifier
-        if let numberingSystem = settings.language.numberingSystemOverride {
-            formatter.locale = Locale(identifier: "\(localeIdentifier)@numbers=\(numberingSystem)")
-        } else {
-            formatter.locale = Locale(identifier: localeIdentifier)
-        }
+        formatter.locale = Locale(identifier: localeIdentifier)
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
         let localizedNumber = formatter.string(from: NSNumber(value: index)) ?? "\(index)"
