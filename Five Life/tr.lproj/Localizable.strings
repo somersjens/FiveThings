@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Yeni Ay";
 "moonphase.principal.format" = "%@’da %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ aydınlık • %@";
-"moonphase.waxing" = "Büyüyen";
-"moonphase.waning" = "Küçülen";
+"moonphase.waxing" = "büyüyen";
+"moonphase.waning" = "küçülen";
 "moonphase.waning.crescent" = "Küçülen Hilal";
 "moonphase.waning.gibbous" = "Küçülen Dışbükey";
 "moonphase.waxing.crescent" = "Büyüyen Hilal";

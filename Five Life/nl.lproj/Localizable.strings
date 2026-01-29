@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Nieuwe maan";
 "moonphase.principal.format" = "%@ om %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ verlicht • %@";
-"moonphase.waxing" = "Wassend";
-"moonphase.waning" = "Afnemend";
+"moonphase.waxing" = "wassend";
+"moonphase.waning" = "afnemend";
 "moonphase.waning.crescent" = "Afnemende sikkel";
 "moonphase.waning.gibbous" = "Afnemende gibbeus";
 "moonphase.waxing.crescent" = "Wassende sikkel";

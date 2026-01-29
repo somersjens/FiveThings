@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Nymåne";
 "moonphase.principal.format" = "%@ kl. %@ (ca. %@%%)";
 "moonphase.illumination.range" = "%@–%@ oplyst • %@";
-"moonphase.waxing" = "Tiltagende";
-"moonphase.waning" = "Aftagende";
+"moonphase.waxing" = "tiltagende";
+"moonphase.waning" = "aftagende";
 "moonphase.waning.crescent" = "Aftagende segl";
 "moonphase.waning.gibbous" = "Aftagende pukkelmåne";
 "moonphase.waxing.crescent" = "Tiltagende segl";

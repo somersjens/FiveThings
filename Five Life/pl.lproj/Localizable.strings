@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Nów";
 "moonphase.principal.format" = "%@ o %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ oświetlone • %@";
-"moonphase.waxing" = "Przybywający";
-"moonphase.waning" = "Ubywający";
+"moonphase.waxing" = "przybywający";
+"moonphase.waning" = "ubywający";
 "moonphase.waning.crescent" = "Ubywający sierp";
 "moonphase.waning.gibbous" = "Ubywający garbaty";
 "moonphase.waxing.crescent" = "Przybywający sierp";

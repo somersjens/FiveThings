@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "New Moon";
 "moonphase.principal.format" = "%@ at %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ illuminated • %@";
-"moonphase.waxing" = "Waxing";
-"moonphase.waning" = "Waning";
+"moonphase.waxing" = "waxing";
+"moonphase.waning" = "waning";
 "moonphase.waning.crescent" = "Waning Crescent";
 "moonphase.waning.gibbous" = "Waning Gibbous";
 "moonphase.waxing.crescent" = "Waxing Crescent";

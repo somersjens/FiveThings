@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Trăng mới";
 "moonphase.principal.format" = "%@ vào %@ (khoảng %@%%)";
 "moonphase.illumination.range" = "%@–%@ được chiếu sáng • %@";
-"moonphase.waxing" = "Trăng đang lớn";
-"moonphase.waning" = "Trăng đang khuyết";
+"moonphase.waxing" = "trăng đang lớn";
+"moonphase.waning" = "trăng đang khuyết";
 "moonphase.waning.crescent" = "Trăng lưỡi liềm khuyết";
 "moonphase.waning.gibbous" = "Trăng khuyết lồi";
 "moonphase.waxing.crescent" = "Trăng lưỡi liềm non";

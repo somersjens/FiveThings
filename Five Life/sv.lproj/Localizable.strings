@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Nymåne";
 "moonphase.principal.format" = "%@ klockan %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ belyst • %@";
-"moonphase.waxing" = "Växande";
-"moonphase.waning" = "Avtagande";
+"moonphase.waxing" = "växande";
+"moonphase.waning" = "avtagande";
 "moonphase.waning.crescent" = "Avtagande halvmåne";
 "moonphase.waning.gibbous" = "Avtagande gibbousmåne";
 "moonphase.waxing.crescent" = "Växande halvmåne";

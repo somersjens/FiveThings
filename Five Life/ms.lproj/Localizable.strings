@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Bulan baru";
 "moonphase.principal.format" = "%@ pada %@ (kira-kira %@%%)";
 "moonphase.illumination.range" = "%@–%@ diterangi • %@";
-"moonphase.waxing" = "Membesar";
-"moonphase.waning" = "Mengecil";
+"moonphase.waxing" = "membesar";
+"moonphase.waning" = "mengecil";
 "moonphase.waning.crescent" = "Bulan sabit mengecil";
 "moonphase.waning.gibbous" = "Bulan hampir penuh mengecil";
 "moonphase.waxing.crescent" = "Bulan sabit membesar";

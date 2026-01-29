@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Újhold";
 "moonphase.principal.format" = "%@ ekkor: %@ (kb. %@%%)";
 "moonphase.illumination.range" = "%@–%@ megvilágítva • %@";
-"moonphase.waxing" = "Növekvő";
-"moonphase.waning" = "Csökkenő";
+"moonphase.waxing" = "növekvő";
+"moonphase.waning" = "csökkenő";
 "moonphase.waning.crescent" = "Csökkenő sarló";
 "moonphase.waning.gibbous" = "Csökkenő domború";
 "moonphase.waxing.crescent" = "Növekvő sarló";

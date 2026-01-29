@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Uusikuu";
 "moonphase.principal.format" = "%@ klo %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ valaistu • %@";
-"moonphase.waxing" = "Kasvava";
-"moonphase.waning" = "Vähenevä";
+"moonphase.waxing" = "kasvava";
+"moonphase.waning" = "vähenevä";
 "moonphase.waning.crescent" = "Vähenevä sirppi";
 "moonphase.waning.gibbous" = "Vähenevä kupera";
 "moonphase.waxing.crescent" = "Kasvava sirppi";

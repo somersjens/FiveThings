@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Bagong Buwan";
 "moonphase.principal.format" = "%@ sa %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ naiilawan • %@";
-"moonphase.waxing" = "Lumalaki";
-"moonphase.waning" = "Bumababa";
+"moonphase.waxing" = "lumalaki";
+"moonphase.waning" = "numababa";
 "moonphase.waning.crescent" = "Bumababang Crescent";
 "moonphase.waning.gibbous" = "Bumababang Gibbous";
 "moonphase.waxing.crescent" = "Lumalagong Crescent";

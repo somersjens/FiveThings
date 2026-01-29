@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Nymåne";
 "moonphase.principal.format" = "%@ kl. %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ opplyst • %@";
-"moonphase.waxing" = "Voksende";
-"moonphase.waning" = "Avtakende";
+"moonphase.waxing" = "voksende";
+"moonphase.waning" = "avtakende";
 "moonphase.waning.crescent" = "Avtakende sigd";
 "moonphase.waning.gibbous" = "Avtakende gibbous";
 "moonphase.waxing.crescent" = "Voksende sigd";

@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Nov";
 "moonphase.principal.format" = "%@ v %@ (≈%@%%)";
 "moonphase.illumination.range" = "%@–%@ osvětleno • %@";
-"moonphase.waxing" = "Přibývající";
-"moonphase.waning" = "Ubývající";
+"moonphase.waxing" = "přibývající";
+"moonphase.waning" = "ubývající";
 "moonphase.waning.crescent" = "Ubývající srpek";
 "moonphase.waning.gibbous" = "Ubývající vyklenutý";
 "moonphase.waxing.crescent" = "Přibývající srpek";

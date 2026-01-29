@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Neumond";
 "moonphase.principal.format" = "%@ um %@ (ca. %@ %%)";
 "moonphase.illumination.range" = "%@–%@ beleuchtet • %@";
-"moonphase.waxing" = "Zunehmend";
-"moonphase.waning" = "Abnehmend";
+"moonphase.waxing" = "zunehmend";
+"moonphase.waning" = "abnehmend";
 "moonphase.waning.crescent" = "Abnehmender Sichelmond";
 "moonphase.waning.gibbous" = "Abnehmender Mond";
 "moonphase.waxing.crescent" = "Zunehmender Sichelmond";

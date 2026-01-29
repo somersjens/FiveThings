@@ -232,8 +232,8 @@
 "moonphase.new.moon" = "Mlađak";
 "moonphase.principal.format" = "%@ u %@ (približno %@%%)";
 "moonphase.illumination.range" = "%@–%@ osvijetljeno • %@";
-"moonphase.waxing" = "Rastući";
-"moonphase.waning" = "Opadajući";
+"moonphase.waxing" = "rastući";
+"moonphase.waning" = "opadajući";
 "moonphase.waning.crescent" = "Opadajući srp";
 "moonphase.waning.gibbous" = "Opadajući izbočeni";
 "moonphase.waxing.crescent" = "Rastući srp";
