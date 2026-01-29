@@ -968,7 +968,7 @@ struct ContentView: View {
                                     searchHighlightsEnabled: false,
                                     highlightLockIcon: highlightLockIcons,
                                     entry: entry)
-                            .transition(.identity)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
 
                         if !dismissedEmptyLimitNotice,
                            let thirdEmptyEntryID,
@@ -985,7 +985,7 @@ struct ContentView: View {
                                             searchHighlightsEnabled: false,
                                             highlightLockIcon: highlightLockIcons,
                                             entry: entry)
-                                    .transition(.identity)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
 
                                 if !dismissedEmptyLimitNotice,
                                    let thirdEmptyEntryID,
@@ -996,7 +996,7 @@ struct ContentView: View {
                         }
                     }
                 }
-                .animation(.easeInOut(duration: 0.25),
+                .animation(.spring(response: 0.5, dampingFraction: 0.9),
                            value: unfinishedEntries.map(\.id))
                 .animation(.easeInOut(duration: settingsOpenAnimationDuration),
                            value: showSettings)
