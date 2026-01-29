@@ -42,9 +42,12 @@ struct RootContentTaskModifier: ViewModifier {
         content.task {
             vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
             await notifier.refreshAuthorizationStatus()
+            let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
+                                                         reminderTime: settings.dailyReminderTime)
             await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                language: settings.language,
-                                                dailyCount: settings.dailyItemCount)
+                                                 reminderDate: dailyReminderDate,
+                                                 language: settings.language,
+                                                 dailyCount: settings.dailyItemCount)
 
             let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
                                                           reminderTime: settings.nextDayReminderTime)
@@ -70,6 +73,12 @@ struct RootContentEntriesChangeModifier: ViewModifier {
             .onChange(of: entries.count) { _, _ in
                 // Keep “next day if needed” in sync when entries are created or removed.
                 Task {
+                    let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
+                                                                 reminderTime: settings.dailyReminderTime)
+                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                         reminderDate: dailyReminderDate,
+                                                         language: settings.language,
+                                                         dailyCount: settings.dailyItemCount)
                     let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
                                                                   reminderTime: settings.nextDayReminderTime)
                     await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
@@ -81,6 +90,12 @@ struct RootContentEntriesChangeModifier: ViewModifier {
             }
             .onChange(of: entries.map(\.isLocked)) { _, _ in
                 Task {
+                    let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
+                                                                 reminderTime: settings.dailyReminderTime)
+                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                         reminderDate: dailyReminderDate,
+                                                         language: settings.language,
+                                                         dailyCount: settings.dailyItemCount)
                     let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
                                                                   reminderTime: settings.nextDayReminderTime)
                     await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
@@ -107,6 +122,7 @@ struct RootContentSettingsChangeModifier: ViewModifier {
     let vm: ContentViewModel
     let notifier: NotificationManager
     let modelContext: ModelContext
+    let entries: [DayEntry]
     let unfinishedEntries: [DayEntry]
     let refreshEntryLists: () -> Void
     let showNextSeeYouTomorrowMessage: () -> Void
@@ -117,9 +133,12 @@ struct RootContentSettingsChangeModifier: ViewModifier {
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
                 refreshEntryLists()
                 Task {
+                    let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
+                                                                 reminderTime: settings.dailyReminderTime)
                     await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                        language: settings.language,
-                                                        dailyCount: settings.dailyItemCount)
+                                                         reminderDate: dailyReminderDate,
+                                                         language: settings.language,
+                                                         dailyCount: settings.dailyItemCount)
                 }
             }
             .onChange(of: vm.searchText) { _, _ in

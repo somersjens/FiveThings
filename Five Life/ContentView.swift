@@ -639,6 +639,7 @@ struct ContentView: View {
             vm: vm,
             notifier: notifier,
             modelContext: modelContext,
+            entries: entries,
             unfinishedEntries: unfinishedEntries,
             refreshEntryLists: refreshEntryLists,
             showNextSeeYouTomorrowMessage: showNextSeeYouTomorrowMessage
@@ -765,9 +766,12 @@ struct ContentView: View {
                     }
                     // Apply notification changes after closing settings
                     Task {
+                        let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
+                                                                     reminderTime: settings.dailyReminderTime)
                         await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                            language: settings.language,
-                                                            dailyCount: settings.dailyItemCount)
+                                                             reminderDate: dailyReminderDate,
+                                                             language: settings.language,
+                                                             dailyCount: settings.dailyItemCount)
                         let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
                                                                       reminderTime: settings.nextDayReminderTime)
                         await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,

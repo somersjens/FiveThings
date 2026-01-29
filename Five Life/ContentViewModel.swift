@@ -156,6 +156,30 @@ final class ContentViewModel: ObservableObject {
         return nextReminder
     }
 
+    func dailyReminderDate(allEntries: [DayEntry], reminderTime: ReminderTime?, now: Date = Date()) -> Date? {
+        guard let reminderTime else { return nil }
+        let calendar = Calendar.current
+        guard var nextReminder = calendar.nextDate(after: now,
+                                                   matching: reminderTime.asDateComponents(),
+                                                   matchingPolicy: .nextTimePreservingSmallerComponents) else {
+            return nil
+        }
+
+        for _ in 0..<370 {
+            let reminderStart = startOfDay(nextReminder)
+            if let entry = allEntries.first(where: { $0.day == reminderStart }), entry.isLocked {
+                guard let shifted = calendar.date(byAdding: .day, value: 1, to: nextReminder) else {
+                    return nil
+                }
+                nextReminder = shifted
+                continue
+            }
+            return nextReminder
+        }
+
+        return nil
+    }
+
     func limitedFinishedEntries(from entries: [DayEntry]) -> [DayEntry] {
         let sortedByNewest = entries.sorted { $0.day > $1.day }
         switch finishedLimit {

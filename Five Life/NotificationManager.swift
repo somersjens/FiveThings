@@ -50,11 +50,14 @@ final class NotificationManager: ObservableObject {
         }
     }
 
-    func scheduleDailyReminder(time: ReminderTime?, language: AppLanguage, dailyCount: Int) async {
+    func scheduleDailyReminder(time: ReminderTime?,
+                               reminderDate: Date?,
+                               language: AppLanguage,
+                               dailyCount: Int) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [NotificationIDs.daily])
 
-        guard let time else { return }
+        guard let time, let reminderDate else { return }
         let allowed = await requestAuthorizationIfNeeded()
         guard allowed else { return }
 
@@ -69,9 +72,9 @@ final class NotificationManager: ObservableObject {
                                    clampedCount)
         content.sound = notificationSound
 
-        var triggerComps = time.asDateComponents()
+        var triggerComps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)
         triggerComps.calendar = .current
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComps, repeats: true)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComps, repeats: false)
 
         let req = UNNotificationRequest(identifier: NotificationIDs.daily, content: content, trigger: trigger)
         try? await center.add(req)
