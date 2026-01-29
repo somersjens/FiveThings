@@ -669,6 +669,14 @@ struct ContentView: View {
             scheduleMidnightRefresh: scheduleMidnightRefresh,
             updateUnlockStateIfNeeded: updateUnlockStateIfNeeded
         ))
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active {
+                cancelTransientTasks()
+            }
+        }
+        .onDisappear {
+            cancelTransientTasks()
+        }
     }
 
     private func scrollContent(
@@ -1195,6 +1203,7 @@ struct ContentView: View {
         settingsScrollTask = Task { @MainActor in
             let animation = Animation.easeInOut(duration: settingsScrollDuration)
             await Task.yield()
+            guard !Task.isCancelled, scenePhase == .active else { return }
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
@@ -1206,6 +1215,7 @@ struct ContentView: View {
         settingsScrollTask = Task { @MainActor in
             let animation = Animation.easeOut(duration: scrollToTopDuration)
             await Task.yield()
+            guard !Task.isCancelled, scenePhase == .active else { return }
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
@@ -1217,6 +1227,7 @@ struct ContentView: View {
         settingsScrollTask = Task { @MainActor in
             let animation = Animation.easeInOut(duration: scrollToFooterDuration)
             await Task.yield()
+            guard !Task.isCancelled, scenePhase == .active else { return }
             withAnimation(animation) {
                 proxy.scrollTo(footerLinksID, anchor: .bottom)
             }
@@ -1229,6 +1240,7 @@ struct ContentView: View {
             let sleepTime = UInt64(delay * 1_000_000_000)
             try? await Task.sleep(nanoseconds: sleepTime)
             await Task.yield()
+            guard !Task.isCancelled, scenePhase == .active else { return }
             let animation = Animation.easeInOut(duration: scrollToFooterDuration)
             withAnimation(animation) {
                 proxy.scrollTo(infoCardID, anchor: .top)
@@ -1241,6 +1253,7 @@ struct ContentView: View {
         settingsScrollTask = Task { @MainActor in
             let animation = Animation.easeInOut(duration: scrollToTopDuration)
             await Task.yield()
+            guard !Task.isCancelled, scenePhase == .active else { return }
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
@@ -1257,6 +1270,7 @@ struct ContentView: View {
         settingsScrollTask = Task { @MainActor in
             let animation = Animation.easeOut(duration: scrollToTopDuration)
             await Task.yield()
+            guard !Task.isCancelled, scenePhase == .active else { return }
             withAnimation(animation) {
                 proxy.scrollTo(settingsTopID, anchor: .top)
             }
@@ -1309,7 +1323,7 @@ struct ContentView: View {
         settingsInfoTask?.cancel()
         settingsInfoTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, scenePhase == .active else { return }
             requestedSettingsInfo = info
             pendingSettingsInfoRequest = nil
         }
@@ -1318,15 +1332,30 @@ struct ContentView: View {
     private func pulseHighlight(_ binding: Binding<Bool>, cycles: Int = 3) {
         Task { @MainActor in
             for _ in 0..<cycles {
+                guard scenePhase == .active else { return }
                 withAnimation(.easeInOut(duration: highlightPulseDuration)) {
                     binding.wrappedValue = true
                 }
                 try? await Task.sleep(nanoseconds: UInt64(highlightPulseDuration * 1_000_000_000))
+                guard scenePhase == .active else { return }
                 withAnimation(.easeInOut(duration: highlightPulseDuration)) {
                     binding.wrappedValue = false
                 }
                 try? await Task.sleep(nanoseconds: UInt64(highlightPulseDuration * 1_000_000_000))
             }
         }
+    }
+
+    private func cancelTransientTasks() {
+        settingsScrollTask?.cancel()
+        settingsScrollTask = nil
+        infoCardScrollTask?.cancel()
+        infoCardScrollTask = nil
+        settingsInfoTask?.cancel()
+        settingsInfoTask = nil
+        pendingSettingsOpen = false
+        pendingSettingsClose = false
+        pendingInfoCardScroll = false
+        pendingSettingsInfoRequest = nil
     }
 }

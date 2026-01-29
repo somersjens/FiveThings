@@ -135,7 +135,7 @@
 "notifications.daily.8.title" = "Hahaha";
 "notifications.daily.9.body" = "Schrijf %d dingen op waar je nu om %@ trots op bent vandaag.";
 "notifications.daily.9.title" = "Mooie dag";
-"notifications.daily.10.body" = "Noteer %d leuke dingen die je vandaag hebt gedaan, het is alweer %@.";
+"notifications.daily.10.body" = "Noteer %d leuke dingen die je vandaag hebt gedaan, het is alweer %@ .";
 "notifications.daily.10.title" = "Afgevinkt!";
 "notifications.next.1.body" = "%@ seintje: vul je dag van gisteren even aan met %d dingen.";
 "notifications.next.1.title" = "Ochtendcheck";
