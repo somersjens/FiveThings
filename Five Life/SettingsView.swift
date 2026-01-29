@@ -551,8 +551,8 @@ struct SettingsView: View {
             .labelsHidden()
             .datePickerStyle(.compact)
             .opacity(isVisible ? 1 : 0)
-            .offset(y: isVisible ? 0 : -6)
-            .animation(.easeInOut(duration: 0.2).delay(isVisible ? 0.2 : 0), value: isVisible)
+            .animation(.easeInOut(duration: 0.2), value: isVisible)
+            .allowsHitTesting(isVisible)
             .onChange(of: selection.wrappedValue) { _, newValue in
                 onChange(newValue)
             }
