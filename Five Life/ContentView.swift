@@ -991,9 +991,6 @@ struct ContentView: View {
                              highlightSortArrow: highlightSortArrow,
                              highlightFilterLimit: highlightFilterLimit)
         }
-        .frame(maxHeight: showSettings ? 0 : nil, alignment: .top)
-        .opacity(showSettings ? 0 : 1)
-        .clipped()
         .animation(.easeInOut(duration: settingsOpenAnimationDuration), value: showSettings)
     }
 
