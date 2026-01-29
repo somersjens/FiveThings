@@ -51,6 +51,35 @@ struct SettingsView: View {
     @State private var infoFrames: [SettingsInfo: CGRect] = [:]
     @State private var infoPopoverSize: CGSize = .zero
 
+    init(
+        settings: SettingsStore,
+        showSecretMenu: Binding<Bool>,
+        requestedInfo: Binding<SettingsInfo?>,
+        showsNavigation: Bool = true,
+        isSettingsCardExpanded: Bool = true
+    ) {
+        self.settings = settings
+        self._showSecretMenu = showSecretMenu
+        self._requestedInfo = requestedInfo
+        self.showsNavigation = showsNavigation
+        self.isSettingsCardExpanded = isSettingsCardExpanded
+
+        let defaultDailyTime = ReminderTime(hour: 22, minute: 0)
+        let defaultNextDayTime = ReminderTime(hour: 9, minute: 0)
+
+        let dailyPickerDate = settings.dailyReminderTime
+            .flatMap { Calendar.current.date(from: $0.asDateComponents()) }
+            ?? Self.defaultReminderDate(for: defaultDailyTime)
+        let nextDayPickerDate = settings.nextDayReminderTime
+            .flatMap { Calendar.current.date(from: $0.asDateComponents()) }
+            ?? Self.defaultReminderDate(for: defaultNextDayTime)
+
+        _dailyReminderEnabled = State(initialValue: settings.dailyReminderTime != nil)
+        _nextDayReminderEnabled = State(initialValue: settings.nextDayReminderTime != nil)
+        _dailyReminderPickerDate = State(initialValue: dailyPickerDate)
+        _nextDayReminderPickerDate = State(initialValue: nextDayPickerDate)
+    }
+
     enum SettingsInfo {
         case language
         case addDay
@@ -676,12 +705,12 @@ struct SettingsView: View {
             if let rt = settings.dailyReminderTime {
                 dailyReminderPickerDate = Calendar.current.date(from: rt.asDateComponents()) ?? Date()
             } else {
-                dailyReminderPickerDate = defaultReminderDate(for: defaultDailyReminderTime)
+                dailyReminderPickerDate = Self.defaultReminderDate(for: defaultDailyReminderTime)
             }
             if let rt = settings.nextDayReminderTime {
                 nextDayReminderPickerDate = Calendar.current.date(from: rt.asDateComponents()) ?? Date()
             } else {
-                nextDayReminderPickerDate = defaultReminderDate(for: defaultNextDayReminderTime)
+                nextDayReminderPickerDate = Self.defaultReminderDate(for: defaultNextDayReminderTime)
             }
 
             faceIdLockEnabled = settings.faceIdLockEnabled
@@ -795,7 +824,7 @@ struct SettingsView: View {
         return L10n.string("settings.delete.all", language: settings.language)
     }
 
-    private func defaultReminderDate(for time: ReminderTime) -> Date {
+    private static func defaultReminderDate(for time: ReminderTime) -> Date {
         Calendar.current.date(from: time.asDateComponents()) ?? Date()
     }
 
