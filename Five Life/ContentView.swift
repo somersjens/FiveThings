@@ -4,6 +4,13 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    private struct SettingsSectionHeightKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
 
@@ -40,6 +47,7 @@ struct ContentView: View {
     @State private var highlightScrollToTop = false
     @State private var highlightFooterLinks = false
     @State private var requestedSettingsInfo: SettingsView.SettingsInfo?
+    @State private var settingsSectionHeight: CGFloat = 0
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     @AppStorage("hasDismissedInfoCard") private var hasDismissedInfoCard: Bool = false
     @AppStorage("seeYouTomorrowIndexEnglish") private var seeYouTomorrowIndexEnglish: Int = 0
@@ -696,8 +704,15 @@ struct ContentView: View {
                         .frame(height: 1)
                         .id(settingsTopID)
 
-                    if showSettings {
-                        settingsSection(scale: scale)
+                    ZStack(alignment: .top) {
+                        Color.clear
+                            .frame(height: showSettings ? settingsSectionHeight : 0)
+                            .animation(.easeInOut(duration: settingsOpenAnimationDuration), value: showSettings)
+
+                        if showSettings {
+                            settingsSection(scale: scale)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
                     }
 
                     unfinishedSection(
@@ -708,23 +723,7 @@ struct ContentView: View {
                         remainingUnfinishedEntries: remainingUnfinishedEntries
                     )
 
-                    Rectangle()
-                        .fill(Color.brandAccent)
-                        .frame(height: 5)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                        .padding(.top, 8)
-
-                    if settings.statisticsEnabled {
-                        statisticsRow(scale: scale)
-                    }
-
-                    SearchAndSortBar(settings: settings,
-                                     text: $vm.searchText,
-                                     newestFirst: $vm.newestFirst,
-                                     finishedLimit: $vm.finishedLimit,
-                                     highlightSearchPlaceholder: highlightSearchPlaceholder,
-                                     highlightSortArrow: highlightSortArrow,
-                                     highlightFilterLimit: highlightFilterLimit)
+                    postSettingsSection(scale: scale)
 
                     finishedSection(
                         finishedEntries: finishedEntries,
@@ -961,7 +960,41 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .strokeBorder(Color.gray.opacity(0.3), lineWidth: 2)
         )
-        .transition(.move(edge: .top).combined(with: .opacity))
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(key: SettingsSectionHeightKey.self, value: proxy.size.height)
+            }
+        )
+        .onPreferenceChange(SettingsSectionHeightKey.self) { height in
+            settingsSectionHeight = height
+        }
+    }
+
+    private func postSettingsSection(scale: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Rectangle()
+                .fill(Color.brandAccent)
+                .frame(height: 5)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .padding(.top, 8)
+
+            if settings.statisticsEnabled {
+                statisticsRow(scale: scale)
+            }
+
+            SearchAndSortBar(settings: settings,
+                             text: $vm.searchText,
+                             newestFirst: $vm.newestFirst,
+                             finishedLimit: $vm.finishedLimit,
+                             highlightSearchPlaceholder: highlightSearchPlaceholder,
+                             highlightSortArrow: highlightSortArrow,
+                             highlightFilterLimit: highlightFilterLimit)
+        }
+        .frame(maxHeight: showSettings ? 0 : nil, alignment: .top)
+        .opacity(showSettings ? 0 : 1)
+        .clipped()
+        .animation(.easeInOut(duration: settingsOpenAnimationDuration), value: showSettings)
     }
 
     private func unfinishedSection(
