@@ -8,6 +8,9 @@ enum L10n {
         if args.isEmpty {
             return format
         }
+        if formatPlaceholderCount(format) != args.count {
+            return format
+        }
         return String(format: format, locale: Locale(identifier: language.localeIdentifier), arguments: args)
     }
 
@@ -17,5 +20,14 @@ enum L10n {
             return bundle
         }
         return .main
+    }
+
+    private static func formatPlaceholderCount(_ format: String) -> Int {
+        let pattern = "%(?!%)(?:\\d+\\$)?[+-]?(?:\\d+)?(?:\\.\\d+)?[@a-zA-Z]"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return 0
+        }
+        let range = NSRange(format.startIndex..<format.endIndex, in: format)
+        return regex.numberOfMatches(in: format, range: range)
     }
 }
