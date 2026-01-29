@@ -425,6 +425,7 @@ final class SettingsStore: ObservableObject {
     @AppStorage("statisticsEnabled") var statisticsEnabled: Bool = true
     @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
     @AppStorage("appleIdConnected") var appleIdConnected: Bool = false
+    @AppStorage("appleIdEverConnected") var appleIdEverConnected: Bool = false
     @AppStorage("appleUserIdentifier") var appleUserIdentifier: String = ""
     @AppStorage("donationPaid") var donationPaid: Bool = false
     @AppStorage("appleLastSnapshotAt") private var appleLastSnapshotAtInterval: Double = 0

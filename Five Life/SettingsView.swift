@@ -110,6 +110,84 @@ struct SettingsView: View {
         }
     }
 
+    private final class WarningSwitch: UISwitch {
+        var showsDisconnectedWarning: Bool = false {
+            didSet { updateAppearance() }
+        }
+        var warningOffColor: UIColor = .clear {
+            didSet { updateAppearance() }
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            updateAppearance()
+        }
+
+        override func setOn(_ on: Bool, animated: Bool) {
+            super.setOn(on, animated: animated)
+            updateAppearance()
+        }
+
+        private func updateAppearance() {
+            guard showsDisconnectedWarning, !isOn else {
+                layer.borderColor = nil
+                layer.borderWidth = 0
+                return
+            }
+
+            backgroundColor = warningOffColor
+            tintColor = warningOffColor
+            layer.cornerRadius = bounds.height / 2
+            layer.masksToBounds = true
+
+            if let track = subviews.first?.subviews.first {
+                track.backgroundColor = warningOffColor
+                track.layer.cornerRadius = bounds.height / 2
+                track.layer.masksToBounds = true
+            }
+        }
+    }
+
+    private struct AppleIdSwitch: UIViewRepresentable {
+        @Binding var isOn: Bool
+        let showsDisconnectedWarning: Bool
+        let isEnabled: Bool
+
+        func makeUIView(context: Context) -> UISwitch {
+            let uiSwitch = WarningSwitch()
+            uiSwitch.addTarget(context.coordinator, action: #selector(Coordinator.valueChanged), for: .valueChanged)
+            return uiSwitch
+        }
+
+        func updateUIView(_ uiView: UISwitch, context: Context) {
+            let shouldAnimate = context.transaction.animation != nil
+            uiView.setOn(isOn, animated: shouldAnimate)
+            uiView.isEnabled = isEnabled
+            uiView.onTintColor = UIColor(Color.brandAccent)
+            let warningOffColor = UIColor(Color.red.opacity(0.15))
+            if let warningSwitch = uiView as? WarningSwitch {
+                warningSwitch.warningOffColor = warningOffColor
+                warningSwitch.showsDisconnectedWarning = showsDisconnectedWarning
+            }
+        }
+
+        func makeCoordinator() -> Coordinator {
+            Coordinator(isOn: $isOn)
+        }
+
+        final class Coordinator: NSObject {
+            private var isOn: Binding<Bool>
+
+            init(isOn: Binding<Bool>) {
+                self.isOn = isOn
+            }
+
+            @objc func valueChanged(_ sender: UISwitch) {
+                isOn.wrappedValue = sender.isOn
+            }
+        }
+    }
+
     private var languageSection: some View {
         HStack {
             infoTitle(L10n.string("settings.app.language", language: settings.language), info: .language)
@@ -244,14 +322,15 @@ struct SettingsView: View {
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
                 Spacer()
-                Toggle("", isOn: Binding(
+                AppleIdSwitch(isOn: Binding(
                     get: { appleIdConnected },
                     set: { newValue in
                         handleAppleIdToggleChange(newValue)
                     }
-                ))
-                .labelsHidden()
-                .disabled(isSigningInWithApple)
+                ),
+                showsDisconnectedWarning: settings.appleIdEverConnected && !appleIdConnected,
+                isEnabled: !isSigningInWithApple)
+                    .accessibilityLabel(L10n.string("settings.apple.id.connect", language: settings.language))
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -762,6 +841,9 @@ struct SettingsView: View {
         }
         .onAppear {
             addDayFieldFocused = false
+            if settings.appleIdConnected && !settings.appleIdEverConnected {
+                settings.appleIdEverConnected = true
+            }
         }
         .fileImporter(isPresented: $showImportPicker,
                       allowedContentTypes: [.commaSeparatedText],
@@ -1537,6 +1619,7 @@ struct SettingsView: View {
             let credential = try await appleSignInCoordinator.signIn()
             settings.appleUserIdentifier = credential.user
             settings.appleIdConnected = true
+            settings.appleIdEverConnected = true
             appleIdConnected = true
             await AppleSyncManager.shared.reconcileAfterSignIn(modelContext: modelContext,
                                                                settings: settings,
