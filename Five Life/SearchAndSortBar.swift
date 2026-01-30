@@ -16,9 +16,11 @@ struct SearchAndSortBar: View {
 
     var body: some View {
         HStack(spacing: 10) {
+            let controlDimension = controlSize * responsiveTypeScale
+
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.brandAccent)
 
                 TextField(
                     "",
@@ -28,14 +30,15 @@ struct SearchAndSortBar: View {
                 )
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.brandAccent)
+                .tint(Color.brandAccent)
 
                 if !text.isEmpty {
                     Button {
                         text = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.brandAccent)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(L10n.string("search.clear", language: settings.language))
@@ -54,9 +57,9 @@ struct SearchAndSortBar: View {
                 Text(finishedLimit.displayText(language: settings.language))
                     .font(.system(size: filterFontSize * responsiveTypeScale, weight: .semibold))
                     .monospacedDigit()
-                    .foregroundStyle(highlightFilterLimit ? .orange : .primary)
-                    .frame(width: controlSize * responsiveTypeScale,
-                           height: controlSize * responsiveTypeScale)
+                    .foregroundStyle(highlightFilterLimit ? .orange : Color.brandAccent)
+                    .frame(width: controlDimension,
+                           height: controlDimension)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .scaleEffect(highlightFilterLimit ? 1.2 : 1)
@@ -72,8 +75,9 @@ struct SearchAndSortBar: View {
             } label: {
                 Image(systemName: newestFirst ? "arrow.down" : "arrow.up")
                     .font(.system(size: sortIconSize * responsiveTypeScale, weight: .semibold))
-                    .foregroundStyle(highlightSortArrow ? .orange : .primary)
-                    .padding(12)
+                    .foregroundStyle(highlightSortArrow ? .orange : Color.brandAccent)
+                    .frame(width: controlDimension,
+                           height: controlDimension)
                     .background(.secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .scaleEffect(highlightSortArrow ? 1.2 : 1)

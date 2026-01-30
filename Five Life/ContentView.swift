@@ -436,7 +436,7 @@ struct ContentView: View {
                     handleSettingsToggle()
                 } label: {
                     Image(systemName: "gearshape.fill")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.brandAccent)
                         .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.plain)
@@ -449,7 +449,7 @@ struct ContentView: View {
                 } label: {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 17, weight: .bold))
-                        .foregroundStyle(highlightScrollToTop ? .orange : .secondary)
+                        .foregroundStyle(highlightScrollToTop ? .orange : Color.brandAccent)
                         .frame(width: 32, height: 32)
                         .scaleEffect(highlightScrollToTop ? 1.2 : 1)
                         .animation(.easeInOut(duration: 0.25), value: highlightScrollToTop)
@@ -515,7 +515,7 @@ struct ContentView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
-        .foregroundStyle(.secondary)
+        .foregroundStyle(Color.brandAccent)
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(
@@ -844,7 +844,7 @@ struct ContentView: View {
                         Image(systemName: "info")
                             .font(.system(size: settingsGearSize * scale,
                                           weight: .semibold))
-                            .foregroundStyle(Color(.systemGray))
+                            .foregroundStyle(Color.brandAccent)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(L10n.string("info.card.button", language: settings.language))
@@ -854,13 +854,13 @@ struct ContentView: View {
                         hasSeenAccessScreen = false
                         pendingSettingsClose = true
                     } label: {
-                        Image("Settings_clover")
+                        Image("Access_5")
                             .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
                             .frame(width: settingsGearSize * scale * 1.2,
                                    height: settingsGearSize * scale * 1.2)
-                            .foregroundStyle(Color(.systemGray))
+                            .foregroundStyle(Color.brandAccent)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(L10n.string("access.back.main.menu", language: settings.language))
@@ -871,7 +871,7 @@ struct ContentView: View {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: settingsGearSize * scale,
                                           weight: .semibold))
-                            .foregroundStyle(Color(.systemGray))
+                            .foregroundStyle(Color.brandAccent)
                     }
                     .buttonStyle(.plain)
                 }
