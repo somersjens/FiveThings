@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (pisteet %d)";
 "export.pdf.header" = "PDF luotu %@: %@ järjestyksessä %@ (suodatinasetukset) – sivu %d/%d";
 "export.title" = "Vie PDF/CSV-muotoon";
-"export.filter.notice" = "Vienti perustuu suodatinasetuksiin: [%@] ylhäällä ja [%@]";
+"export.filter.notice" = "Vienti perustuu suodatinasetuksiin: %@ ylhäällä ja %@";
 "export.filter.notice.order.oldest" = "vanhin";
 "export.filter.notice.order.newest" = "uusin";
 "export.filter.notice.limit.maximum" = "enintään %d";

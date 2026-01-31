@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (ocjena %d)";
 "export.pdf.header" = "PDF stvoren %@: %@ po redu %@ (postavke filtra) – stranica %d/%d";
 "export.title" = "Izvezi u PDF/CSV";
-"export.filter.notice" = "Izvoz se temelji na postavkama filtra: [%@] na vrhu i [%@]";
+"export.filter.notice" = "Izvoz se temelji na postavkama filtra: %@ na vrhu i %@";
 "export.filter.notice.order.oldest" = "najstarije";
 "export.filter.notice.order.newest" = "najnovije";
 "export.filter.notice.limit.maximum" = "maksimalno %d";

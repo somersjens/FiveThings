@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (βαθμολογία %d)";
 "export.pdf.header" = "PDF δημιουργήθηκε %@: %@ κατά σειρά %@ (ρυθμίσεις φίλτρου) - σελίδα %d/%d";
 "export.title" = "Εξαγωγή σε PDF/CSV";
-"export.filter.notice" = "Η εξαγωγή βασίζεται στις ρυθμίσεις φίλτρων: [%@] επάνω και [%@]";
+"export.filter.notice" = "Η εξαγωγή βασίζεται στις ρυθμίσεις φίλτρων: %@ επάνω και %@";
 "export.filter.notice.order.oldest" = "παλαιότερο";
 "export.filter.notice.order.newest" = "νεότερο";
 "export.filter.notice.limit.maximum" = "μέγιστο %d";

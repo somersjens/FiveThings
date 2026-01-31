@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (ציון %d)";
 "export.pdf.header" = "PDF נוצר ב-%@: %@ בסדר %@ (הגדרות סינון) - עמוד %d/%d";
 "export.title" = "ייצוא ל-PDF/CSV";
-"export.filter.notice" = "הייצוא מבוסס על הגדרות המסנן: [%@] למעלה ו[%@]";
+"export.filter.notice" = "הייצוא מבוסס על הגדרות המסנן: %@ למעלה ו %@";
 "export.filter.notice.order.oldest" = "הישן";
 "export.filter.notice.order.newest" = "החדש";
 "export.filter.notice.limit.maximum" = "מקסימום %d";

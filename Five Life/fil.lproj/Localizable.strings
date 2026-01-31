@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (score %d)";
 "export.pdf.header" = "PDF na ginawa noong %@: %@ sa %@ order (mga setting ng filter) - pahina %d/%d";
 "export.title" = "I-export sa PDF/CSV";
-"export.filter.notice" = "Nakabatay ang pag-export sa mga setting ng filter: [%@] sa itaas at [%@]";
+"export.filter.notice" = "Nakabatay ang pag-export sa mga setting ng filter: %@ sa itaas at %@";
 "export.filter.notice.order.oldest" = "pinakaluma";
 "export.filter.notice.order.newest" = "pinakabago";
 "export.filter.notice.limit.maximum" = "pinakamataas na %d";

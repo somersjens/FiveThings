@@ -571,7 +571,7 @@ struct SettingsView: View {
 
             Text(addDayDisplayText(addDayDigits))
                 .font(.body.monospacedDigit())
-                .foregroundStyle(colorScheme == .dark ? .white : .primary)
+                .foregroundStyle(Color.brandAccent)
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -658,6 +658,7 @@ struct SettingsView: View {
                    displayedComponents: .hourAndMinute)
             .labelsHidden()
             .datePickerStyle(.compact)
+            .foregroundStyle(Color.brandAccent)
             .opacity(isVisible ? 1 : 0)
             .animation(.easeInOut(duration: 0.2), value: isVisible)
             .allowsHitTesting(isVisible)
@@ -1002,8 +1003,8 @@ struct SettingsView: View {
 
     private func addDayDisplayText(_ digits: String) -> AttributedString {
         let format = addDayFormat
-        let digitColor = Color.primary
-        let placeholderColor = Color(.systemGray3)
+        let digitColor = Color.brandAccent
+        let placeholderColor = Color(.systemGray)
 
         let segments = format.segmentStrings(for: digits)
         var output = AttributedString("")
@@ -1267,7 +1268,7 @@ struct SettingsView: View {
             textField.font = UIFont.monospacedDigitSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize,
                                                               weight: .regular)
             textField.textColor = UIColor.clear
-            textField.tintColor = UIColor.darkGray
+            textField.tintColor = UIColor(Color.brandAccent)
             textField.delegate = context.coordinator
             textField.accessibilityLabel = accessibilityLabel
             textField.accessibilityHint = accessibilityHint
