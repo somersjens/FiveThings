@@ -1381,6 +1381,13 @@ struct ContentView: View {
             }
             let shouldScrollToInfoCard = pendingInfoCardScroll
             pendingInfoCardScroll = false
+            if showExportOptions {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showExportOptions = false
+                }
+                let closeDelayNanoseconds = UInt64(0.2 * 1_000_000_000)
+                try? await Task.sleep(nanoseconds: closeDelayNanoseconds)
+            }
             withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
                 showSettings = false
             }
