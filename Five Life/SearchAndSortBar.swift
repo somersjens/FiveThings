@@ -28,6 +28,7 @@ struct SearchAndSortBar: View {
                     prompt: Text(L10n.string("search.placeholder", language: settings.language))
                         .foregroundStyle(highlightSearchPlaceholder ? .orange : .secondary)
                 )
+                .textFieldStyle(.plain)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .foregroundStyle(Color.brandAccent)
@@ -44,8 +45,8 @@ struct SearchAndSortBar: View {
                     .accessibilityLabel(L10n.string("search.clear", language: settings.language))
                 }
             }
-            .padding(.vertical, 10)
             .padding(.horizontal, 12)
+            .frame(height: controlDimension)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(.secondary.opacity(0.10))

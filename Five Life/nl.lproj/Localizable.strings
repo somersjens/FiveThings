@@ -36,10 +36,10 @@
 "info.card.entry.1" = "Schrijf %@ dingen op waar je vandaag blij van werd en tik op het **[slotje](info://lock)** om af te ronden.";
 "info.card.entry.2" = "Open **[Instellingen](info://settings)** door op de appnaam te tikken en tik op elke optie voor extra uitleg.";
 "info.card.entry.3" = "Gebruik de **[zoekbalk](info://search)** om je afgeronde kaarten te doorzoeken op trefwoord.";
-"info.card.entry.4a" = "De lijst is gesorteerd op **[nieuwste](info://sort)** en bevat **[alle items](info://filter)**.";
-"info.card.entry.4b" = "De lijst is gesorteerd op **[oudste](info://sort)** en bevat **[alle items](info://filter)**.";
-"info.card.entry.4c" = "De lijst is gesorteerd op **[nieuwste](info://sort)** en is beperkt tot **[%@ dagen](info://filter)**.";
-"info.card.entry.4d" = "De lijst is gesorteerd op **[oudste](info://sort)** en is beperkt tot **[%@ dagen](info://filter)**.";
+"info.card.entry.4a" = "De lijst is gesorteerd op **[nieuwste](info://sort)** bovenaan en bevat **[alle dagen](info://filter)**.";
+"info.card.entry.4b" = "De lijst is gesorteerd op **[oudste](info://sort)** bovenaan en bevat **[alle dagen](info://filter)**.";
+"info.card.entry.4c" = "De lijst is gesorteerd op **[nieuwste](info://sort)** bovenaan en is beperkt tot **[%@ dagen](info://filter)**.";
+"info.card.entry.4d" = "De lijst is gesorteerd op **[oudste](info://sort)** bovenaan en is beperkt tot **[%@ dagen](info://filter)**.";
 "info.card.entry.5" = "Tik op de **[pijl](info://top)** rechtsboven om in één keer naar boven te gaan.";
 "info.card.entry.6" = "Ideeën om de app te verbeteren? Laat het weten via de **[footerlinks](info://footer)** onderaan.";
 "info.card.entry.7" = "Tikken op de **[groene tekst](info://highlight)** laat de functie in het oranje zien. Je sluit deze kaart door rechtsboven op de ‘i’ te tikken.";
