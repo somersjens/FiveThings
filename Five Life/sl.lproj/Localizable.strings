@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (ocena %d)";
 "export.pdf.header" = "PDF ustvarjen %@: %@ po vrstnem redu %@ (nastavitve filtra) – stran %d/%d";
 "export.title" = "Izvozi v PDF/CSV";
+"export.filter.notice" = "Izvoz temelji na nastavitvah filtra: [%@] na vrhu in [%@]";
+"export.filter.notice.order.oldest" = "najstarejše";
+"export.filter.notice.order.newest" = "najnovejše";
+"export.filter.notice.limit.maximum" = "največ %d";
+"export.filter.notice.limit.all" = "vsi dnevi";
 "filters.all" = "Vse";
 "filters.show.last" = "Prikaži zadnjih %@ kartic";
 "filters.sort.newest.first" = "Najnovejše najprej";

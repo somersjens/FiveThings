@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (scor %d)";
 "export.pdf.header" = "PDF generat la %@: %@ în ordine %@ (setări filtru) - pagina %d/%d";
 "export.title" = "Exportă în PDF/CSV";
+"export.filter.notice" = "Exportul se bazează pe setările filtrului: [%@] sus și [%@]";
+"export.filter.notice.order.oldest" = "cel mai vechi";
+"export.filter.notice.order.newest" = "cel mai nou";
+"export.filter.notice.limit.maximum" = "maximum %d";
+"export.filter.notice.limit.all" = "toate zilele";
 "filters.all" = "Toate";
 "filters.show.last" = "Arată ultimele %@ carduri";
 "filters.sort.newest.first" = "Cele mai noi primele";

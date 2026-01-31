@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (மதிப்பெண் %d)";
 "export.pdf.header" = "%@ அன்று உருவாக்கப்பட்ட PDF: %@ வரிசையில் %@ (வடிகட்டி அமைப்புகள்) - பக்கம் %d/%d";
 "export.title" = "PDF/CSV ஆக ஏற்றுமதி செய்";
+"export.filter.notice" = "ஏற்றுமதி வடிகட்டி அமைப்புகளை அடிப்படையாகக் கொண்டது: மேலே [%@] மற்றும் [%@]";
+"export.filter.notice.order.oldest" = "பழமையானது";
+"export.filter.notice.order.newest" = "புதியது";
+"export.filter.notice.limit.maximum" = "அதிகபட்சம் %d";
+"export.filter.notice.limit.all" = "அனைத்து நாட்கள்";
 "filters.all" = "அனைத்தும்";
 "filters.show.last" = "கடைசி %@ அட்டைகளைக் காட்டு";
 "filters.sort.newest.first" = "புதியது முதலில்";

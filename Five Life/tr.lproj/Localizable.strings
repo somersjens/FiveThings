@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (puan %d)";
 "export.pdf.header" = "%@ tarihinde oluşturulan PDF: %@ sırayla %@ (filtre ayarları) - sayfa %d/%d";
 "export.title" = "PDF/CSV Olarak Dışa Aktar";
+"export.filter.notice" = "Dışa aktarma, filtre ayarlarına dayanır: [%@] üstte ve [%@]";
+"export.filter.notice.order.oldest" = "en eski";
+"export.filter.notice.order.newest" = "en yeni";
+"export.filter.notice.limit.maximum" = "en fazla %d";
+"export.filter.notice.limit.all" = "tüm günler";
 "filters.all" = "Tümü";
 "filters.show.last" = "Son %@ kartı göster";
 "filters.sort.newest.first" = "Yeniden eskiye";

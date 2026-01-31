@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (оцінка %d)";
 "export.pdf.header" = "PDF створено %@: %@ у порядку %@ (налаштування фільтра) — сторінка %d/%d";
 "export.title" = "Експорт у PDF/CSV";
+"export.filter.notice" = "Експорт ґрунтується на налаштуваннях фільтра: [%@] зверху та [%@]";
+"export.filter.notice.order.oldest" = "найстаріші";
+"export.filter.notice.order.newest" = "найновіші";
+"export.filter.notice.limit.maximum" = "максимум %d";
+"export.filter.notice.limit.all" = "усі дні";
 "filters.all" = "Усі";
 "filters.show.last" = "Показати останні %@ картки";
 "filters.sort.newest.first" = "Спочатку нові";

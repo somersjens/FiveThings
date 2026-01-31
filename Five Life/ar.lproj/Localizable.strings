@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (تقييم %d)";
 "export.pdf.header" = "تم إنشاء PDF في %@: %@ بترتيب %@ (إعدادات التصفية) - الصفحة %d/%d";
 "export.title" = "تصدير إلى PDF/CSV";
+"export.filter.notice" = "يعتمد التصدير على إعدادات عامل التصفية: [%@] في الأعلى و[%@]";
+"export.filter.notice.order.oldest" = "الأقدم";
+"export.filter.notice.order.newest" = "الأحدث";
+"export.filter.notice.limit.maximum" = "بحد أقصى %d";
+"export.filter.notice.limit.all" = "كل الأيام";
 "filters.all" = "الكل";
 "filters.show.last" = "عرض آخر %@ بطاقات";
 "filters.sort.newest.first" = "الأحدث أولاً";

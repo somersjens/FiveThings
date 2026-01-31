@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (puntuación %d)";
 "export.pdf.header" = "PDF generado el %@: %@ en orden %@ (ajustes de filtro) - página %d/%d";
 "export.title" = "Exportar a PDF/CSV";
+"export.filter.notice" = "La exportación se basa en la configuración de filtros: [%@] arriba y [%@]";
+"export.filter.notice.order.oldest" = "más antiguo";
+"export.filter.notice.order.newest" = "más reciente";
+"export.filter.notice.limit.maximum" = "máximo %d";
+"export.filter.notice.limit.all" = "todos los días";
 "filters.all" = "Todo";
 "filters.show.last" = "Mostrar últimas %@ tarjetas";
 "filters.sort.newest.first" = "Más recientes primero";

@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (skor %d)";
 "export.pdf.header" = "PDF dibuat pada %@: %@ dalam urutan %@ (pengaturan filter) - halaman %d/%d";
 "export.title" = "Ekspor ke PDF/CSV";
+"export.filter.notice" = "Ekspor didasarkan pada pengaturan filter: [%@] di atas dan [%@]";
+"export.filter.notice.order.oldest" = "terlama";
+"export.filter.notice.order.newest" = "terbaru";
+"export.filter.notice.limit.maximum" = "maksimum %d";
+"export.filter.notice.limit.all" = "semua hari";
 "filters.all" = "Semua";
 "filters.show.last" = "Tampilkan %d kartu terakhir";
 "filters.sort.newest.first" = "Terbaru dulu";

@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (score %d)";
 "export.pdf.header" = "PDF gegenereerd op %@: %@ in %@ volgorde (filter instellingen) - pagina %d/%d";
 "export.title" = "Exporteren naar PDF/CSV";
+"export.filter.notice" = "Export is gebaseerd op filter instellingen: [%@] bovenaan en [%@]";
+"export.filter.notice.order.oldest" = "oudste";
+"export.filter.notice.order.newest" = "nieuwste";
+"export.filter.notice.limit.maximum" = "maximaal %d";
+"export.filter.notice.limit.all" = "alle dagen";
 "filters.all" = "All";
 "filters.show.last" = "Laatste %@ kaarten tonen";
 "filters.sort.newest.first" = "Nieuw naar oud";

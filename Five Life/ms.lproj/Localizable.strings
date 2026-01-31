@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (skor %d)";
 "export.pdf.header" = "PDF dijana pada %@: %@ mengikut susunan %@ (tetapan penapis) - halaman %d/%d";
 "export.title" = "Eksport ke PDF/CSV";
+"export.filter.notice" = "Eksport adalah berdasarkan tetapan penapis: [%@] di atas dan [%@]";
+"export.filter.notice.order.oldest" = "paling lama";
+"export.filter.notice.order.newest" = "paling baharu";
+"export.filter.notice.limit.maximum" = "maksimum %d";
+"export.filter.notice.limit.all" = "semua hari";
 "filters.all" = "Semua";
 "filters.show.last" = "Tunjuk %d kad terakhir";
 "filters.sort.newest.first" = "Terbaru dahulu";

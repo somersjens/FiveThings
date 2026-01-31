@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (hodnotenie %d)";
 "export.pdf.header" = "PDF vytvorené %@: %@ v poradí %@ (nastavenia filtra) – strana %d/%d";
 "export.title" = "Exportovať do PDF/CSV";
+"export.filter.notice" = "Export je založený na nastaveniach filtra: [%@] navrchu a [%@]";
+"export.filter.notice.order.oldest" = "najstaršie";
+"export.filter.notice.order.newest" = "najnovšie";
+"export.filter.notice.limit.maximum" = "maximálne %d";
+"export.filter.notice.limit.all" = "všetky dni";
 "filters.all" = "Všetko";
 "filters.show.last" = "Zobraziť posledných %@ kariet";
 "filters.sort.newest.first" = "Najnovšie najprv";

@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (স্কোর %d)";
 "export.pdf.header" = "%@ তারিখে তৈরি PDF: %@ ক্রমে %@ (ফিল্টার সেটিংস) - পৃষ্ঠা %d/%d";
 "export.title" = "PDF/CSV-এ এক্সপোর্ট করো";
+"export.filter.notice" = "এক্সপোর্ট ফিল্টার সেটিংসের উপর ভিত্তি করে: উপরে [%@] এবং [%@]";
+"export.filter.notice.order.oldest" = "সবচেয়ে পুরনো";
+"export.filter.notice.order.newest" = "সবচেয়ে নতুন";
+"export.filter.notice.limit.maximum" = "সর্বাধিক %d";
+"export.filter.notice.limit.all" = "সব দিন";
 "filters.all" = "সব";
 "filters.show.last" = "শেষ %@ কার্ড দেখাও";
 "filters.sort.newest.first" = "সবচেয়ে নতুন প্রথমে";

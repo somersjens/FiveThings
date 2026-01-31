@@ -383,6 +383,22 @@ struct ContentView: View {
         .accessibilityLabel(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
     }
 
+    private func exportFilterNoticeText() -> String {
+        let orderKey = vm.newestFirst
+            ? "export.filter.notice.order.newest"
+            : "export.filter.notice.order.oldest"
+        let orderText = L10n.string(orderKey, language: settings.language)
+        let limitText: String
+        if vm.finishedLimit == .all {
+            limitText = L10n.string("export.filter.notice.limit.all", language: settings.language)
+        } else {
+            limitText = L10n.string("export.filter.notice.limit.maximum",
+                                    language: settings.language,
+                                    vm.finishedLimit.rawValue)
+        }
+        return L10n.string("export.filter.notice", language: settings.language, orderText, limitText)
+    }
+
     private func calculateStreak(from entries: [DayEntry]) -> Int {
         let calendar = Calendar.current
         let uniqueDays = Array(Set(entries.map { calendar.startOfDay(for: $0.day) }))
@@ -906,36 +922,44 @@ struct ContentView: View {
                 .padding(.bottom, 6)
 
                 if showExportOptions {
-                    HStack(spacing: 12) {
-                        Button {
-                            handleExport(format: .pdf)
-                        } label: {
-                            Text(L10n.string("export.pdf", language: settings.language))
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                                .frame(width: 80, height: 36)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(Color.brandAccent.opacity(0.2))
-                                )
-                        }
-                        .buttonStyle(.plain)
+                    VStack(spacing: 10) {
+                        HStack(spacing: 12) {
+                            Button {
+                                handleExport(format: .pdf)
+                            } label: {
+                                Text(L10n.string("export.pdf", language: settings.language))
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 80, height: 36)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(Color.brandAccent.opacity(0.2))
+                                    )
+                            }
+                            .buttonStyle(.plain)
 
-                        Button {
-                            handleExport(format: .csv)
-                        } label: {
-                            Text(L10n.string("export.csv", language: settings.language))
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                                .frame(width: 80, height: 36)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(Color.brandAccent.opacity(0.2))
-                                )
+                            Button {
+                                handleExport(format: .csv)
+                            } label: {
+                                Text(L10n.string("export.csv", language: settings.language))
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 80, height: 36)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(Color.brandAccent.opacity(0.2))
+                                    )
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                        Text(exportFilterNoticeText())
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Color.brandAccent)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    .frame(maxWidth: .infinity, alignment: .center)
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }

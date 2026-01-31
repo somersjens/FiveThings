@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (pontszám %d)";
 "export.pdf.header" = "PDF létrehozva %@: %@ sorrendben %@ (szűrőbeállítások) – oldal %d/%d";
 "export.title" = "Exportálás PDF/CSV formátumba";
+"export.filter.notice" = "Az exportálás a szűrőbeállításokon alapul: [%@] felül és [%@]";
+"export.filter.notice.order.oldest" = "legrégebbi";
+"export.filter.notice.order.newest" = "legújabb";
+"export.filter.notice.limit.maximum" = "legfeljebb %d";
+"export.filter.notice.limit.all" = "minden nap";
 "filters.all" = "Összes";
 "filters.show.last" = "Utolsó %@ kártya megjelenítése";
 "filters.sort.newest.first" = "Legújabb előre";

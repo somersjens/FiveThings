@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (評分 %d)";
 "export.pdf.header" = "PDF 生成於 %@: %@ 按 %@ 順序（過濾設定） - 第 %d/%d 頁";
 "export.title" = "匯出為 PDF/CSV";
+"export.filter.notice" = "匯出基於篩選設定：[%@] 在頂部，以及[%@]";
+"export.filter.notice.order.oldest" = "最早";
+"export.filter.notice.order.newest" = "最新";
+"export.filter.notice.limit.maximum" = "最多 %d";
+"export.filter.notice.limit.all" = "所有日期";
 "filters.all" = "全部";
 "filters.show.last" = "顯示最近 %@ 張卡片";
 "filters.sort.newest.first" = "最新在前";

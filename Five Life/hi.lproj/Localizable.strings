@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (स्कोर %d)";
 "export.pdf.header" = "%@ पर बना PDF: %@ %@ क्रम में (फ़िल्टर सेटिंग) - पेज %d/%d";
 "export.title" = "PDF/CSV में निर्यात करें";
+"export.filter.notice" = "निर्यात फ़िल्टर सेटिंग्स पर आधारित है: ऊपर [%@] और [%@]";
+"export.filter.notice.order.oldest" = "सबसे पुराना";
+"export.filter.notice.order.newest" = "सबसे नया";
+"export.filter.notice.limit.maximum" = "अधिकतम %d";
+"export.filter.notice.limit.all" = "सभी दिन";
 "filters.all" = "सभी";
 "filters.show.last" = "पिछली %@ कार्ड दिखाएँ";
 "filters.sort.newest.first" = "नवीनतम पहले";

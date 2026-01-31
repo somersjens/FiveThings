@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (점수 %d)";
 "export.pdf.header" = "%@에 생성된 PDF: %@ 기준 %@ 순서 (필터 설정) - 페이지 %d/%d";
 "export.title" = "PDF/CSV로 내보내기";
+"export.filter.notice" = "내보내기는 필터 설정을 기준으로 합니다: 상단에 [%@], 그리고 [%@]";
+"export.filter.notice.order.oldest" = "오래된 순";
+"export.filter.notice.order.newest" = "최신 순";
+"export.filter.notice.limit.maximum" = "최대 %d";
+"export.filter.notice.limit.all" = "모든 날짜";
 "filters.all" = "전체";
 "filters.show.last" = "최근 %@장 카드 보기";
 "filters.sort.newest.first" = "최신순";

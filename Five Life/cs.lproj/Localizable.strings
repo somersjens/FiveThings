@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (skóre %d)";
 "export.pdf.header" = "PDF vygenerováno %@: %@ v %@ pořadí (nastavení filtrů) – strana %d/%d";
 "export.title" = "Exportovat do PDF/CSV";
+"export.filter.notice" = "Export je založen na nastavení filtrů: [%@] nahoře a [%@]";
+"export.filter.notice.order.oldest" = "nejstarší";
+"export.filter.notice.order.newest" = "nejnovější";
+"export.filter.notice.limit.maximum" = "maximálně %d";
+"export.filter.notice.limit.all" = "všechny dny";
 "filters.all" = "Vše";
 "filters.show.last" = "Zobrazit posledních %@ karet";
 "filters.sort.newest.first" = "Od nejnovějšího";

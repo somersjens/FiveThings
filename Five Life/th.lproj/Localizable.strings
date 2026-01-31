@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (คะแนน %d)";
 "export.pdf.header" = "PDF สร้างเมื่อ %@: %@ เรียงตาม %@ (การตั้งค่าตัวกรอง) – หน้า %d/%d";
 "export.title" = "ส่งออกเป็น PDF/CSV";
+"export.filter.notice" = "การส่งออกอิงตามการตั้งค่าตัวกรอง: [%@] ด้านบน และ [%@]";
+"export.filter.notice.order.oldest" = "เก่าสุด";
+"export.filter.notice.order.newest" = "ใหม่สุด";
+"export.filter.notice.limit.maximum" = "สูงสุด %d";
+"export.filter.notice.limit.all" = "ทุกวัน";
 "filters.all" = "ทั้งหมด";
 "filters.show.last" = "แสดง %@ การ์ดล่าสุด";
 "filters.sort.newest.first" = "ใหม่ที่สุดก่อน";

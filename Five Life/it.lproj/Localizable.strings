@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (punteggio %d)";
 "export.pdf.header" = "PDF generato il %@: %@ in ordine %@ (impostazioni filtro) - pagina %d/%d";
 "export.title" = "Esporta in PDF/CSV";
+"export.filter.notice" = "L’esportazione si basa sulle impostazioni del filtro: [%@] in alto e [%@]";
+"export.filter.notice.order.oldest" = "più vecchio";
+"export.filter.notice.order.newest" = "più recente";
+"export.filter.notice.limit.maximum" = "massimo %d";
+"export.filter.notice.limit.all" = "tutti i giorni";
 "filters.all" = "Tutti";
 "filters.show.last" = "Mostra ultime %d schede";
 "filters.sort.newest.first" = "Dal più recente";

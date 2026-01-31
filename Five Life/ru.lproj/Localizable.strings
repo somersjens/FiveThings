@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (оценка %d)";
 "export.pdf.header" = "PDF создан %@: %@ в порядке %@ (настройки фильтра) — страница %d/%d";
 "export.title" = "Экспорт в PDF/CSV";
+"export.filter.notice" = "Экспорт основан на настройках фильтра: [%@] сверху и [%@]";
+"export.filter.notice.order.oldest" = "самые старые";
+"export.filter.notice.order.newest" = "самые новые";
+"export.filter.notice.limit.maximum" = "не более %d";
+"export.filter.notice.limit.all" = "все дни";
 "filters.all" = "Все";
 "filters.show.last" = "Показать последние %@ карточки";
 "filters.sort.newest.first" = "Сначала новые";

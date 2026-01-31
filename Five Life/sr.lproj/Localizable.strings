@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (ocena %d)";
 "export.pdf.header" = "PDF kreiran %@: %@ po redu %@ (podešavanja filtera) – strana %d/%d";
 "export.title" = "Izvezi u PDF/CSV";
+"export.filter.notice" = "Извоз је заснован на подешавањима филтера: [%@] на врху и [%@]";
+"export.filter.notice.order.oldest" = "најстарије";
+"export.filter.notice.order.newest" = "најновије";
+"export.filter.notice.limit.maximum" = "максимално %d";
+"export.filter.notice.limit.all" = "сви дани";
 "filters.all" = "Sve";
 "filters.show.last" = "Prikaži poslednjih %@ kartica";
 "filters.sort.newest.first" = "Najnovije prvo";
