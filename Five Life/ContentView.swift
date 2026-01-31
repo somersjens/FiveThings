@@ -927,6 +927,7 @@ struct ContentView: View {
                     VStack(spacing: 10) {
                         HStack(spacing: 12) {
                             Button {
+                                triggerExportHighlight(for: .pdf)
                                 Task {
                                     await handleExport(format: .pdf)
                                 }
@@ -944,6 +945,7 @@ struct ContentView: View {
                             .disabled(exportingFormat != nil)
 
                             Button {
+                                triggerExportHighlight(for: .csv)
                                 Task {
                                     await handleExport(format: .csv)
                                 }
@@ -960,7 +962,7 @@ struct ContentView: View {
                             .buttonStyle(.plain)
                             .disabled(exportingFormat != nil)
                         }
-                        .animation(.easeInOut(duration: 0.4), value: exportingFormat)
+                        .animation(.easeInOut(duration: 0.5), value: exportingFormat)
                             .frame(maxWidth: .infinity, alignment: .center)
 
                         Text(exportFilterNoticeText())
@@ -1187,19 +1189,28 @@ struct ContentView: View {
     }
 
     @MainActor
-    private func handleExport(format: ExportFormat) async {
+    private func triggerExportHighlight(for format: ExportFormat) {
         guard exportingFormat == nil else { return }
-
-        withAnimation(.easeInOut(duration: 0.4)) {
+        let highlightDuration: TimeInterval = 0.5
+        withAnimation(.easeInOut(duration: highlightDuration)) {
             exportingFormat = format
         }
+    }
 
-        await Task.yield()
+    @MainActor
+    private func handleExport(format: ExportFormat) async {
+        guard exportingFormat == nil || exportingFormat == format else { return }
+
+        let highlightDuration: TimeInterval = 0.5
+        let highlightStart = Date()
 
         let entries = exportEntries
         let language = settings.language
         let finishedLimit = vm.finishedLimit
         let newestFirst = vm.newestFirst
+
+        let delayNanoseconds = UInt64(0.12 * 1_000_000_000)
+        try? await Task.sleep(nanoseconds: delayNanoseconds)
 
         do {
             let url = try ExportService.export(entries: entries,
@@ -1214,14 +1225,25 @@ struct ContentView: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 showExportOptions = false
             }
+            await resetExportingFormat(after: highlightStart, minimumDuration: highlightDuration)
             withAnimation(.easeInOut(duration: 0.2)) {
                 exportingFormat = nil
             }
         } catch {
+            await resetExportingFormat(after: highlightStart, minimumDuration: highlightDuration)
             withAnimation(.easeInOut(duration: 0.2)) {
                 exportingFormat = nil
             }
         }
+    }
+
+    @MainActor
+    private func resetExportingFormat(after startDate: Date, minimumDuration: TimeInterval) async {
+        let elapsed = Date().timeIntervalSince(startDate)
+        let remaining = minimumDuration - elapsed
+        guard remaining > 0 else { return }
+        let nanoseconds = UInt64(remaining * 1_000_000_000)
+        try? await Task.sleep(nanoseconds: nanoseconds)
     }
 
     private func secondsUntilNextDay() -> TimeInterval {
