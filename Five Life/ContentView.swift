@@ -332,7 +332,7 @@ struct ContentView: View {
             .multilineTextAlignment(.center)
         }
         .font(.footnote.weight(.semibold))
-        .foregroundStyle(highlightFooterLinks ? .orange : .secondary)
+        .foregroundStyle(highlightFooterLinks ? .orange : Color.brandAccent)
         .animation(.easeInOut(duration: 0.25), value: highlightFooterLinks)
         .id(footerLinksID)
     }
@@ -369,7 +369,7 @@ struct ContentView: View {
         } label: {
             Text(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.brandAccent)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 10)

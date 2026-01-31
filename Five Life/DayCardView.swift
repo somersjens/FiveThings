@@ -50,7 +50,10 @@ struct DayCardView: View {
 
     private var isEditable: Bool { !entry.isLocked }
     private var canDragEntries: Bool {
-        isEditable && entry.isComplete(requiredCount: requiredCount)
+        isEditable && hasAnyContent
+    }
+    private var hasAnyContent: Bool {
+        entry.items.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
     private var isToday: Bool {
@@ -362,7 +365,7 @@ struct DayCardView: View {
         let styledRow = rowContainer(idx: idx,
                                      showsRemove: showsRemove,
                                      applyInsertionPadding: true,
-                                     trackSize: true)
+                                     trackSize: canDragEntries)
         let interactiveRow = styledRow
             .opacity(isDragging && dragIndex == idx ? 0 : 1)
             .allowsHitTesting(!(isDragging && dragIndex == idx))
