@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (score %d)";
 "export.pdf.header" = "PDF generated on %@: %@ in %@ order (filter settings) - page %d/%d";
 "export.title" = "Export to PDF/CSV";
-"export.filter.notice" = "Export is based on filter settings: [%@] at the top and [%@]";
+"export.filter.notice" = "Export is based on filter settings: %@ at the top and %@";
 "export.filter.notice.order.oldest" = "oldest";
 "export.filter.notice.order.newest" = "newest";
 "export.filter.notice.limit.maximum" = "maximum %d";

@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (puntuació %d)";
 "export.pdf.header" = "PDF generat el %@: %@ en ordre %@ (configuració de filtre) - pàgina %d/%d";
 "export.title" = "Exporta a PDF/CSV";
-"export.filter.notice" = "L’exportació es basa en la configuració del filtre: [%@] a dalt i [%@]";
+"export.filter.notice" = "L’exportació es basa en la configuració del filtre: %@ a dalt i %@";
 "export.filter.notice.order.oldest" = "més antic";
 "export.filter.notice.order.newest" = "més recent";
 "export.filter.notice.limit.maximum" = "màxim %d";

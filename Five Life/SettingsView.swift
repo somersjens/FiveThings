@@ -580,7 +580,7 @@ struct SettingsView: View {
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(settingsCardOuterBackground)
+                .fill(addDayFieldBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -1503,8 +1503,16 @@ struct SettingsView: View {
         .foregroundStyle(isDisabled ? Color.gray.opacity(0.6) : Color.brandAccent)
     }
 
+    private var switchOffBackground: Color {
+        colorScheme == .dark ? Color(.systemGray4) : Color(.systemGray5)
+    }
+
+    private var addDayFieldBackground: Color {
+        colorScheme == .dark ? switchOffBackground : settingsCardOuterBackground
+    }
+
     private var stepperButtonBackground: Color {
-        colorScheme == .dark ? settingsCardOuterBackground : Color(.systemGray5)
+        colorScheme == .dark ? switchOffBackground : Color(.systemGray5)
     }
 
     private func showAddDayMessage(_ message: String, isError: Bool = true) {
