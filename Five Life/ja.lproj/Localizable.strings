@@ -33,7 +33,7 @@
 "cards.see.you.tomorrow.20" = "今夜はぐっすり眠ってね";
 "info.card.title" = "ようこそ";
 "info.card.button" = "情報";
-"info.card.entry.1" = "今日の *いいこと五つ* を書いて、**[鍵](info://lock)** をタップして完了。";
+"info.card.entry.1" = "今日の *いいこと%@つ* を書いて、**[鍵](info://lock)** をタップして完了。";
 "info.card.entry.2" = "アプリ名をタップして **[設定](info://settings)** を開き、項目をタップすると詳しく見られます。";
 "info.card.entry.3" = "**[検索バー](info://search)** を使って、完了したカードをキーワードで探せます。";
 "info.card.entry.4a" = "リストは **[新しい順](info://sort)** に並び、**[すべて](info://filter)** 表示中です。";
@@ -73,6 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (スコア %d)";
 "export.pdf.header" = "%@ に生成された PDF：%@ を %@ 順（フィルター設定） - ページ %d/%d";
 "export.title" = "PDF / CSV でエクスポート";
+"export.filter.notice" = "エクスポートはフィルター設定に基づきます：上部は%@、%@";
+"export.filter.notice.order.oldest" = "古い順";
+"export.filter.notice.order.newest" = "新しい順";
+"export.filter.notice.limit.maximum" = "最大 %d";
+"export.filter.notice.limit.all" = "すべての日";
 "filters.all" = "すべて";
 "filters.show.last" = "直近 %@ 枚のカードを表示";
 "filters.sort.newest.first" = "新しい順";
