@@ -227,7 +227,7 @@
 "stats.days" = "Días";
 "stats.entries" = "Entradas";
 "stats.streak" = "Racha";
-"title.daily" = "Cinco Cosas Buenas cada día";
+"title.daily" = "%d Cosas Buenas cada día";
 "title.happy" = "%@ Cosas Buenas";
 "export.order.ascending" = "ascendente";
 "export.order.descending" = "descendente";

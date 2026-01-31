@@ -79,7 +79,7 @@
 "export.filter.notice.limit.maximum" = "maksimum %d";
 "export.filter.notice.limit.all" = "semua hari";
 "filters.all" = "Semua";
-"filters.show.last" = "Tampilkan %d kartu terakhir";
+"filters.show.last" = "Tampilkan %@ kartu terakhir";
 "filters.sort.newest.first" = "Terbaru dulu";
 "filters.sort.oldest.first" = "Terlama dulu";
 "filters.active.notice" = "Filter aktif untuk %d posting terbaru. Ketuk pesan ini untuk menghapus filter";

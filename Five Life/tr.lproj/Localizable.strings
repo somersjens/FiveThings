@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (puan %d)";
 "export.pdf.header" = "%@ tarihinde oluşturulan PDF: %@ sırayla %@ (filtre ayarları) - sayfa %d/%d";
 "export.title" = "PDF/CSV Olarak Dışa Aktar";
-"export.filter.notice" = "Dışa aktarma, filtre ayarlarına dayanır: [%@] üstte ve [%@]";
+"export.filter.notice" = "Dışa aktarma, filtre ayarlarına dayanır: %@ üstte ve %@";
 "export.filter.notice.order.oldest" = "en eski";
 "export.filter.notice.order.newest" = "en yeni";
 "export.filter.notice.limit.maximum" = "en fazla %d";
@@ -122,7 +122,7 @@
 "lock.faceid.action" = "Kilidi Aç";
 "lock.faceid.reason" = "Kartlarını Face ID ile kilitle.";
 "lock.faceid.title" = "Face ID ile Kilidi Aç";
-"notifications.daily.1.body" = "Bugün hakkında %d şey yazman için %@ hatırlatman.";
+"notifications.daily.1.body" = "Bu senin %@ hatırlatman: bugün hakkında %d şey yaz.";
 "notifications.daily.1.title" = "Günlük hatırlatma";
 "notifications.daily.2.body" = "%@ oldu, bugün hakkında %d şey not alma zamanı.";
 "notifications.daily.2.title" = "Gün sonu";

@@ -79,7 +79,7 @@
 "export.filter.notice.limit.maximum" = "massimo %d";
 "export.filter.notice.limit.all" = "tutti i giorni";
 "filters.all" = "Tutti";
-"filters.show.last" = "Mostra ultime %d schede";
+"filters.show.last" = "Mostra ultime %@ schede";
 "filters.sort.newest.first" = "Dal più recente";
 "filters.sort.oldest.first" = "Dal più vecchio";
 "filters.active.notice" = "Filtro attivo per i %d post più recenti. Tocca questo messaggio per rimuovere il filtro";

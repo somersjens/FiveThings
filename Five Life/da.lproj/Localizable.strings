@@ -227,7 +227,7 @@
 "stats.days" = "Dage";
 "stats.entries" = "Indtastninger";
 "stats.streak" = "Stime";
-"title.daily" = "Fem Gode Ting hver dag";
+"title.daily" = "%d Gode Ting hver dag";
 "title.happy" = "%@ Gode Ting";
 "export.order.ascending" = "stigende";
 "export.order.descending" = "faldende";

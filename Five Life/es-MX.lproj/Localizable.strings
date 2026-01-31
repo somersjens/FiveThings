@@ -79,7 +79,7 @@
 "export.filter.notice.limit.maximum" = "máximo %d";
 "export.filter.notice.limit.all" = "todos los días";
 "filters.all" = "Todos";
-"filters.show.last" = "Mostrar las últimas %d tarjetas";
+"filters.show.last" = "Mostrar las últimas %@ tarjetas";
 "filters.sort.newest.first" = "Más reciente primero";
 "filters.sort.oldest.first" = "Más antiguo primero";
 "filters.active.notice" = "Filtro activo para las %d publicaciones más recientes. Toca este mensaje para quitar el filtro";

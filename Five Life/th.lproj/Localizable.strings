@@ -33,7 +33,7 @@
 "cards.see.you.tomorrow.20" = "นอนหลับฝันดีนะ";
 "info.card.title" = "ข้อมูลต้อนรับ";
 "info.card.button" = "ข้อมูล";
-"info.card.entry.1" = "จด *ห้าสิ่งดีๆ* ที่ทำให้คุณมีความสุขวันนี้ แล้วแตะ **[กุญแจ](info://lock)** เพื่อสิ้นสุด";
+"info.card.entry.1" = "จด %@ สิ่งดีๆ ที่ทำให้คุณมีความสุขวันนี้ แล้วแตะ **[กุญแจ](info://lock)** เพื่อสิ้นสุด";
 "info.card.entry.2" = "แตะชื่อแอปเพื่อเปิด **[การตั้งค่า](info://settings)** แล้วแตะตัวเลือกใดก็ได้เพื่อดูรายละเอียดเพิ่มเติม";
 "info.card.entry.3" = "ใช้ **[แถบค้นหา](info://search)** เพื่อค้นหาบัตรที่ทำเสร็จแล้วด้วยคำสำคัญ";
 "info.card.entry.4a" = "รายการเรียงตาม **[ใหม่สุด](info://sort)** และแสดง **[ทุกบันทึก](info://filter)**";
@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (คะแนน %d)";
 "export.pdf.header" = "PDF สร้างเมื่อ %@: %@ เรียงตาม %@ (การตั้งค่าตัวกรอง) – หน้า %d/%d";
 "export.title" = "ส่งออกเป็น PDF/CSV";
-"export.filter.notice" = "การส่งออกอิงตามการตั้งค่าตัวกรอง: [%@] ด้านบน และ [%@]";
+"export.filter.notice" = "การส่งออกอิงตามการตั้งค่าตัวกรอง: %@ ด้านบน และ %@";
 "export.filter.notice.order.oldest" = "เก่าสุด";
 "export.filter.notice.order.newest" = "ใหม่สุด";
 "export.filter.notice.limit.maximum" = "สูงสุด %d";
@@ -227,7 +227,7 @@
 "stats.days" = "วัน";
 "stats.entries" = "รายการ";
 "stats.streak" = "ต่อเนื่อง";
-"title.daily" = "ห้าสิ่งดีๆ ทุกวัน";
+"title.daily" = "ทุกวัน %d สิ่งดีๆ";
 "title.happy" = "%@ สิ่งดีๆ";
 "export.order.ascending" = "น้อยไปมาก";
 "export.order.descending" = "มากไปน้อย";

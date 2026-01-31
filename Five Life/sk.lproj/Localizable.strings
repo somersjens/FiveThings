@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (hodnotenie %d)";
 "export.pdf.header" = "PDF vytvorené %@: %@ v poradí %@ (nastavenia filtra) – strana %d/%d";
 "export.title" = "Exportovať do PDF/CSV";
-"export.filter.notice" = "Export je založený na nastaveniach filtra: [%@] navrchu a [%@]";
+"export.filter.notice" = "Export je založený na nastaveniach filtra: %@ navrchu a %@";
 "export.filter.notice.order.oldest" = "najstaršie";
 "export.filter.notice.order.newest" = "najnovšie";
 "export.filter.notice.limit.maximum" = "maximálne %d";
@@ -227,7 +227,7 @@
 "stats.days" = "Dni";
 "stats.entries" = "Záznamy";
 "stats.streak" = "Séria";
-"title.daily" = "Päť Pekných Vecí každý deň";
+"title.daily" = "%d Pekných Vecí každý deň";
 "title.happy" = "%@ Pekných Vecí";
 "export.order.ascending" = "vzostupne";
 "export.order.descending" = "zostupne";

@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (score %d)";
 "export.pdf.header" = "PDF gegenereerd op %@: %@ in %@ volgorde (filter instellingen) - pagina %d/%d";
 "export.title" = "Exporteren naar PDF/CSV";
-"export.filter.notice" = "Export is gebaseerd op filter instellingen: [%@] bovenaan en [%@]";
+"export.filter.notice" = "Export is gebaseerd op filter instellingen: %@ bovenaan en %@";
 "export.filter.notice.order.oldest" = "oudste";
 "export.filter.notice.order.newest" = "nieuwste";
 "export.filter.notice.limit.maximum" = "maximaal %d";
@@ -134,13 +134,13 @@
 "notifications.daily.5.title" = "Wat maakte je blij?";
 "notifications.daily.6.body" = "Even pauze bij %@: noteer %d dingen die je meeneemt uit vandaag.";
 "notifications.daily.6.title" = "Laatste actie";
-"notifications.daily.7.body" = "Tijd om %d dingen over je dag te bewaren, het is weer %@.";
+"notifications.daily.7.body" = "Rond %@: tijd om %d dingen uit je dag te bewaren.";
 "notifications.daily.7.title" = "Schrijf ze op";
 "notifications.daily.8.body" = "Je %@ seintje: schrijf %d dingen op die je aan het lachen maakten.";
 "notifications.daily.8.title" = "Hahaha";
-"notifications.daily.9.body" = "Schrijf %d dingen op waar je nu om %@ trots op bent vandaag.";
+"notifications.daily.9.body" = "Om %@: schrijf %d dingen op waar je vandaag trots op bent.";
 "notifications.daily.9.title" = "Mooie dag";
-"notifications.daily.10.body" = "Noteer %d leuke dingen die je vandaag hebt gedaan, het is alweer %@ .";
+"notifications.daily.10.body" = "Rond %@: noteer %d leuke dingen die je vandaag hebt gedaan.";
 "notifications.daily.10.title" = "Afgevinkt!";
 "notifications.next.1.body" = "%@ seintje: vul je dag van gisteren even aan met %d dingen.";
 "notifications.next.1.title" = "Ochtendcheck";
@@ -158,7 +158,7 @@
 "notifications.next.7.title" = "Streak bewaren";
 "notifications.next.8.body" = "Goedemorgen! %@; tijd voor een korte terugblik op gisteren in %d punten.";
 "notifications.next.8.title" = "Korte terugblik";
-"notifications.next.9.body" = "Zet nog even %d dingen over gisteren uit je hoofd en op papier, het is %@.";
+"notifications.next.9.body" = "Om %@: zet %d dingen over gisteren op papier, zodat je ze niet hoeft te onthouden.";
 "notifications.next.9.title" = "Schrijf het van je af";
 "notifications.next.10.body" = "Het is %@: maak je dag van gisteren compleet met %d dingen.";
 "notifications.next.10.title" = "Compleet maken";

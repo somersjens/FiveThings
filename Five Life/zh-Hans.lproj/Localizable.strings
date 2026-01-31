@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (评分 %d)";
 "export.pdf.header" = "PDF 生成于 %@: %@ 按 %@ 顺序（过滤设置） - 第 %d/%d 页";
 "export.title" = "导出为 PDF/CSV";
-"export.filter.notice" = "导出基于筛选设置：[%@] 在顶部，以及[%@]";
+"export.filter.notice" = "导出基于筛选设置：%@ 在顶部，以及%@";
 "export.filter.notice.order.oldest" = "最早";
 "export.filter.notice.order.newest" = "最新";
 "export.filter.notice.limit.maximum" = "最多 %d";
@@ -227,7 +227,7 @@
 "stats.days" = "天数";
 "stats.entries" = "条目";
 "stats.streak" = "连胜";
-"title.daily" = "每天五件好事";
+"title.daily" = "每天 %d 件好事";
 "title.happy" = "%@ 件好事";
 "export.order.ascending" = "升序";
 "export.order.descending" = "降序";

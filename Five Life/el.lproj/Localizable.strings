@@ -227,7 +227,7 @@
 "stats.days" = "Ημέρες";
 "stats.entries" = "Εγγραφές";
 "stats.streak" = "Σειρά";
-"title.daily" = "Πέντε Καλές Στιγμές κάθε μέρα";
+"title.daily" = "%d Καλές Στιγμές κάθε μέρα";
 "title.happy" = "%@ Καλές Στιγμές";
 "export.order.ascending" = "αύξουσα";
 "export.order.descending" = "φθίνουσα";

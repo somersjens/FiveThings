@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (ocena %d)";
 "export.pdf.header" = "PDF kreiran %@: %@ po redu %@ (podešavanja filtera) – strana %d/%d";
 "export.title" = "Izvezi u PDF/CSV";
-"export.filter.notice" = "Извоз је заснован на подешавањима филтера: [%@] на врху и [%@]";
+"export.filter.notice" = "Извоз је заснован на подешавањима филтера: %@ на врху и %@";
 "export.filter.notice.order.oldest" = "најстарије";
 "export.filter.notice.order.newest" = "најновије";
 "export.filter.notice.limit.maximum" = "максимално %d";
@@ -227,7 +227,7 @@
 "stats.days" = "Dani";
 "stats.entries" = "Unosi";
 "stats.streak" = "Niz";
-"title.daily" = "Pet Dobrih Stvari svaki dan";
+"title.daily" = "%d Dobrih Stvari svaki dan";
 "title.happy" = "%@ Dobrih Stvari";
 "export.order.ascending" = "rastući";
 "export.order.descending" = "opadajući";

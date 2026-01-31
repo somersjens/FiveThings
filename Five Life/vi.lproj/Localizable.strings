@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (điểm %d)";
 "export.pdf.header" = "PDF tạo ngày %@: %@ theo thứ tự %@ (cài đặt lọc) - trang %d/%d";
 "export.title" = "Xuất ra PDF/CSV";
-"export.filter.notice" = "Xuất dữ liệu dựa trên cài đặt bộ lọc: [%@] ở trên cùng và [%@]";
+"export.filter.notice" = "Xuất dữ liệu dựa trên cài đặt bộ lọc: %@ ở trên cùng và %@";
 "export.filter.notice.order.oldest" = "cũ nhất";
 "export.filter.notice.order.newest" = "mới nhất";
 "export.filter.notice.limit.maximum" = "tối đa %d";
@@ -227,7 +227,7 @@
 "stats.days" = "Ngày";
 "stats.entries" = "Mục";
 "stats.streak" = "Chuỗi";
-"title.daily" = "Năm Điều Tốt mỗi ngày";
+"title.daily" = "%d Điều Tốt mỗi ngày";
 "title.happy" = "%@ Điều Tốt";
 "export.order.ascending" = "tăng dần";
 "export.order.descending" = "giảm dần";

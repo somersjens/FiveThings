@@ -73,7 +73,11 @@
 "export.pdf.entry.with.score" = "%@ (ציון %d)";
 "export.pdf.header" = "PDF נוצר ב-%@: %@ בסדר %@ (הגדרות סינון) - עמוד %d/%d";
 "export.title" = "ייצוא ל-PDF/CSV";
+<<<<<<< ours
 "export.filter.notice" = "הייצוא מבוסס על הגדרות המסנן: %@ למעלה ו %@";
+=======
+"export.filter.notice" = "הייצוא מבוסס על הגדרות המסנן: %@ למעלה ו%@";
+>>>>>>> theirs
 "export.filter.notice.order.oldest" = "הישן";
 "export.filter.notice.order.newest" = "החדש";
 "export.filter.notice.limit.maximum" = "מקסימום %d";
@@ -227,7 +231,7 @@
 "stats.days" = "ימים";
 "stats.entries" = "רשומות";
 "stats.streak" = "רצף";
-"title.daily" = "חמישה דברים טובים כל יום";
+"title.daily" = "%d דברים טובים כל יום";
 "title.happy" = "%@ דברים טובים";
 "export.order.ascending" = "עולה";
 "export.order.descending" = "יורד";

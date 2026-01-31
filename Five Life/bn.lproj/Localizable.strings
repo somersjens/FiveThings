@@ -122,7 +122,7 @@
 "lock.faceid.action" = "আনলক করো";
 "lock.faceid.reason" = "তোমার কার্ডগুলো Face ID দিয়ে আনলক করো।";
 "lock.faceid.title" = "Face ID দিয়ে আনলক";
-"notifications.daily.1.body" = "আজকের %dটা জিনিস লেখার জন্য তোমার %@ রিমাইন্ডার।";
+"notifications.daily.1.body" = "এটি তোমার %@ রিমাইন্ডার: আজকের %dটা জিনিস লিখে রাখো।";
 "notifications.daily.1.title" = "দৈনিক রিমাইন্ডার";
 "notifications.daily.2.body" = "%@ হয়ে গেছে, আজকের %dটা জিনিস লেখার ভালো সময়।";
 "notifications.daily.2.title" = "দিনের শেষ";

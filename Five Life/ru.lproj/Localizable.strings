@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (оценка %d)";
 "export.pdf.header" = "PDF создан %@: %@ в порядке %@ (настройки фильтра) — страница %d/%d";
 "export.title" = "Экспорт в PDF/CSV";
-"export.filter.notice" = "Экспорт основан на настройках фильтра: [%@] сверху и [%@]";
+"export.filter.notice" = "Экспорт основан на настройках фильтра: %@ сверху и %@";
 "export.filter.notice.order.oldest" = "самые старые";
 "export.filter.notice.order.newest" = "самые новые";
 "export.filter.notice.limit.maximum" = "не более %d";
@@ -227,7 +227,7 @@
 "stats.days" = "Дни";
 "stats.entries" = "Записи";
 "stats.streak" = "Серия";
-"title.daily" = "Пять Хороших Вещей каждый день";
+"title.daily" = "%d Хороших Вещей каждый день";
 "title.happy" = "%@ Хороших Вещей";
 "export.order.ascending" = "по возрастанию";
 "export.order.descending" = "по убыванию";

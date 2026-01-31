@@ -33,7 +33,7 @@
 "cards.see.you.tomorrow.20" = "잘 자고 좋은 꿈 꿔";
 "info.card.title" = "환영 정보";
 "info.card.button" = "정보";
-"info.card.entry.1" = "오늘 기분 좋았던 *다섯 가지 좋은 일*을 적고 **[자물쇠](info://lock)**를 탭해서 완료하세요.";
+"info.card.entry.1" = "오늘 기분 좋았던 %@ 좋은 일을 적고 **[자물쇠](info://lock)**를 탭해서 완료하세요.";
 "info.card.entry.2" = "앱 이름을 탭해 **[설정](info://settings)**을 열고, 원하는 항목을 탭하면 자세한 설명을 볼 수 있어요.";
 "info.card.entry.3" = "**[검색창](info://search)**을 사용해 완료한 카드를 키워드로 찾아보세요.";
 "info.card.entry.4a" = "목록은 **[최신순](info://sort)**으로 정렬되어 있으며 **[모든 항목](info://filter)**을 표시합니다.";
@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (점수 %d)";
 "export.pdf.header" = "%@에 생성된 PDF: %@ 기준 %@ 순서 (필터 설정) - 페이지 %d/%d";
 "export.title" = "PDF/CSV로 내보내기";
-"export.filter.notice" = "내보내기는 필터 설정을 기준으로 합니다: 상단에 [%@], 그리고 [%@]";
+"export.filter.notice" = "내보내기는 필터 설정을 기준으로 합니다: 상단에 %@, 그리고 %@";
 "export.filter.notice.order.oldest" = "오래된 순";
 "export.filter.notice.order.newest" = "최신 순";
 "export.filter.notice.limit.maximum" = "최대 %d";
@@ -227,7 +227,7 @@
 "stats.days" = "일";
 "stats.entries" = "항목";
 "stats.streak" = "연속";
-"title.daily" = "매일 다섯 가지 좋은 일";
+"title.daily" = "매일 좋은 일 %d가지";
 "title.happy" = "%@ 좋은 일";
 "export.order.ascending" = "오름차순";
 "export.order.descending" = "내림차순";

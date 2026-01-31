@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (pontuação %d)";
 "export.pdf.header" = "PDF gerado em %@: %@ por %@ (configurações de filtro) - página %d/%d";
 "export.title" = "Exportar para PDF/CSV";
-"export.filter.notice" = "A exportação é baseada nas configurações de filtro: [%@] no topo e [%@]";
+"export.filter.notice" = "A exportação é baseada nas configurações de filtro: %@ no topo e %@";
 "export.filter.notice.order.oldest" = "mais antigo";
 "export.filter.notice.order.newest" = "mais recente";
 "export.filter.notice.limit.maximum" = "no máximo %d";

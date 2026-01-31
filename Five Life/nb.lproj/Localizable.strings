@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (poeng %d)";
 "export.pdf.header" = "PDF generert %@ %@ i %@ rekkefølge (filterinnstillinger) - side %d/%d";
 "export.title" = "Eksporter til PDF/CSV";
-"export.filter.notice" = "Eksporten er basert på filterinnstillinger: [%@] øverst og [%@]";
+"export.filter.notice" = "Eksporten er basert på filterinnstillinger: %@ øverst og %@";
 "export.filter.notice.order.oldest" = "eldste";
 "export.filter.notice.order.newest" = "nyeste";
 "export.filter.notice.limit.maximum" = "maks %d";

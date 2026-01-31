@@ -227,7 +227,7 @@
 "stats.days" = "Dani";
 "stats.entries" = "Unosi";
 "stats.streak" = "Niz";
-"title.daily" = "Pet Lijepih Stvari svaki dan";
+"title.daily" = "%d Lijepih Stvari svaki dan";
 "title.happy" = "%@ Lijepih Stvari";
 "export.order.ascending" = "rastuće";
 "export.order.descending" = "padajuće";

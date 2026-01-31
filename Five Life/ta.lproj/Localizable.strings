@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (மதிப்பெண் %d)";
 "export.pdf.header" = "%@ அன்று உருவாக்கப்பட்ட PDF: %@ வரிசையில் %@ (வடிகட்டி அமைப்புகள்) - பக்கம் %d/%d";
 "export.title" = "PDF/CSV ஆக ஏற்றுமதி செய்";
-"export.filter.notice" = "ஏற்றுமதி வடிகட்டி அமைப்புகளை அடிப்படையாகக் கொண்டது: மேலே [%@] மற்றும் [%@]";
+"export.filter.notice" = "ஏற்றுமதி வடிகட்டி அமைப்புகளை அடிப்படையாகக் கொண்டது: மேலே %@ மற்றும் %@";
 "export.filter.notice.order.oldest" = "பழமையானது";
 "export.filter.notice.order.newest" = "புதியது";
 "export.filter.notice.limit.maximum" = "அதிகபட்சம் %d";
@@ -122,7 +122,7 @@
 "lock.faceid.action" = "திற";
 "lock.faceid.reason" = "உங்கள் அட்டைகளை Face ID மூலம் திறக்கவும்.";
 "lock.faceid.title" = "Face ID மூலம் திற";
-"notifications.daily.1.body" = "இன்று பற்றி %d விஷயங்களை எழுதுவதற்கான உங்கள் %@ நினைவூட்டல்.";
+"notifications.daily.1.body" = "இது உங்கள் %@ நினைவூட்டல்: இன்று பற்றி %d விஷயங்களை எழுதுங்கள்.";
 "notifications.daily.1.title" = "தினசரி நினைவூட்டல்";
 "notifications.daily.2.body" = "%@ ஆகிவிட்டது, இன்று பற்றி %d விஷயங்களை குறிப்பிடுவதற்கு நல்ல நேரம்.";
 "notifications.daily.2.title" = "நாள் முடிவு";

@@ -79,7 +79,7 @@
 "export.filter.notice.limit.maximum" = "maximum %d";
 "export.filter.notice.limit.all" = "tous les jours";
 "filters.all" = "Tous";
-"filters.show.last" = "Afficher les %d dernières cartes";
+"filters.show.last" = "Afficher les %@ dernières cartes";
 "filters.sort.newest.first" = "Du plus récent au plus ancien";
 "filters.sort.oldest.first" = "Du plus ancien au plus récent";
 "filters.active.notice" = "Filtre actif pour les %d publications les plus récentes. Appuie sur ce message pour supprimer le filtre";

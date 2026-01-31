@@ -33,7 +33,7 @@
 "cards.see.you.tomorrow.20" = "Jó éjszakát és szép álmokat";
 "info.card.title" = "Üdvözlő információ";
 "info.card.button" = "Információ";
-"info.card.entry.1" = "Írd fel a mai *öt jó dolgot*, ami boldoggá tett, majd koppints a **[zár](info://lock)**-ra a befejezéshez.";
+"info.card.entry.1" = "Írd fel a mai %@ jó dolgot, ami boldoggá tett, majd koppints a **[zár](info://lock)**-ra a befejezéshez.";
 "info.card.entry.2" = "Koppints az alkalmazás nevére a **[Beállítások](info://settings)** megnyitásához, majd koppints bármelyik opcióra további infóért.";
 "info.card.entry.3" = "Használd a **[keresősávot](info://search)** a kész kártyák kulcsszó szerinti kereséséhez.";
 "info.card.entry.4a" = "A lista **[legújabb](info://sort)** szerint rendezett és **[minden bejegyzést](info://filter)** mutat.";
@@ -227,7 +227,7 @@
 "stats.days" = "Napok";
 "stats.entries" = "Bejegyzések";
 "stats.streak" = "Sorozat";
-"title.daily" = "Öt Jó Dolog minden nap";
+"title.daily" = "Minden nap %d Jó Dolog";
 "title.happy" = "%@ Jó Dolog";
 "export.order.ascending" = "növekvő";
 "export.order.descending" = "csökkenő";

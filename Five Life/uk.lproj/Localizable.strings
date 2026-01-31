@@ -73,7 +73,7 @@
 "export.pdf.entry.with.score" = "%@ (оцінка %d)";
 "export.pdf.header" = "PDF створено %@: %@ у порядку %@ (налаштування фільтра) — сторінка %d/%d";
 "export.title" = "Експорт у PDF/CSV";
-"export.filter.notice" = "Експорт ґрунтується на налаштуваннях фільтра: [%@] зверху та [%@]";
+"export.filter.notice" = "Експорт ґрунтується на налаштуваннях фільтра: %@ зверху та %@";
 "export.filter.notice.order.oldest" = "найстаріші";
 "export.filter.notice.order.newest" = "найновіші";
 "export.filter.notice.limit.maximum" = "максимум %d";
@@ -227,7 +227,7 @@
 "stats.days" = "Дні";
 "stats.entries" = "Записи";
 "stats.streak" = "Серія";
-"title.daily" = "П’ять Добрих Речей щодня";
+"title.daily" = "%d Добрих Речей щодня";
 "title.happy" = "%@ Добрих Речей";
 "export.order.ascending" = "за зростанням";
 "export.order.descending" = "за спаданням";
