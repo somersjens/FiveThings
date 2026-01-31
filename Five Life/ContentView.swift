@@ -27,6 +27,7 @@ struct ContentView: View {
     @State private var hasAppeared: Bool = false
     @State private var midnightTask: Task<Void, Never>?
     @State private var showExportOptions: Bool = false
+    @State private var exportingFormat: ExportFormat? = nil
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
     @State private var infoCardScrollTask: Task<Void, Never>?
@@ -910,49 +911,57 @@ struct ContentView: View {
                 } label: {
                     Text(L10n.string("export.title", language: settings.language))
                         .font(.headline)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(Color.brandAccent.opacity(0.2))
+                                .fill(Color.brandAccent)
                         )
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: 260)
-                .padding(.bottom, 6)
+                .padding(.bottom, 0)
 
                 if showExportOptions {
                     VStack(spacing: 10) {
                         HStack(spacing: 12) {
                             Button {
-                                handleExport(format: .pdf)
+                                Task {
+                                    await handleExport(format: .pdf)
+                                }
                             } label: {
                                 Text(L10n.string("export.pdf", language: settings.language))
                                     .font(.headline)
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(exportingFormat == .pdf ? .white : .primary)
                                     .frame(width: 80, height: 36)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .fill(Color.brandAccent.opacity(0.2))
+                                            .fill(Color.brandAccent.opacity(exportingFormat == .pdf ? 1.0 : 0.2))
                                     )
                             }
                             .buttonStyle(.plain)
+                            .disabled(exportingFormat != nil)
 
                             Button {
-                                handleExport(format: .csv)
+                                Task {
+                                    await handleExport(format: .csv)
+                                }
                             } label: {
                                 Text(L10n.string("export.csv", language: settings.language))
                                     .font(.headline)
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(exportingFormat == .csv ? .white : .primary)
                                     .frame(width: 80, height: 36)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .fill(Color.brandAccent.opacity(0.2))
+                                            .fill(Color.brandAccent.opacity(exportingFormat == .csv ? 1.0 : 0.2))
                                     )
                             }
                             .buttonStyle(.plain)
+                            .disabled(exportingFormat != nil)
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
+                        .animation(.easeInOut(duration: 0.4), value: exportingFormat)
+                            .frame(maxWidth: .infinity, alignment: .center)
 
                         Text(exportFilterNoticeText())
                             .font(.footnote.weight(.semibold))
@@ -960,7 +969,8 @@ struct ContentView: View {
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .padding(.top, 10)
+                    .transition(.opacity)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -1176,22 +1186,41 @@ struct ContentView: View {
         }
     }
 
-    private func handleExport(format: ExportFormat) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            showExportOptions = false
+    @MainActor
+    private func handleExport(format: ExportFormat) async {
+        guard exportingFormat == nil else { return }
+
+        withAnimation(.easeInOut(duration: 0.4)) {
+            exportingFormat = format
         }
 
+        await Task.yield()
+
+        let entries = exportEntries
+        let language = settings.language
+        let finishedLimit = vm.finishedLimit
+        let newestFirst = vm.newestFirst
+
         do {
-            let url = try ExportService.export(entries: exportEntries,
-                                                language: settings.language,
-                                                format: format,
-                                                filterContext: ExportService.ExportFilterContext(
-                                                    finishedLimit: vm.finishedLimit,
-                                                    newestFirst: vm.newestFirst
-                                                ))
+            let url = try ExportService.export(entries: entries,
+                                               language: language,
+                                               format: format,
+                                               filterContext: ExportService.ExportFilterContext(
+                                                finishedLimit: finishedLimit,
+                                                newestFirst: newestFirst
+                                               ))
+
             shareSheetItem = ShareSheetItem(items: [url])
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                showExportOptions = false
+            }
+            withAnimation(.easeInOut(duration: 0.2)) {
+                exportingFormat = nil
+            }
         } catch {
-            return
+            withAnimation(.easeInOut(duration: 0.2)) {
+                exportingFormat = nil
+            }
         }
     }
 
