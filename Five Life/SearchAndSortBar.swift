@@ -26,7 +26,7 @@ struct SearchAndSortBar: View {
                     "",
                     text: $text,
                     prompt: Text(L10n.string("search.placeholder", language: settings.language))
-                        .foregroundStyle(highlightSearchPlaceholder ? .orange : .secondary)
+                        .foregroundStyle(highlightSearchPlaceholder ? .orange : Color.brandAccent)
                 )
                 .textFieldStyle(.plain)
                 .textInputAutocapitalization(.never)
