@@ -168,6 +168,10 @@ enum MoonPhase {
             case .thirdQuarter: return 0.75
             }
         }
+
+        var fraction: Double {
+            kOffset
+        }
     }
 
     private static func illuminationRange(in range: Range<Date>) -> (min: Int, max: Int) {
@@ -199,21 +203,34 @@ enum MoonPhase {
     }
 
     private static func phaseFraction(on date: Date) -> Double {
-        // Known new moon reference: 2000-01-06 18:14 UTC (commonly used approximation anchor)
-        // We’ll approximate in UTC to avoid locale drift.
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        let phaseTypes: [PrincipalPhaseType] = [.newMoon, .firstQuarter, .fullMoon, .thirdQuarter]
+        var events: [(date: Date, fraction: Double)] = []
+        for phaseType in phaseTypes {
+            let k = approximateK(for: date, targetPhase: phaseType.kOffset)
+            for candidate in [k - 1.0, k, k + 1.0] {
+                let eventDate = truePhaseDate(for: candidate, phaseType: phaseType)
+                events.append((eventDate, phaseType.fraction))
+            }
+        }
 
-        let refComponents = DateComponents(calendar: calendar, timeZone: calendar.timeZone,
-                                           year: 2000, month: 1, day: 6, hour: 18, minute: 14)
-        guard let reference = calendar.date(from: refComponents) else { return 0.0 }
+        let sorted = events.sorted { $0.date < $1.date }
+        guard let nextIndex = sorted.firstIndex(where: { $0.date > date }) else {
+            return sorted.last?.fraction ?? 0.0
+        }
 
-        let deltaSeconds = date.timeIntervalSince(reference)
-        let deltaDays = deltaSeconds / secondsPerDay
-
-        // phase 0.0..1.0 (0=new, 0.25=first quarter, 0.5=full, 0.75=third)
-        let phase = (deltaDays / synodicMonth).truncatingRemainder(dividingBy: 1.0)
-        return phase < 0 ? phase + 1.0 : phase
+        let next = sorted[nextIndex]
+        let last = nextIndex > 0 ? sorted[nextIndex - 1] : sorted.last ?? next
+        let span = next.date.timeIntervalSince(last.date)
+        guard span > 0 else { return last.fraction }
+        let elapsed = date.timeIntervalSince(last.date)
+        var startFraction = last.fraction
+        var endFraction = next.fraction
+        if endFraction <= startFraction {
+            endFraction += 1.0
+        }
+        let fraction = startFraction + (elapsed / span) * (endFraction - startFraction)
+        let normalized = fraction.truncatingRemainder(dividingBy: 1.0)
+        return normalized < 0 ? normalized + 1.0 : normalized
     }
 
     private static let synodicMonth = 29.530588853
