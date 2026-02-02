@@ -223,7 +223,7 @@ enum MoonPhase {
         let span = next.date.timeIntervalSince(last.date)
         guard span > 0 else { return last.fraction }
         let elapsed = date.timeIntervalSince(last.date)
-        var startFraction = last.fraction
+        let startFraction = last.fraction
         var endFraction = next.fraction
         if endFraction <= startFraction {
             endFraction += 1.0
