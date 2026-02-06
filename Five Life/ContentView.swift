@@ -251,7 +251,7 @@ struct ContentView: View {
     private var statisticsSnapshot: StatisticsSnapshot {
         let completed = completedEntries
         let totalDays = completed.count
-        let totalEntries = completed.reduce(0) { $0 + $1.itemCount }
+        let totalEntries = completed.reduce(0) { $0 + $1.filledItemCount }
         let streak = calculateStreak(from: completed)
         return StatisticsSnapshot(streak: streak, days: totalDays, entries: totalEntries)
     }

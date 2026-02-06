@@ -33,6 +33,13 @@ final class DayEntry {
         isComplete(requiredCount: itemCount)
     }
 
+    var filledItemCount: Int {
+        items.reduce(0) { count, item in
+            let trimmed = item.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? count : count + 1
+        }
+    }
+
     func isComplete(requiredCount: Int) -> Bool {
         let clamped = max(1, min(10, requiredCount))
         guard items.count >= clamped else { return false }
