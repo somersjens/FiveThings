@@ -127,19 +127,35 @@ struct RootContentSettingsChangeModifier: ViewModifier {
     let refreshEntryLists: () -> Void
     let showNextSeeYouTomorrowMessage: () -> Void
 
+    private func rescheduleReminders() {
+        Task {
+            let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
+                                                         reminderTime: settings.dailyReminderTime)
+            await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
+                                                 reminderDate: dailyReminderDate,
+                                                 language: settings.language,
+                                                 dailyCount: settings.dailyItemCount)
+            let nextReminderDate = vm.nextDayReminderDate(allEntries: entries,
+                                                          reminderTime: settings.nextDayReminderTime)
+            await notifier.scheduleNextDayIfNeeded(time: settings.nextDayReminderTime,
+                                                   reminderDate: nextReminderDate,
+                                                   language: settings.language,
+                                                   dailyCount: settings.dailyItemCount)
+        }
+    }
+
     func body(content: Content) -> some View {
         content
             .onChange(of: settings.dailyItemCount) { _, _ in
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
                 refreshEntryLists()
-                Task {
-                    let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
-                                                                 reminderTime: settings.dailyReminderTime)
-                    await notifier.scheduleDailyReminder(time: settings.dailyReminderTime,
-                                                         reminderDate: dailyReminderDate,
-                                                         language: settings.language,
-                                                         dailyCount: settings.dailyItemCount)
-                }
+                rescheduleReminders()
+            }
+            .onChange(of: settings.dailyReminderTime) { _, _ in
+                rescheduleReminders()
+            }
+            .onChange(of: settings.nextDayReminderTime) { _, _ in
+                rescheduleReminders()
             }
             .onChange(of: vm.searchText) { _, _ in
                 refreshEntryLists()
@@ -152,6 +168,7 @@ struct RootContentSettingsChangeModifier: ViewModifier {
             }
             .onChange(of: settings.language) { _, _ in
                 refreshEntryLists()
+                rescheduleReminders()
                 if unfinishedEntries.isEmpty {
                     showNextSeeYouTomorrowMessage()
                 }
