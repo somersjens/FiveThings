@@ -230,7 +230,7 @@ struct ContentView: View {
     private let settingsTopID = "settingsTop"
     private let footerLinksID = "footerLinks"
     private let infoCardID = "infoCard"
-    private let infoCardDismissAnimation = Animation.easeInOut(duration: 0.35)
+    private let infoCardDismissAnimation = Animation.spring(response: 0.35, dampingFraction: 1.0, blendDuration: 0.1)
     private let settingsScrollDuration: Double = 0.48
     private let scrollToTopDuration: Double = 0.2
     private let scrollToFooterDuration: Double = 0.6
