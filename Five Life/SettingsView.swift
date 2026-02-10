@@ -43,7 +43,7 @@ struct SettingsView: View {
     @State private var importErrorMessage: String?
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
     @State private var showLanguagePicker: Bool = false
-    private let defaultDailyReminderTime = ReminderTime(hour: 22, minute: 0)
+    private let defaultDailyReminderTime = ReminderTime(hour: 21, minute: 55)
     private let defaultNextDayReminderTime = ReminderTime(hour: 9, minute: 0)
     private let secretRowHeightMultiplier: CGFloat = 1.5
     @State private var isDeleteAllConfirming: Bool = false
@@ -64,7 +64,7 @@ struct SettingsView: View {
         self.showsNavigation = showsNavigation
         self.isSettingsCardExpanded = isSettingsCardExpanded
 
-        let defaultDailyTime = ReminderTime(hour: 22, minute: 0)
+        let defaultDailyTime = ReminderTime(hour: 21, minute: 55)
         let defaultNextDayTime = ReminderTime(hour: 9, minute: 0)
 
         let dailyPickerDate = settings.dailyReminderTime
