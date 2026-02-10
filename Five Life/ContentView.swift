@@ -925,6 +925,7 @@ struct ContentView: View {
                         .lineLimit(2)
                         .frame(maxWidth: 260, alignment: .center)
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, -8)
                 }
 
                 Button {
@@ -989,9 +990,10 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
 
                         Text(exportFilterNoticeText())
-                            .font(.footnote.weight(.semibold))
+                            .font(.footnote)
                             .foregroundStyle(Color.brandAccent)
                             .multilineTextAlignment(.center)
+                            .frame(maxWidth: 260, alignment: .center)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
                     .padding(.top, 10)
