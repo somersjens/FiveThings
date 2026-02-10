@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Küçülen Dışbükey";
 "moonphase.waxing.crescent" = "Büyüyen Hilal";
 "moonphase.waxing.gibbous" = "Büyüyen Dışbükey";
+"settings.notifications.night.mode.notice" = "Bu saatte Gece Modu açıksa çalışmaz.";

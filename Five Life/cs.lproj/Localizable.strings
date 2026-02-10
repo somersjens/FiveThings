@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Ubývající vyklenutý";
 "moonphase.waxing.crescent" = "Přibývající srpek";
 "moonphase.waxing.gibbous" = "Přibývající vyklenutý";
+"settings.notifications.night.mode.notice" = "Nefunguje, pokud je v tuto dobu zapnutý noční režim.";

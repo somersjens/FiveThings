@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Abnehmender Mond";
 "moonphase.waxing.crescent" = "Zunehmender Sichelmond";
 "moonphase.waxing.gibbous" = "Zunehmender Mond";
+"settings.notifications.night.mode.notice" = "Funktioniert nicht, wenn der Nachtmodus zu dieser Zeit aktiviert ist.";

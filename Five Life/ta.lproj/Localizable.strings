@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "குறையும் குவிந்த நிலா";
 "moonphase.waxing.crescent" = "வளரும் பிறை";
 "moonphase.waxing.gibbous" = "வளரும் குவிந்த நிலா";
+"settings.notifications.night.mode.notice" = "இந்த நேரத்தில் நைட் மோடு இயக்கப்பட்டிருந்தால் இது வேலை செய்யாது.";

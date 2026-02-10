@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "البدر المتناقص";
 "moonphase.waxing.crescent" = "الهلال المتزايد";
 "moonphase.waxing.gibbous" = "البدر المتزايد";
+"settings.notifications.night.mode.notice" = "لا يعمل إذا كان وضع الليل مفعّلًا في هذا الوقت.";

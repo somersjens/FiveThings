@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Bulan hampir penuh mengecil";
 "moonphase.waxing.crescent" = "Bulan sabit membesar";
 "moonphase.waxing.gibbous" = "Bulan hampir penuh membesar";
+"settings.notifications.night.mode.notice" = "Tidak berfungsi jika Mod Malam dihidupkan pada waktu ini.";

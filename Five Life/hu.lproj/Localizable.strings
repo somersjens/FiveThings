@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Csökkenő domború";
 "moonphase.waxing.crescent" = "Növekvő sarló";
 "moonphase.waxing.gibbous" = "Növekvő domború";
+"settings.notifications.night.mode.notice" = "Nem működik, ha a sötét mód ebben az időben be van kapcsolva.";

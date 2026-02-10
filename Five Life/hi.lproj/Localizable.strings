@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "घटता उभरा चाँद";
 "moonphase.waxing.crescent" = "बढ़ता चाँद की कली";
 "moonphase.waxing.gibbous" = "बढ़ता उभरा चाँद";
+"settings.notifications.night.mode.notice" = "यदि इस समय नाइट मोड चालू है, तो यह काम नहीं करता।";

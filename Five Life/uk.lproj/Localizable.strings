@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Зменшується опуклий";
 "moonphase.waxing.crescent" = "Зростаючий півмісяць";
 "moonphase.waxing.gibbous" = "Зростаючий опуклий";
+"settings.notifications.night.mode.notice" = "Не працює, якщо в цей час увімкнено нічний режим.";

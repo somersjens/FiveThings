@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "虧凸月";
 "moonphase.waxing.crescent" = "娥眉月";
 "moonphase.waxing.gibbous" = "盈凸月";
+"settings.notifications.night.mode.notice" = "如果此時開啟了夜間模式，將無法使用。";

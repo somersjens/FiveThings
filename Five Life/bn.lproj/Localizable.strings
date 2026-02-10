@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "কমছে গিবাস";
 "moonphase.waxing.crescent" = "বাড়ছে ক্রিসেন্ট";
 "moonphase.waxing.gibbous" = "বাড়ছে গিবাস";
+"settings.notifications.night.mode.notice" = "এই সময়ে নাইট মোড চালু থাকলে কাজ করে না।";

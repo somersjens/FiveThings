@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Afnemende gibbeus";
 "moonphase.waxing.crescent" = "Wassende sikkel";
 "moonphase.waxing.gibbous" = "Wassende gibbeus";
+"settings.notifications.night.mode.notice" = "Werkt niet als je nachtmodus op dit tijdstip aanstaat.";

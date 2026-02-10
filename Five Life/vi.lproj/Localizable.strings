@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Trăng khuyết lồi";
 "moonphase.waxing.crescent" = "Trăng lưỡi liềm non";
 "moonphase.waxing.gibbous" = "Trăng tròn lồi";
+"settings.notifications.night.mode.notice" = "Không hoạt động nếu Chế độ ban đêm đang bật vào thời điểm này.";

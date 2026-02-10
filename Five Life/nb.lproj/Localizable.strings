@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Avtakende gibbous";
 "moonphase.waxing.crescent" = "Voksende sigd";
 "moonphase.waxing.gibbous" = "Voksende gibbous";
+"settings.notifications.night.mode.notice" = "Fungerer ikke hvis nattmodus er slått på på dette tidspunktet.";

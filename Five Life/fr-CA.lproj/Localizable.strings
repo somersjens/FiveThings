@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Gibbeuse décroissante";
 "moonphase.waxing.crescent" = "Premier croissant";
 "moonphase.waxing.gibbous" = "Gibbeuse croissante";
+"settings.notifications.night.mode.notice" = "Ne fonctionne pas si le mode nuit est activé à cette heure-ci.";

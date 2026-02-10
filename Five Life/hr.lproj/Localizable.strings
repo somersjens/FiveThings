@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Opadajući izbočeni";
 "moonphase.waxing.crescent" = "Rastući srp";
 "moonphase.waxing.gibbous" = "Rastući izbočeni";
+"settings.notifications.night.mode.notice" = "Ne radi ako je noćni način rada uključen u ovo vrijeme.";

@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Vähenevä kupera";
 "moonphase.waxing.crescent" = "Kasvava sirppi";
 "moonphase.waxing.gibbous" = "Kasvava kupera";
+"settings.notifications.night.mode.notice" = "Ei toimi, jos yötila on käytössä tähän aikaan.";

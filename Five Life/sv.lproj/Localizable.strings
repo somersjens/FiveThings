@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Avtagande gibbousmåne";
 "moonphase.waxing.crescent" = "Växande halvmåne";
 "moonphase.waxing.gibbous" = "Växande gibbousmåne";
+"settings.notifications.night.mode.notice" = "Fungerar inte om nattläge är aktiverat vid den här tiden.";

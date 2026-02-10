@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Aftagende pukkelmåne";
 "moonphase.waxing.crescent" = "Tiltagende segl";
 "moonphase.waxing.gibbous" = "Tiltagende pukkelmåne";
+"settings.notifications.night.mode.notice" = "Virker ikke, hvis Nattilstand er slået til på dette tidspunkt.";

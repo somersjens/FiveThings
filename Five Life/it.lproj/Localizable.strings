@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Calante gibbosa";
 "moonphase.waxing.crescent" = "Crescente a falce";
 "moonphase.waxing.gibbous" = "Crescente gibbosa";
+"settings.notifications.night.mode.notice" = "Non funziona se la Modalità Notte è attiva a quest’ora.";

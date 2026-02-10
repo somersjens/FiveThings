@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Gibos în descreștere";
 "moonphase.waxing.crescent" = "Seceră în creștere";
 "moonphase.waxing.gibbous" = "Gibos în creștere";
+"settings.notifications.night.mode.notice" = "Nu funcționează dacă modul de noapte este activ la această oră.";

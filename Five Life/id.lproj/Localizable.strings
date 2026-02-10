@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Bulan Cembung Berkurang";
 "moonphase.waxing.crescent" = "Bulan Sabit Bertambah";
 "moonphase.waxing.gibbous" = "Bulan Cembung Bertambah";
+"settings.notifications.night.mode.notice" = "Tidak berfungsi jika Mode Malam aktif pada waktu ini.";

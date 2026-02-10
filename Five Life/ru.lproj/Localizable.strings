@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Убывающий выпуклый";
 "moonphase.waxing.crescent" = "Растущий серп";
 "moonphase.waxing.gibbous" = "Растущий выпуклый";
+"settings.notifications.night.mode.notice" = "Не работает, если в это время включён ночной режим.";

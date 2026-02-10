@@ -917,6 +917,16 @@ struct ContentView: View {
                              showsNavigation: false,
                              isSettingsCardExpanded: showSettings)
 
+                if shouldShowNightModeNotificationNotice {
+                    Text(L10n.string("settings.notifications.night.mode.notice", language: settings.language))
+                        .font(.footnote)
+                        .foregroundStyle(Color.brandAccent)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .frame(maxWidth: 260, alignment: .center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+
                 Button {
                     withAnimation(.easeInOut(duration: 0.25)) {
                         showExportOptions.toggle()
@@ -1018,6 +1028,14 @@ struct ContentView: View {
         .onPreferenceChange(SettingsSectionHeightKey.self) { height in
             settingsSectionHeight = height
         }
+    }
+
+    private var shouldShowNightModeNotificationNotice: Bool {
+        let notificationsEnabled = settings.dailyReminderTime != nil || settings.nextDayReminderTime != nil
+        let hasPermission = notifier.authorizationStatus == .authorized
+            || notifier.authorizationStatus == .provisional
+            || notifier.authorizationStatus == .ephemeral
+        return notificationsEnabled && hasPermission
     }
 
     private func postSettingsSection(scale: CGFloat) -> some View {

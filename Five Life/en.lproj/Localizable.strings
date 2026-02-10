@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Waning Gibbous";
 "moonphase.waxing.crescent" = "Waxing Crescent";
 "moonphase.waxing.gibbous" = "Waxing Gibbous";
+"settings.notifications.night.mode.notice" = "Doesn’t work if Night Mode is enabled at this time.";

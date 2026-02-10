@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "ירח מתמלא מתמעט";
 "moonphase.waxing.crescent" = "ירח חודשי מתמלא";
 "moonphase.waxing.gibbous" = "ירח מתמלא מתמלא";
+"settings.notifications.night.mode.notice" = "לא עובד אם מצב לילה מופעל בשעה הזו.";

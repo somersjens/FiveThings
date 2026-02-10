@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "欠けゆく凸月";
 "moonphase.waxing.crescent" = "三日月";
 "moonphase.waxing.gibbous" = "膨らむ凸月";
+"settings.notifications.night.mode.notice" = "この時間にナイトモードが有効になっていると動作しません。";

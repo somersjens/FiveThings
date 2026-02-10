@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Ubywający garbaty";
 "moonphase.waxing.crescent" = "Przybywający sierp";
 "moonphase.waxing.gibbous" = "Przybywający garbaty";
+"settings.notifications.night.mode.notice" = "Nie działa, jeśli o tej porze włączony jest tryb nocny.";

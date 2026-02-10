@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "기우는 만월 직전";
 "moonphase.waxing.crescent" = "차오르는 초승달";
 "moonphase.waxing.gibbous" = "차오르는 만월 직전";
+"settings.notifications.night.mode.notice" = "이 시간에 야간 모드가 켜져 있으면 작동하지 않습니다.";

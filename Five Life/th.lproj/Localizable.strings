@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "ข้างแรมใกล้เต็ม";
 "moonphase.waxing.crescent" = "ข้างขึ้นเสี้ยว";
 "moonphase.waxing.gibbous" = "ข้างขึ้นใกล้เต็ม";
+"settings.notifications.night.mode.notice" = "ใช้งานไม่ได้หากเปิดโหมดกลางคืนอยู่ในเวลานี้";

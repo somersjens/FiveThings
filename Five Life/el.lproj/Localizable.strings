@@ -243,3 +243,4 @@
 "moonphase.waning.gibbous" = "Μειούμενη κυρτή";
 "moonphase.waxing.crescent" = "Αυξανόμενη δρεπανόσχημη";
 "moonphase.waxing.gibbous" = "Αυξανόμενη κυρτή";
+"settings.notifications.night.mode.notice" = "Δεν λειτουργεί αν είναι ενεργοποιημένη η νυχτερινή λειτουργία αυτή την ώρα.";
