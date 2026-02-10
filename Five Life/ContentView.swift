@@ -81,6 +81,17 @@ struct ContentView: View {
         colorScheme == .dark ? Color.brandSurface : Color(.systemBackground)
     }
 
+    private var cardAppearAnimation: Animation {
+        .snappy(duration: 0.34, extraBounce: 0)
+    }
+
+    private var smoothCardTransition: AnyTransition {
+        .asymmetric(
+            insertion: .opacity.combined(with: .scale(scale: 0.985, anchor: .top)),
+            removal: .opacity
+        )
+    }
+
     private func requiredCount(for entry: DayEntry) -> Int {
         if entry.isLocked { return entry.itemCount }
         if Calendar.current.isDate(entry.day, inSameDayAs: Date()) { return settings.dailyItemCount }
@@ -1048,7 +1059,7 @@ struct ContentView: View {
                                     searchHighlightsEnabled: false,
                                     highlightLockIcon: highlightLockIcons,
                                     entry: entry)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .transition(smoothCardTransition)
 
                         if !dismissedEmptyLimitNotice,
                            let thirdEmptyEntryID,
@@ -1065,7 +1076,7 @@ struct ContentView: View {
                                             searchHighlightsEnabled: false,
                                             highlightLockIcon: highlightLockIcons,
                                             entry: entry)
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                    .transition(smoothCardTransition)
 
                                 if !dismissedEmptyLimitNotice,
                                    let thirdEmptyEntryID,
@@ -1076,7 +1087,7 @@ struct ContentView: View {
                         }
                     }
                 }
-                .animation(.spring(response: 0.5, dampingFraction: 0.9),
+                .animation(cardAppearAnimation,
                            value: unfinishedEntries.map(\.id))
                 .animation(.easeInOut(duration: settingsOpenAnimationDuration),
                            value: showSettings)
@@ -1120,7 +1131,7 @@ struct ContentView: View {
                             searchHighlightsEnabled: true,
                             highlightLockIcon: highlightLockIcons,
                             entry: entry)
-                    .transition(.opacity)
+                    .transition(smoothCardTransition)
             }
 
             if !remainingFinishedEntries.isEmpty {
@@ -1131,7 +1142,7 @@ struct ContentView: View {
                                     searchHighlightsEnabled: true,
                                     highlightLockIcon: highlightLockIcons,
                                     entry: entry)
-                            .transition(.opacity)
+                            .transition(smoothCardTransition)
                     }
                 }
             }
@@ -1153,7 +1164,7 @@ struct ContentView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25),
+        .animation(cardAppearAnimation,
                    value: finishedEntries.map(\.id))
         .animation(.easeInOut(duration: 0.25), value: vm.searchText)
         .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
