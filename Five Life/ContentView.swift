@@ -717,18 +717,20 @@ struct ContentView: View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 14) {
-                    Color.clear
-                        .frame(height: 1)
-                        .id(settingsTopID)
-
-                    ZStack(alignment: .top) {
+                    VStack(spacing: 0) {
                         Color.clear
-                            .frame(height: showSettings ? settingsSectionHeight : 0)
-                            .animation(.easeInOut(duration: settingsOpenAnimationDuration), value: showSettings)
+                            .frame(height: 1)
+                            .id(settingsTopID)
 
-                        if showSettings {
-                            settingsSection(scale: scale)
-                                .transition(.move(edge: .top).combined(with: .opacity))
+                        ZStack(alignment: .top) {
+                            Color.clear
+                                .frame(height: showSettings ? settingsSectionHeight : 0)
+                                .animation(.easeInOut(duration: settingsOpenAnimationDuration), value: showSettings)
+
+                            if showSettings {
+                                settingsSection(scale: scale)
+                                    .transition(.move(edge: .top).combined(with: .opacity))
+                            }
                         }
                     }
 
