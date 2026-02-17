@@ -487,6 +487,13 @@ struct ContentView: View {
 
                 Spacer()
 
+                if highlightScrollToTop {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(.orange)
+                        .transition(.opacity)
+                }
+
                 Button {
                     scrollToTopTrigger += 1
                 } label: {
