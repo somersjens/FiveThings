@@ -451,7 +451,6 @@ struct DayCardView: View {
         }
 
         if showsFirstEntryPrompts,
-           (settings.language == .english || settings.language == .englishUK),
            let firstCardPromptKey = firstCardPromptKeys[safe: idx] {
             return L10n.string(firstCardPromptKey, language: settings.language)
         }
