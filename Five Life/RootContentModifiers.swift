@@ -42,8 +42,11 @@ struct RootContentTaskModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.task {
-            withAnimation(autoEntryAnimation) {
+            let didCreateTodayEntry = withAnimation(autoEntryAnimation) {
                 vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            }
+            if didCreateTodayEntry {
+                refreshEntryLists()
             }
             await notifier.refreshAuthorizationStatus()
             let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
