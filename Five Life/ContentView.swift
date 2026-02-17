@@ -81,10 +81,6 @@ struct ContentView: View {
         colorScheme == .dark ? Color.brandSurface : Color(.systemBackground)
     }
 
-    private var cardAppearAnimation: Animation {
-        .snappy(duration: 0.34, extraBounce: 0)
-    }
-
     private var smoothCardTransition: AnyTransition {
         .asymmetric(
             insertion: .opacity.combined(with: .scale(scale: 0.985, anchor: .top)),
@@ -1107,8 +1103,6 @@ struct ContentView: View {
                         }
                     }
                 }
-                .animation(cardAppearAnimation,
-                           value: unfinishedEntries.map(\.id))
                 .animation(.easeInOut(duration: settingsOpenAnimationDuration),
                            value: showSettings)
             } else {
@@ -1184,8 +1178,6 @@ struct ContentView: View {
                     .transition(.opacity)
             }
         }
-        .animation(cardAppearAnimation,
-                   value: finishedEntries.map(\.id))
         .animation(.easeInOut(duration: 0.25), value: vm.searchText)
         .animation(.easeInOut(duration: 0.25), value: vm.newestFirst)
         .animation(.easeInOut(duration: 0.25), value: vm.finishedLimit)
@@ -1203,12 +1195,14 @@ struct ContentView: View {
                     return
                 }
                 await MainActor.run {
-                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                    AppleSyncManager.shared.captureMidnightSnapshotIfNeeded(
-                        modelContext: modelContext,
-                        settings: settings,
-                        isConnected: settings.appleIdConnected
-                    )
+                    withAnimation(.snappy(duration: 0.34, extraBounce: 0)) {
+                        vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                        AppleSyncManager.shared.captureMidnightSnapshotIfNeeded(
+                            modelContext: modelContext,
+                            settings: settings,
+                            isConnected: settings.appleIdConnected
+                        )
+                    }
                 }
                 let nextReminderDate = await MainActor.run {
                     vm.nextDayReminderDate(allEntries: entries, reminderTime: settings.nextDayReminderTime)

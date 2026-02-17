@@ -46,7 +46,8 @@ final class ContentViewModel: ObservableObject {
         Calendar.current.startOfDay(for: date)
     }
 
-    func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) {
+    @discardableResult
+    func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) -> Bool {
         settings.clampDailyCount()
 
         let today = startOfDay(Date())
@@ -59,12 +60,13 @@ final class ContentViewModel: ObservableObject {
             if !existing.isLocked {
                 existing.resizeItemsIfNeeded(to: settings.dailyItemCount)
             }
-            return
+            return false
         }
 
         let entry = DayEntry(day: today, itemCount: settings.dailyItemCount)
         modelContext.insert(entry)
         try? modelContext.save()
+        return true
     }
 
     func lock(_ entry: DayEntry, requiredCount: Int, settings: SettingsStore, modelContext: ModelContext) {

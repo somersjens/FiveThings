@@ -30,6 +30,8 @@ struct RootContentBaseModifier: ViewModifier {
 }
 
 struct RootContentTaskModifier: ViewModifier {
+    private let autoEntryAnimation = Animation.snappy(duration: 0.34, extraBounce: 0)
+
     let settings: SettingsStore
     let vm: ContentViewModel
     let notifier: NotificationManager
@@ -40,7 +42,9 @@ struct RootContentTaskModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.task {
-            vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            withAnimation(autoEntryAnimation) {
+                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+            }
             await notifier.refreshAuthorizationStatus()
             let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
                                                          reminderTime: settings.dailyReminderTime)
@@ -234,6 +238,8 @@ struct RootContentLifecycleModifier: ViewModifier {
 }
 
 struct RootContentScenePhaseModifier: ViewModifier {
+    private let autoEntryAnimation = Animation.snappy(duration: 0.34, extraBounce: 0)
+
     @Binding var isUnlocked: Bool
     @Binding var midnightTask: Task<Void, Never>?
 
@@ -251,12 +257,14 @@ struct RootContentScenePhaseModifier: ViewModifier {
                 isUnlocked = false
             }
             if phase == .active {
-                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                AppleSyncManager.shared.catchUpSnapshotIfNeeded(
-                    modelContext: modelContext,
-                    settings: settings,
-                    isConnected: settings.appleIdConnected
-                )
+                withAnimation(autoEntryAnimation) {
+                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    AppleSyncManager.shared.catchUpSnapshotIfNeeded(
+                        modelContext: modelContext,
+                        settings: settings,
+                        isConnected: settings.appleIdConnected
+                    )
+                }
                 scheduleMidnightRefresh()
                 updateUnlockStateIfNeeded()
                 refreshEntryLists()
