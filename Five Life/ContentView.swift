@@ -30,16 +30,14 @@ struct ContentView: View {
     @State private var exportingFormat: ExportFormat? = nil
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
-    @State private var settingsToggleGeneration = 0
     @State private var infoCardScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
     @State private var scrollToFooterTrigger = 0
-    @State private var settingsToggleRequest = 0
-    @State private var requestedSettingsVisible = false
     @State private var suppressSettingsAutoScroll = false
     @State private var pendingSettingsInfoRequest: SettingsView.SettingsInfo?
     @State private var settingsInfoTask: Task<Void, Never>?
     @State private var pendingInfoCardScroll = false
+    @State private var settingsToggleLocked = false
     @State private var dismissedEmptyLimitNotice = false
     @State private var showsReturnToMainMenuOnly = false
     @State private var highlightLockIcons = false
@@ -730,7 +728,7 @@ struct ContentView: View {
                     .frame(height: 1)
                     .id(settingsTopID)
 
-                LazyVStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 14) {
                     VStack(spacing: 0) {
                         ZStack(alignment: .top) {
                             Color.clear
@@ -800,6 +798,11 @@ struct ContentView: View {
                             showExportOptions = false
                         }
                     }
+                    if pendingInfoCardScroll {
+                        pendingInfoCardScroll = false
+                        scheduleInfoCardScroll(using: proxy,
+                                               delay: settingsOpenAnimationDuration + 0.05)
+                    }
                     // Apply notification changes after closing settings
                     Task {
                         let dailyReminderDate = vm.dailyReminderDate(allEntries: entries,
@@ -826,9 +829,6 @@ struct ContentView: View {
                 if showSettings {
                     scrollSettingsIntoView(using: proxy)
                 }
-            }
-            .onChange(of: settingsToggleRequest) { _, _ in
-                applySettingsToggleRequest(using: proxy)
             }
             .onChange(of: scrollToTopTrigger) { _, _ in
                 scrollToTop(using: proxy)
@@ -1278,7 +1278,15 @@ struct ContentView: View {
     }
 
     private func handleSettingsToggle() {
+        guard !settingsToggleLocked else { return }
+        settingsToggleLocked = true
         requestSettingsVisibility(!showSettings)
+
+        Task { @MainActor in
+            let lockDuration = max(settingsOpenAnimationDuration, scrollToTopDuration) + 0.08
+            try? await Task.sleep(nanoseconds: UInt64(lockDuration * 1_000_000_000))
+            settingsToggleLocked = false
+        }
     }
 
     private func requestSettingsVisibility(_ shouldShow: Bool,
@@ -1286,8 +1294,24 @@ struct ContentView: View {
         if scrollToInfoCardAfterClose {
             pendingInfoCardScroll = true
         }
-        requestedSettingsVisible = shouldShow
-        settingsToggleRequest += 1
+        if shouldShow {
+            pendingInfoCardScroll = false
+            suppressSettingsAutoScroll = true
+            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
+                showSettings = true
+            }
+            scrollToTopTrigger += 1
+            return
+        }
+
+        if showExportOptions {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                showExportOptions = false
+            }
+        }
+        withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
+            showSettings = false
+        }
     }
 
     private func updateUnlockStateIfNeeded() {
@@ -1380,45 +1404,6 @@ struct ContentView: View {
         }
     }
 
-    private func applySettingsToggleRequest(using proxy: ScrollViewProxy) {
-        settingsScrollTask?.cancel()
-        let shouldShow = requestedSettingsVisible
-        settingsToggleGeneration += 1
-        let generation = settingsToggleGeneration
-
-        withAnimation(.easeOut(duration: scrollToTopDuration)) {
-            proxy.scrollTo(settingsTopID, anchor: .top)
-        }
-
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64(scrollToTopDuration * 1_000_000_000))
-            guard generation == settingsToggleGeneration else { return }
-
-            if shouldShow {
-                suppressSettingsAutoScroll = true
-                withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
-                    showSettings = true
-                }
-                return
-            }
-
-            let shouldScrollToInfoCard = pendingInfoCardScroll
-            pendingInfoCardScroll = false
-            if showExportOptions {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showExportOptions = false
-                }
-            }
-            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
-                showSettings = false
-            }
-            if shouldScrollToInfoCard {
-                scheduleInfoCardScroll(using: proxy,
-                                       delay: settingsOpenAnimationDuration + 0.05)
-            }
-        }
-    }
-
     private func handleInfoCardLink(_ action: String) {
         switch action {
         case "lock":
@@ -1481,14 +1466,12 @@ struct ContentView: View {
     private func cancelTransientTasks() {
         settingsScrollTask?.cancel()
         settingsScrollTask = nil
-        settingsToggleGeneration = 0
         infoCardScrollTask?.cancel()
         infoCardScrollTask = nil
         settingsInfoTask?.cancel()
         settingsInfoTask = nil
-        settingsToggleRequest = 0
-        requestedSettingsVisible = false
         pendingInfoCardScroll = false
         pendingSettingsInfoRequest = nil
+        settingsToggleLocked = false
     }
 }
