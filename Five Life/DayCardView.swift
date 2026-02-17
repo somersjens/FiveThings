@@ -11,6 +11,7 @@ struct DayCardView: View {
     @ObservedObject var vm: ContentViewModel
     let searchHighlightsEnabled: Bool
     let highlightLockIcon: Bool
+    let showsFirstEntryPrompts: Bool
 
     @Bindable var entry: DayEntry
 
@@ -433,9 +434,7 @@ struct DayCardView: View {
 
     private func rowContent(idx: Int) -> some View {
         let showsOptionalPlaceholder = hasOptionalRows && !entry.isLocked && idx >= requiredCount
-        let placeholderText = showsOptionalPlaceholder
-            ? L10n.string("daycard.placeholder.optional", language: settings.language)
-            : L10n.string("daycard.placeholder.entry", language: settings.language)
+        let placeholderText = placeholderText(for: idx, showsOptionalPlaceholder: showsOptionalPlaceholder)
         return HStack(alignment: .top, spacing: 6) {
             Text(localizedIndexString(idx + 1))
                 .font(.system(.body, design: .rounded).weight(.semibold))
@@ -444,6 +443,30 @@ struct DayCardView: View {
 
             rowTextView(placeholderText: placeholderText, idx: idx)
         }
+    }
+
+    private func placeholderText(for idx: Int, showsOptionalPlaceholder: Bool) -> String {
+        if showsOptionalPlaceholder {
+            return L10n.string("daycard.placeholder.optional", language: settings.language)
+        }
+
+        if showsFirstEntryPrompts,
+           (settings.language == .english || settings.language == .englishUK),
+           let firstCardPromptKey = firstCardPromptKeys[safe: idx] {
+            return L10n.string(firstCardPromptKey, language: settings.language)
+        }
+
+        return L10n.string("daycard.placeholder.entry", language: settings.language)
+    }
+
+    private var firstCardPromptKeys: [String] {
+        [
+            "daycard.placeholder.first.entry.1",
+            "daycard.placeholder.first.entry.2",
+            "daycard.placeholder.first.entry.3",
+            "daycard.placeholder.first.entry.4",
+            "daycard.placeholder.first.entry.5"
+        ]
     }
 
     private func localizedIndexString(_ index: Int) -> String {

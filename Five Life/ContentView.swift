@@ -108,6 +108,15 @@ struct ContentView: View {
             .sorted { $0.day > $1.day }
     }
 
+    private var firstCreatedEntryID: DayEntry.ID? {
+        entries.min { lhs, rhs in
+            if lhs.createdAt == rhs.createdAt {
+                return lhs.day < rhs.day
+            }
+            return lhs.createdAt < rhs.createdAt
+        }?.id
+    }
+
     private var finished: [DayEntry] {
         let base = entries.filter { isFinishedEntry($0) }
         let limited = vm.limitedFinishedEntries(from: base)
@@ -1069,6 +1078,7 @@ struct ContentView: View {
                                     vm: vm,
                                     searchHighlightsEnabled: false,
                                     highlightLockIcon: highlightLockIcons,
+                                    showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
                                     entry: entry)
                             .transition(smoothCardTransition)
 
@@ -1086,6 +1096,7 @@ struct ContentView: View {
                                             vm: vm,
                                             searchHighlightsEnabled: false,
                                             highlightLockIcon: highlightLockIcons,
+                                            showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
                                             entry: entry)
                                     .transition(smoothCardTransition)
 
@@ -1139,6 +1150,7 @@ struct ContentView: View {
                             vm: vm,
                             searchHighlightsEnabled: true,
                             highlightLockIcon: highlightLockIcons,
+                            showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
                             entry: entry)
                     .transition(smoothCardTransition)
             }
@@ -1150,6 +1162,7 @@ struct ContentView: View {
                                     vm: vm,
                                     searchHighlightsEnabled: true,
                                     highlightLockIcon: highlightLockIcons,
+                                    showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
                                     entry: entry)
                             .transition(smoothCardTransition)
                     }

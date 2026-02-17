@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Fill all fields to lock.";
 "daycard.lock" = "Lock";
 "daycard.placeholder.entry" = "Write something positive…";
+"daycard.placeholder.first.entry.1" = "Had a nice interaction with...";
+"daycard.placeholder.first.entry.2" = "I ate something delicious called...";
+"daycard.placeholder.first.entry.3" = "I laughed so hard at a funny video of...";
+"daycard.placeholder.first.entry.4" = "Got a friendly greeting at...";
+"daycard.placeholder.first.entry.5" = "I started today with...";
 "daycard.placeholder.optional" = "Optional (above old amount)";
 "daycard.remove.optional" = "Remove optional entry";
 "daycard.score.adjust" = "Adjust score";
