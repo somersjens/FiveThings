@@ -195,7 +195,9 @@ struct ContentView: View {
 
     private var infoCardEntries: [String] {
         let localizedCount = localizedCountText(settings.dailyItemCount)
-        return (1...10)
+        let displayOrder = [7] + Array(1...6) + Array(8...10)
+
+        return displayOrder
             .map { index in
                 let key = "info.card.entry.\(index)"
                 if index == 1 {
