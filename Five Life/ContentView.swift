@@ -415,6 +415,16 @@ struct ContentView: View {
         return L10n.string("export.filter.notice", language: settings.language, orderText, limitText)
     }
 
+    private func handleExportFilterNoticeTap() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            if vm.finishedLimit != .all {
+                vm.finishedLimit = .all
+            } else {
+                vm.newestFirst.toggle()
+            }
+        }
+    }
+
     private func calculateStreak(from entries: [DayEntry]) -> Int {
         let calendar = Calendar.current
         let uniqueDays = Array(Set(entries.map { calendar.startOfDay(for: $0.day) }))
@@ -919,7 +929,7 @@ struct ContentView: View {
 
                 if shouldShowNightModeNotificationNotice {
                     Text(L10n.string("settings.notifications.night.mode.notice", language: settings.language))
-                        .font(.footnote)
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(Color.brandAccent)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -989,12 +999,18 @@ struct ContentView: View {
                         .animation(.easeInOut(duration: 0.5), value: exportingFormat)
                             .frame(maxWidth: .infinity, alignment: .center)
 
-                        Text(exportFilterNoticeText())
-                            .font(.footnote)
-                            .foregroundStyle(Color.brandAccent)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 260, alignment: .center)
-                            .frame(maxWidth: .infinity, alignment: .center)
+                        Button {
+                            handleExportFilterNoticeTap()
+                        } label: {
+                            Text(exportFilterNoticeText())
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(Color.brandAccent)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 260, alignment: .center)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(exportFilterNoticeText())
                     }
                     .padding(.top, 10)
                     .transition(.opacity)
