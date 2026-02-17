@@ -46,6 +46,7 @@ struct ContentView: View {
     @State private var highlightFilterLimit = false
     @State private var highlightScrollToTop = false
     @State private var highlightFooterLinks = false
+    @State private var highlightAllInfoCardLinks = false
     @State private var requestedSettingsInfo: SettingsView.SettingsInfo?
     @State private var settingsSectionHeight: CGFloat = 0
     @AppStorage("hasSeenAccessScreen") private var hasSeenAccessScreen: Bool = false
@@ -1156,7 +1157,8 @@ struct ContentView: View {
                              linkAction: handleInfoCardLink,
                              numberText: { "\(localizedCountText($0))." },
                              linkHighlightDuration: highlightPulseDuration,
-                             linkHighlightCycles: 3)
+                             linkHighlightCycles: 3,
+                             highlightAllLinks: highlightAllInfoCardLinks)
                     .id(infoCardID)
                     .transition(.opacity)
             }
@@ -1197,7 +1199,8 @@ struct ContentView: View {
                              linkAction: handleInfoCardLink,
                              numberText: { "\(localizedCountText($0))." },
                              linkHighlightDuration: highlightPulseDuration,
-                             linkHighlightCycles: 3)
+                             linkHighlightCycles: 3,
+                             highlightAllLinks: highlightAllInfoCardLinks)
                     .id(infoCardID)
                     .transition(.opacity)
             }
@@ -1436,7 +1439,11 @@ struct ContentView: View {
     private func handleInfoCardLink(_ action: String) {
         switch action {
         case "lock":
-            pulseHighlight($highlightLockIcons)
+            scrollToTopTrigger += 1
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: UInt64((scrollToTopDuration + 0.1) * 1_000_000_000))
+                pulseHighlight($highlightLockIcons)
+            }
         case "settings":
             pendingSettingsInfoRequest = .entriesPerDay
             if showSettings {
@@ -1459,7 +1466,7 @@ struct ContentView: View {
                 pulseHighlight($highlightFooterLinks)
             }
         case "highlight":
-            break
+            pulseHighlight($highlightAllInfoCardLinks)
         default:
             break
         }

@@ -11,7 +11,7 @@ struct SearchAndSortBar: View {
     let highlightFilterLimit: Bool
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @ScaledMetric(relativeTo: .footnote) private var filterFontSize: CGFloat = 12
-    @ScaledMetric(relativeTo: .headline) private var sortIconSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .headline) private var sortIconSize: CGFloat = 17
     @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 40
 
     var body: some View {
@@ -26,7 +26,7 @@ struct SearchAndSortBar: View {
                     "",
                     text: $text,
                     prompt: Text(L10n.string("search.placeholder", language: settings.language))
-                        .foregroundStyle(highlightSearchPlaceholder ? .orange : Color.brandAccent)
+                        .foregroundStyle(Color.brandAccent)
                 )
                 .textFieldStyle(.plain)
                 .textInputAutocapitalization(.never)
@@ -49,8 +49,16 @@ struct SearchAndSortBar: View {
             .frame(height: controlDimension)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(.secondary.opacity(0.10))
+                    .fill(highlightSearchPlaceholder ? Color.orange.opacity(0.26) : .secondary.opacity(0.10))
             )
+            .animation(.easeInOut(duration: 0.25), value: highlightSearchPlaceholder)
+
+            if highlightSortArrow || highlightFilterLimit {
+                Image(systemName: "arrow.right")
+                    .font(.system(size: sortIconSize * responsiveTypeScale, weight: .bold))
+                    .foregroundStyle(Color.brandAccent)
+                    .transition(.opacity)
+            }
 
             Button {
                 finishedLimit = finishedLimit.next()
@@ -58,12 +66,11 @@ struct SearchAndSortBar: View {
                 Text(finishedLimit.displayText(language: settings.language))
                     .font(.system(size: filterFontSize * responsiveTypeScale, weight: .semibold))
                     .monospacedDigit()
-                    .foregroundStyle(highlightFilterLimit ? .orange : Color.brandAccent)
+                    .foregroundStyle(Color.brandAccent)
                     .frame(width: controlDimension,
                            height: controlDimension)
-                    .background(.secondary.opacity(0.10))
+                    .background(highlightFilterLimit ? Color.orange.opacity(0.26) : .secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .scaleEffect(highlightFilterLimit ? 1.2 : 1)
                     .animation(.easeInOut(duration: 0.25), value: highlightFilterLimit)
             }
             .buttonStyle(.plain)
@@ -75,13 +82,12 @@ struct SearchAndSortBar: View {
                 newestFirst.toggle()
             } label: {
                 Image(systemName: newestFirst ? "arrow.down" : "arrow.up")
-                    .font(.system(size: sortIconSize * responsiveTypeScale, weight: .semibold))
-                    .foregroundStyle(highlightSortArrow ? .orange : Color.brandAccent)
+                    .font(.system(size: sortIconSize * responsiveTypeScale, weight: .bold))
+                    .foregroundStyle(Color.brandAccent)
                     .frame(width: controlDimension,
                            height: controlDimension)
-                    .background(.secondary.opacity(0.10))
+                    .background(highlightSortArrow ? Color.orange.opacity(0.26) : .secondary.opacity(0.10))
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .scaleEffect(highlightSortArrow ? 1.2 : 1)
                     .animation(.easeInOut(duration: 0.25), value: highlightSortArrow)
             }
             .buttonStyle(.plain)

@@ -12,6 +12,7 @@ struct InfoCardView: View {
     let numberText: (Int) -> String
     let linkHighlightDuration: Double
     let linkHighlightCycles: Int
+    let highlightAllLinks: Bool
 
     @ScaledMetric(relativeTo: .body) private var rowSpacing: CGFloat = 10
     @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
@@ -120,7 +121,8 @@ struct InfoCardView: View {
         var attributed = (try? AttributedString(markdown: text)) ?? AttributedString(text)
         for run in attributed.runs {
             if let link = run.link {
-                attributed[run.range].foregroundColor = highlightLinks && highlightedLink == link ? .orange : Color.brandAccent
+                let shouldHighlightLink = highlightAllLinks || (highlightLinks && highlightedLink == link)
+                attributed[run.range].foregroundColor = shouldHighlightLink ? .orange : Color.brandAccent
                 attributed[run.range].underlineStyle = nil
             }
         }
