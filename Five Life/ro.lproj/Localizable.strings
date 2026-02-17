@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Completează toate câmpurile pentru a bloca.";
 "daycard.lock" = "Blochează";
 "daycard.placeholder.entry" = "Scrie ceva bun…";
+"daycard.placeholder.first.entry.1" = "Am avut o discuție faină cu...";
+"daycard.placeholder.first.entry.2" = "Am mâncat ceva delicios, se numea...";
+"daycard.placeholder.first.entry.3" = "Am râs tare de...";
+"daycard.placeholder.first.entry.4" = "Am fost întâmpinat(ă) cu amabilitate la...";
+"daycard.placeholder.first.entry.5" = "Azi am început cu...";
 "daycard.placeholder.optional" = "Opțional (mai mult decât cantitatea anterioară)";
 "daycard.remove.optional" = "Elimină intrarea opțională";
 "daycard.score.adjust" = "Ajustează scorul";
@@ -84,8 +89,8 @@
 "filters.sort.oldest.first" = "Cele mai vechi primele";
 "filters.active.notice" = "Filtru activ: se afișează doar ultimele %d intrări. Atinge acest mesaj pentru a elimina filtrul";
 "footer.feedback" = "Trimite feedback";
-"footer.review" = "Scrie o recenzie";
-"footer.share" = "Distribuie cu prietenii";
+"footer.review" = "Scrie recenzie";
+"footer.share" = "Distribuie";
 "holiday.ascension_day" = "Înălțarea Domnului";
 "holiday.christmas_day" = "Crăciun";
 "holiday.christmas_day_one" = "Prima zi de Crăciun";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "すべての項目を入力してロックしてください。";
 "daycard.lock" = "ロック";
 "daycard.placeholder.entry" = "今日のいいことを書いて…";
+"daycard.placeholder.first.entry.1" = "楽しく話した相手は...";
+"daycard.placeholder.first.entry.2" = "美味しく食べたものは...";
+"daycard.placeholder.first.entry.3" = "大笑いした動画は...";
+"daycard.placeholder.first.entry.4" = "やさしく挨拶してくれた場所は...";
+"daycard.placeholder.first.entry.5" = "今日始めたことは...";
 "daycard.placeholder.optional" = "任意（以前の数より多い）";
 "daycard.remove.optional" = "任意の項目を削除";
 "daycard.score.adjust" = "スコアを調整";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Isi semua medan untuk kunci.";
 "daycard.lock" = "Kunci";
 "daycard.placeholder.entry" = "Tulis sesuatu yang baik…";
+"daycard.placeholder.first.entry.1" = "Saya borak seronok dengan...";
+"daycard.placeholder.first.entry.2" = "Saya makan sesuatu yang sedap, namanya...";
+"daycard.placeholder.first.entry.3" = "Saya ketawa kuat sebab...";
+"daycard.placeholder.first.entry.4" = "Saya disambut mesra di...";
+"daycard.placeholder.first.entry.5" = "Saya mula hari ini dengan...";
 "daycard.placeholder.optional" = "Pilihan (lebih daripada kuantiti sebelumnya)";
 "daycard.remove.optional" = "Buang entri pilihan";
 "daycard.score.adjust" = "Laras skor";
@@ -85,7 +90,7 @@
 "filters.active.notice" = "Penapis aktif: hanya %d entri terbaru dipaparkan. Tekan mesej ini untuk buang penapis";
 "footer.feedback" = "Hantar maklum balas";
 "footer.review" = "Tulis ulasan";
-"footer.share" = "Kongsi dengan rakan";
+"footer.share" = "Kongsi";
 "holiday.ascension_day" = "Hari Kenaikan Isa Al-Masih";
 "holiday.christmas_day" = "Hari Krismas";
 "holiday.christmas_day_one" = "Hari Krismas pertama";

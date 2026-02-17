@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Täytä kaikki kentät lukitaksesi.";
 "daycard.lock" = "Lukitse";
 "daycard.placeholder.entry" = "Kirjoita jotain positiivista…";
+"daycard.placeholder.first.entry.1" = "Juttelin mukavasti...";
+"daycard.placeholder.first.entry.2" = "Söin jotain herkullista, sen nimi oli...";
+"daycard.placeholder.first.entry.3" = "Nauroin kunnolla...";
+"daycard.placeholder.first.entry.4" = "Minut toivotettiin ystävällisesti tervetulleeksi...";
+"daycard.placeholder.first.entry.5" = "Aloitin tänään...";
 "daycard.placeholder.optional" = "Valinnainen (edellisen määrän yläpuolelle)";
 "daycard.remove.optional" = "Poista valinnainen merkintä";
 "daycard.score.adjust" = "Säädä pistemäärää";
@@ -83,9 +88,9 @@
 "filters.sort.newest.first" = "Uusimmasta vanhimpaan";
 "filters.sort.oldest.first" = "Vanhimmasta uusimpaan";
 "filters.active.notice" = "Aktiivinen suodatin %d uusimmalle julkaisulle. Poista suodatin napauttamalla tätä viestiä";
-"footer.feedback" = "Lähetä palautetta";
-"footer.review" = "Kirjoita arvostelu";
-"footer.share" = "Jaa ystävien kanssa";
+"footer.feedback" = "Lähetä palaute";
+"footer.review" = "Kirjoita arvio";
+"footer.share" = "Jaa ystäville";
 "holiday.ascension_day" = "Helatorstai";
 "holiday.christmas_day" = "Joulupäivä";
 "holiday.christmas_day_one" = "Joulupäivä";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Omple tots els camps per bloquejar.";
 "daycard.lock" = "Bloqueja";
 "daycard.placeholder.entry" = "Escriu alguna cosa bona…";
+"daycard.placeholder.first.entry.1" = "He tingut una conversa divertida amb...";
+"daycard.placeholder.first.entry.2" = "He menjat una cosa deliciosa, es deia...";
+"daycard.placeholder.first.entry.3" = "He rigut de valent amb...";
+"daycard.placeholder.first.entry.4" = "M’han saludat amb simpatia a...";
+"daycard.placeholder.first.entry.5" = "Avui he començat amb...";
 "daycard.placeholder.optional" = "Opcional (més que la quantitat anterior)";
 "daycard.remove.optional" = "Elimina l’entrada opcional";
 "daycard.score.adjust" = "Ajusta la puntuació";
@@ -84,8 +89,8 @@
 "filters.sort.oldest.first" = "Més antigues primer";
 "filters.active.notice" = "Filtre actiu: només es mostren les %d entrades més recents. Prem aquest missatge per treure el filtre";
 "footer.feedback" = "Envia comentaris";
-"footer.review" = "Escriu una ressenya";
-"footer.share" = "Comparteix amb amics";
+"footer.review" = "Escriu ressenya";
+"footer.share" = "Comparteix";
 "holiday.ascension_day" = "Ascensió";
 "holiday.christmas_day" = "Nadal";
 "holiday.christmas_day_one" = "Primer dia de Nadal";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Isi semua kolom untuk mengunci.";
 "daycard.lock" = "Kunci";
 "daycard.placeholder.entry" = "Tulis sesuatu yang positif…";
+"daycard.placeholder.first.entry.1" = "Aku ngobrol seru sama...";
+"daycard.placeholder.first.entry.2" = "Aku makan sesuatu yang enak, namanya...";
+"daycard.placeholder.first.entry.3" = "Aku ketawa banget gara-gara...";
+"daycard.placeholder.first.entry.4" = "Aku disambut ramah di...";
+"daycard.placeholder.first.entry.5" = "Hari ini aku mulai dengan...";
 "daycard.placeholder.optional" = "Opsional (di atas jumlah sebelumnya)";
 "daycard.remove.optional" = "Hapus entri opsional";
 "daycard.score.adjust" = "Sesuaikan skor";

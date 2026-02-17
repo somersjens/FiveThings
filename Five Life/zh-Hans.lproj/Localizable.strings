@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "填写所有字段以锁定。";
 "daycard.lock" = "锁定";
 "daycard.placeholder.entry" = "今天有哪些好事？…";
+"daycard.placeholder.first.entry.1" = "我聊得很开心的是...";
+"daycard.placeholder.first.entry.2" = "我吃到很香的东西是...";
+"daycard.placeholder.first.entry.3" = "我笑到不行的是...";
+"daycard.placeholder.first.entry.4" = "我被友好打招呼的地方是...";
+"daycard.placeholder.first.entry.5" = "我今天开始做的是...";
 "daycard.placeholder.optional" = "可选（超过原数量）";
 "daycard.remove.optional" = "移除可选条目";
 "daycard.score.adjust" = "调整评分";

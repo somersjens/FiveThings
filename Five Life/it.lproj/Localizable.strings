@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Compila tutti i campi per bloccare.";
 "daycard.lock" = "Blocca";
 "daycard.placeholder.entry" = "Scrivi qualcosa di positivo…";
+"daycard.placeholder.first.entry.1" = "Ho fatto una bella chiacchierata con...";
+"daycard.placeholder.first.entry.2" = "Ho mangiato qualcosa di buonissimo, si chiamava...";
+"daycard.placeholder.first.entry.3" = "Ho riso un sacco per...";
+"daycard.placeholder.first.entry.4" = "Mi hanno salutato con gentilezza a/in...";
+"daycard.placeholder.first.entry.5" = "Oggi ho iniziato con...";
 "daycard.placeholder.optional" = "Opzionale (sopra la quantità precedente)";
 "daycard.remove.optional" = "Rimuovi voce opzionale";
 "daycard.score.adjust" = "Modifica punteggio";
@@ -84,8 +89,8 @@
 "filters.sort.oldest.first" = "Dal più vecchio";
 "filters.active.notice" = "Filtro attivo per i %d post più recenti. Tocca questo messaggio per rimuovere il filtro";
 "footer.feedback" = "Invia feedback";
-"footer.review" = "Scrivi una recensione";
-"footer.share" = "Condividi con gli amici";
+"footer.review" = "Scrivi recensione";
+"footer.share" = "Condividi";
 "holiday.ascension_day" = "Ascensione";
 "holiday.christmas_day" = "Natale";
 "holiday.christmas_day_one" = "Natale";

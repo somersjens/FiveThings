@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "লক করতে সব ফিল্ড পূরণ করো।";
 "daycard.lock" = "লক করো";
 "daycard.placeholder.entry" = "কিছু ইতিবাচক কথা লিখুন…";
+"daycard.placeholder.first.entry.1" = "আজ দারুণ কথা বললাম...";
+"daycard.placeholder.first.entry.2" = "আজ কিছু সুস্বাদু খেয়েছি, নাম...";
+"daycard.placeholder.first.entry.3" = "আজ খুব হেসেছি...";
+"daycard.placeholder.first.entry.4" = "আজ আমাকে হাসিমুখে স্বাগত জানানো হয়েছে...";
+"daycard.placeholder.first.entry.5" = "আজ শুরু করেছি...";
 "daycard.placeholder.optional" = "ঐচ্ছিক (আগের পরিমাণের উপরে)";
 "daycard.remove.optional" = "ঐচ্ছিক এন্ট্রি সরাও";
 "daycard.score.adjust" = "স্কোর সামঞ্জস্য করো";
@@ -83,9 +88,9 @@
 "filters.sort.newest.first" = "সবচেয়ে নতুন প্রথমে";
 "filters.sort.oldest.first" = "সবচেয়ে পুরোনো প্রথমে";
 "filters.active.notice" = "%d সবচেয়ে সাম্প্রতিক পোস্টের জন্য সক্রিয় ফিল্টার। ফিল্টার সরাতে এই বার্তায় চাপ দাও";
-"footer.feedback" = "প্রতিক্রিয়া পাঠাও";
-"footer.review" = "রিভিউ লেখো";
-"footer.share" = "বন্ধুদের সাথে শেয়ার করো";
+"footer.feedback" = "ফিডব্যাক দিন";
+"footer.review" = "রিভিউ লিখুন";
+"footer.share" = "বন্ধুদের সাথে শেয়ার";
 "holiday.ascension_day" = "আরোহণ দিবস";
 "holiday.christmas_day" = "ক্রিসমাস";
 "holiday.christmas_day_one" = "ক্রিসমাস";

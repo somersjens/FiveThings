@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Fyll i alla fält för att låsa.";
 "daycard.lock" = "Lås";
 "daycard.placeholder.entry" = "Skriv något positivt…";
+"daycard.placeholder.first.entry.1" = "Jag hade ett trevligt snack med...";
+"daycard.placeholder.first.entry.2" = "Jag åt något gott, det hette...";
+"daycard.placeholder.first.entry.3" = "Jag skrattade högt åt...";
+"daycard.placeholder.first.entry.4" = "Jag blev vänligt hälsad på...";
+"daycard.placeholder.first.entry.5" = "Jag började idag med...";
 "daycard.placeholder.optional" = "Valfritt (ovanför gammal mängd)";
 "daycard.remove.optional" = "Ta bort valfritt fält";
 "daycard.score.adjust" = "Justera poäng";

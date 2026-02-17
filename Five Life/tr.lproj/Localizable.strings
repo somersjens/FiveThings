@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Kilitlemek için tüm alanları doldur.";
 "daycard.lock" = "Kilitle";
 "daycard.placeholder.entry" = "Olumlu bir şey yaz…";
+"daycard.placeholder.first.entry.1" = "... ile güzel bir sohbet ettim...";
+"daycard.placeholder.first.entry.2" = "Çok lezzetli bir şey yedim, adı...";
+"daycard.placeholder.first.entry.3" = "... yüzünden çok güldüm...";
+"daycard.placeholder.first.entry.4" = "...’de beni güler yüzle karşıladılar...";
+"daycard.placeholder.first.entry.5" = "Bugün ... ile başladım...";
 "daycard.placeholder.optional" = "İsteğe bağlı (eski miktarın üstünde)";
 "daycard.remove.optional" = "İsteğe bağlı girişi kaldır";
 "daycard.score.adjust" = "Puanı ayarla";

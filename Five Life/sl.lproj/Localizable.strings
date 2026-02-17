@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Izpolni vsa polja za zaklepanje.";
 "daycard.lock" = "Zakleni";
 "daycard.placeholder.entry" = "Napiši nekaj lepega…";
+"daycard.placeholder.first.entry.1" = "Imel/Imela sem fajn pogovor z...";
+"daycard.placeholder.first.entry.2" = "Pojedel/Pojedla sem nekaj dobrega, imenovalo se je...";
+"daycard.placeholder.first.entry.3" = "Pošteno sem se nasmejal/nasmejala ob...";
+"daycard.placeholder.first.entry.4" = "Prijazno so me pozdravili v/na...";
+"daycard.placeholder.first.entry.5" = "Danes sem začel/začela z...";
 "daycard.placeholder.optional" = "Neobvezno (več kot prejšnja količina)";
 "daycard.remove.optional" = "Odstrani neobvezni vnos";
 "daycard.score.adjust" = "Prilagodi oceno";
@@ -83,9 +88,9 @@
 "filters.sort.newest.first" = "Najnovejše najprej";
 "filters.sort.oldest.first" = "Najstarejše najprej";
 "filters.active.notice" = "Aktiven filter: prikazanih je le zadnjih %d vnosov. Tapni to sporočilo za odstranitev filtra";
-"footer.feedback" = "Pošlji povratne informacije";
+"footer.feedback" = "Pošlji povratne info";
 "footer.review" = "Napiši oceno";
-"footer.share" = "Deli s prijatelji";
+"footer.share" = "Deli";
 "holiday.ascension_day" = "Vnebohod";
 "holiday.christmas_day" = "Božič";
 "holiday.christmas_day_one" = "Prvi božični dan";

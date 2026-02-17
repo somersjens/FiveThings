@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Fyll ut alle felt for å låse.";
 "daycard.lock" = "Lås";
 "daycard.placeholder.entry" = "Skriv noe positivt…";
+"daycard.placeholder.first.entry.1" = "Jeg hadde en hyggelig prat med...";
+"daycard.placeholder.first.entry.2" = "Jeg spiste noe skikkelig godt, det het...";
+"daycard.placeholder.first.entry.3" = "Jeg lo skikkelig av...";
+"daycard.placeholder.first.entry.4" = "Jeg ble hyggelig møtt hos...";
+"daycard.placeholder.first.entry.5" = "Jeg startet i dag med...";
 "daycard.placeholder.optional" = "Valgfritt (over gammel mengde)";
 "daycard.remove.optional" = "Fjern valgfri oppføring";
 "daycard.score.adjust" = "Juster poeng";
@@ -83,8 +88,8 @@
 "filters.sort.newest.first" = "Nyeste først";
 "filters.sort.oldest.first" = "Eldste først";
 "filters.active.notice" = "Aktivt filter for de %d nyeste innleggene. Trykk på denne meldingen for å fjerne filteret";
-"footer.feedback" = "Send tilbakemelding";
-"footer.review" = "Skriv en anmeldelse";
+"footer.feedback" = "Send feedback";
+"footer.review" = "Skriv anmeldelse";
 "footer.share" = "Del med venner";
 "holiday.ascension_day" = "Kristi himmelfartsdag";
 "holiday.christmas_day" = "1. juledag";

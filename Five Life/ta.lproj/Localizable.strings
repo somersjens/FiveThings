@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "பூட்டுவதற்கு அனைத்து புலங்களையும் நிரப்பு.";
 "daycard.lock" = "பூட்டு";
 "daycard.placeholder.entry" = "ஏதாவது நேர்மறையானதை எழுது…";
+"daycard.placeholder.first.entry.1" = "நல்லா பேசினது...";
+"daycard.placeholder.first.entry.2" = "ருசியாக சாப்பிட்டது...";
+"daycard.placeholder.first.entry.3" = "செமையாக சிரிக்க வைத்த வீடியோ...";
+"daycard.placeholder.first.entry.4" = "நட்பாக வரவேற்ற இடம்...";
+"daycard.placeholder.first.entry.5" = "இன்று தொடங்கியது...";
 "daycard.placeholder.optional" = "விருப்பமானது (முந்தைய அளவுக்கு மேல்)";
 "daycard.remove.optional" = "விருப்ப உள்ளீட்டை அகற்று";
 "daycard.score.adjust" = "மதிப்பெண்ணை சரிசெய்";

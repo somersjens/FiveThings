@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Udfyld alle felter for at låse.";
 "daycard.lock" = "Lås";
 "daycard.placeholder.entry" = "Skriv noget godt…";
+"daycard.placeholder.first.entry.1" = "Jeg havde en hyggelig snak med...";
+"daycard.placeholder.first.entry.2" = "Jeg spiste noget lækkert, det hed...";
+"daycard.placeholder.first.entry.3" = "Jeg grinede højt af...";
+"daycard.placeholder.first.entry.4" = "Jeg blev venligt hilst velkommen hos...";
+"daycard.placeholder.first.entry.5" = "Jeg startede i dag med...";
 "daycard.placeholder.optional" = "Valgfrit (over tidligere antal)";
 "daycard.remove.optional" = "Fjern valgfri post";
 "daycard.score.adjust" = "Juster score";

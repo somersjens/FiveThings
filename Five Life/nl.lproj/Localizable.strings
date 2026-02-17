@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Vul alle velden in om te vergrendelen.";
 "daycard.lock" = "Vergrendelen";
 "daycard.placeholder.entry" = "Schrijf iets positiefs…";
+"daycard.placeholder.first.entry.1" = "Ik had een leuk gesprek met...";
+"daycard.placeholder.first.entry.2" = "Ik at iets lekkers, het heette...";
+"daycard.placeholder.first.entry.3" = "Ik heb hard gelachen om...";
+"daycard.placeholder.first.entry.4" = "Ik werd vriendelijk begroet bij...";
+"daycard.placeholder.first.entry.5" = "Ik startte vandaag met...";
 "daycard.placeholder.optional" = "Optioneel (boven oud aantal)";
 "daycard.remove.optional" = "Optionele regel verwijderen";
 "daycard.score.adjust" = "Pas score aan";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Wypełnij wszystkie pola, aby zablokować.";
 "daycard.lock" = "Zablokuj";
 "daycard.placeholder.entry" = "Zapisz coś pozytywnego…";
+"daycard.placeholder.first.entry.1" = "Miałem/am fajną rozmowę z...";
+"daycard.placeholder.first.entry.2" = "Zjadłem/am coś pysznego, nazywało się...";
+"daycard.placeholder.first.entry.3" = "Uśmiałem/am się z...";
+"daycard.placeholder.first.entry.4" = "Zostałem/am miło przywitany/a w...";
+"daycard.placeholder.first.entry.5" = "Dzisiaj zacząłem/zaczęłam od...";
 "daycard.placeholder.optional" = "Opcjonalne (powyżej poprzedniej ilości)";
 "daycard.remove.optional" = "Usuń wpis opcjonalny";
 "daycard.score.adjust" = "Dostosuj ocenę";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "सभी फ़ील्ड भरें ताकि लॉक हो सके।";
 "daycard.lock" = "लॉक करें";
 "daycard.placeholder.entry" = "कुछ अच्छी बात लिखें…";
+"daycard.placeholder.first.entry.1" = "मेरी मज़ेदार बातचीत हुई...";
+"daycard.placeholder.first.entry.2" = "मैंने कुछ स्वादिष्ट खाया, नाम था...";
+"daycard.placeholder.first.entry.3" = "मैं बहुत हँसा/हँसी...";
+"daycard.placeholder.first.entry.4" = "मुझे दोस्ताना तरीके से स्वागत मिला...";
+"daycard.placeholder.first.entry.5" = "मैंने आज शुरू किया...";
 "daycard.placeholder.optional" = "वैकल्पिक (पहले की संख्या से अधिक)";
 "daycard.remove.optional" = "वैकल्पिक आइटम हटाएँ";
 "daycard.score.adjust" = "स्कोर बदलें";
@@ -85,7 +90,7 @@
 "filters.active.notice" = "फ़िल्टर चालू है: केवल नवीनतम %d प्रविष्टियाँ दिख रही हैं। इस संदेश पर टैप करके फ़िल्टर हटाएँ";
 "footer.feedback" = "फ़ीडबैक भेजें";
 "footer.review" = "समीक्षा लिखें";
-"footer.share" = "दोस्तों के साथ शेयर करें";
+"footer.share" = "दोस्तों संग शेयर";
 "holiday.ascension_day" = "आरोहण दिवस";
 "holiday.christmas_day" = "क्रिसमस";
 "holiday.christmas_day_one" = "क्रिसमस का पहला दिन";

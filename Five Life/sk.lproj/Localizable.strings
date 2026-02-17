@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Vyplň všetky polia pre uzamknutie.";
 "daycard.lock" = "Uzamknúť";
 "daycard.placeholder.entry" = "Napíš niečo pekné…";
+"daycard.placeholder.first.entry.1" = "Mal/Mala som fajn pokec s...";
+"daycard.placeholder.first.entry.2" = "Zjedol/Zjedla som niečo chutné, volalo sa...";
+"daycard.placeholder.first.entry.3" = "Poradne som sa zasmial/Zasmiala na...";
+"daycard.placeholder.first.entry.4" = "Privítali ma milo v...";
+"daycard.placeholder.first.entry.5" = "Dnes som začal/začala s...";
 "daycard.placeholder.optional" = "Voliteľné (viac ako predchádzajúci počet)";
 "daycard.remove.optional" = "Odstrániť voliteľný záznam";
 "daycard.score.adjust" = "Upraviť hodnotenie";
@@ -85,7 +90,7 @@
 "filters.active.notice" = "Aktívny filter: zobrazujú sa iba posledných %d záznamov. Kliknutím na túto správu filter vypneš";
 "footer.feedback" = "Poslať spätnú väzbu";
 "footer.review" = "Napísať recenziu";
-"footer.share" = "Zdieľať s priateľmi";
+"footer.share" = "Zdieľať";
 "holiday.ascension_day" = "Nanebovstúpenie Pána";
 "holiday.christmas_day" = "Vianoce";
 "holiday.christmas_day_one" = "Prvý sviatok vianočný";

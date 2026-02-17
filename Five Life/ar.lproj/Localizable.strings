@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "املأ جميع الحقول للقفل.";
 "daycard.lock" = "قفل";
 "daycard.placeholder.entry" = "اكتب شيئًا جميلًا…";
+"daycard.placeholder.first.entry.1" = "كان عندي حديث لطيف مع...";
+"daycard.placeholder.first.entry.2" = "أكلتُ شيئًا لذيذًا، اسمه...";
+"daycard.placeholder.first.entry.3" = "ضحكتُ كثيرًا على...";
+"daycard.placeholder.first.entry.4" = "تم الترحيب بي بلطف في...";
+"daycard.placeholder.first.entry.5" = "بدأتُ اليوم بـ...";
 "daycard.placeholder.optional" = "اختياري (فوق الكمية السابقة)";
 "daycard.remove.optional" = "إزالة الإدخال الاختياري";
 "daycard.score.adjust" = "تعديل التقييم";

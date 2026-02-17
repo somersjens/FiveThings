@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Заполни все поля, чтобы заблокировать.";
 "daycard.lock" = "Заблокировать";
 "daycard.placeholder.entry" = "Напиши что-то хорошее…";
+"daycard.placeholder.first.entry.1" = "У меня был классный разговор с...";
+"daycard.placeholder.first.entry.2" = "Я съел(а) что-то вкусное, называлось...";
+"daycard.placeholder.first.entry.3" = "Я очень смеялся/смеялась над...";
+"daycard.placeholder.first.entry.4" = "Меня дружелюбно поприветствовали в...";
+"daycard.placeholder.first.entry.5" = "Сегодня я начал(а) с...";
 "daycard.placeholder.optional" = "Необязательно (больше прежнего количества)";
 "daycard.remove.optional" = "Удалить необязательный пункт";
 "daycard.score.adjust" = "Изменить оценку";
@@ -85,7 +90,7 @@
 "filters.active.notice" = "Активный фильтр: только последние %d записей. Нажми на это сообщение, чтобы убрать фильтр";
 "footer.feedback" = "Отправить отзыв";
 "footer.review" = "Написать отзыв";
-"footer.share" = "Поделиться с друзьями";
+"footer.share" = "Поделиться";
 "holiday.ascension_day" = "Вознесение Господне";
 "holiday.christmas_day" = "Рождество";
 "holiday.christmas_day_one" = "Первый день Рождества";

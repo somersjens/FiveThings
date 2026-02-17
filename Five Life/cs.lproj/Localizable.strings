@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Vyplň všechna pole pro uzamčení.";
 "daycard.lock" = "Uzamknout";
 "daycard.placeholder.entry" = "Napiš něco pozitivního…";
+"daycard.placeholder.first.entry.1" = "Měl(a) jsem fajn pokec s...";
+"daycard.placeholder.first.entry.2" = "Dal(a) jsem si něco dobrého, jmenovalo se...";
+"daycard.placeholder.first.entry.3" = "Hodně jsem se nasmál(a) u...";
+"daycard.placeholder.first.entry.4" = "Přivítali mě mile v...";
+"daycard.placeholder.first.entry.5" = "Dnes jsem začal(a) s...";
 "daycard.placeholder.optional" = "Volitelné (nad předchozí množství)";
 "daycard.remove.optional" = "Odebrat volitelný záznam";
 "daycard.score.adjust" = "Upravit skóre";
@@ -85,7 +90,7 @@
 "filters.active.notice" = "Aktivní filtr pro %d nejnovějších příspěvků. Klepnutím na tuto zprávu filtr odstraníš";
 "footer.feedback" = "Poslat zpětnou vazbu";
 "footer.review" = "Napsat recenzi";
-"footer.share" = "Sdílet s přáteli";
+"footer.share" = "Sdílet";
 "holiday.ascension_day" = "Nanebevstoupení Páně";
 "holiday.christmas_day" = "Vánoce";
 "holiday.christmas_day_one" = "Vánoce";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Remplis tous les champs pour verrouiller.";
 "daycard.lock" = "Verrouiller";
 "daycard.placeholder.entry" = "Écris quelque chose de positif…";
+"daycard.placeholder.first.entry.1" = "J’ai eu une discussion sympa avec...";
+"daycard.placeholder.first.entry.2" = "J’ai mangé quelque chose de délicieux, ça s’appelait...";
+"daycard.placeholder.first.entry.3" = "J’ai bien rigolé avec...";
+"daycard.placeholder.first.entry.4" = "J’ai été accueilli(e) gentiment à/au...";
+"daycard.placeholder.first.entry.5" = "J’ai commencé aujourd’hui avec...";
 "daycard.placeholder.optional" = "Optionnel (au-dessus de l’ancienne quantité)";
 "daycard.remove.optional" = "Supprimer l’entrée optionnelle";
 "daycard.score.adjust" = "Ajuster le score";

@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "מלא את כל השדות כדי לנעול.";
 "daycard.lock" = "נעל";
 "daycard.placeholder.entry" = "כתוב משהו טוב…";
+"daycard.placeholder.first.entry.1" = "היה לי שיחה כיפית עם...";
+"daycard.placeholder.first.entry.2" = "אכלתי משהו טעים, זה נקרא...";
+"daycard.placeholder.first.entry.3" = "צחקתי ממש על...";
+"daycard.placeholder.first.entry.4" = "קיבלו אותי בחיוך ב...";
+"daycard.placeholder.first.entry.5" = "התחלתי היום עם...";
 "daycard.placeholder.optional" = "אופציונלי (מעל הכמות הקודמת)";
 "daycard.remove.optional" = "הסר פריט אופציונלי";
 "daycard.score.adjust" = "שנה ציון";

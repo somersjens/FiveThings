@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "กรอกทุกช่องให้ครบเพื่อล็อก";
 "daycard.lock" = "ล็อก";
 "daycard.placeholder.entry" = "เขียนสิ่งดีๆ บ้าง…";
+"daycard.placeholder.first.entry.1" = "ฉันคุยสนุกกับ...";
+"daycard.placeholder.first.entry.2" = "ฉันได้กินของอร่อย ชื่อว่า...";
+"daycard.placeholder.first.entry.3" = "ฉันหัวเราะดังมากกับ...";
+"daycard.placeholder.first.entry.4" = "ฉันได้รับการทักทายอย่างเป็นมิตรที่...";
+"daycard.placeholder.first.entry.5" = "วันนี้ฉันเริ่มต้นด้วย...";
 "daycard.placeholder.optional" = "ไม่บังคับ (เกินจำนวนเดิม)";
 "daycard.remove.optional" = "ลบรายการไม่บังคับ";
 "daycard.score.adjust" = "ปรับคะแนน";

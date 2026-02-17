@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Điền đầy đủ các ô để khóa.";
 "daycard.lock" = "Khóa";
 "daycard.placeholder.entry" = "Viết điều gì đó tốt đẹp…";
+"daycard.placeholder.first.entry.1" = "Tôi đã trò chuyện vui với...";
+"daycard.placeholder.first.entry.2" = "Tôi đã ăn món rất ngon, tên là...";
+"daycard.placeholder.first.entry.3" = "Tôi đã cười rất nhiều vì...";
+"daycard.placeholder.first.entry.4" = "Tôi được chào đón thân thiện ở...";
+"daycard.placeholder.first.entry.5" = "Hôm nay tôi bắt đầu với...";
 "daycard.placeholder.optional" = "Tùy chọn (trên số cũ)";
 "daycard.remove.optional" = "Xóa mục tùy chọn";
 "daycard.score.adjust" = "Điều chỉnh điểm";

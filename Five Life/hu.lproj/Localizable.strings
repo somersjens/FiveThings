@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Töltsd ki az összes mezőt a zároláshoz.";
 "daycard.lock" = "Zárolás";
 "daycard.placeholder.entry" = "Írj valami jót…";
+"daycard.placeholder.first.entry.1" = "Jót beszélgettem vele...";
+"daycard.placeholder.first.entry.2" = "Ettem valami finomat, a neve...";
+"daycard.placeholder.first.entry.3" = "Nagyon nevettem ezen...";
+"daycard.placeholder.first.entry.4" = "Kedvesen köszöntöttek itt...";
+"daycard.placeholder.first.entry.5" = "Ma ezzel kezdtem...";
 "daycard.placeholder.optional" = "Opcionális (több, mint a korábbi mennyiség)";
 "daycard.remove.optional" = "Opcionális bejegyzés eltávolítása";
 "daycard.score.adjust" = "Pontszám módosítása";
@@ -83,9 +88,9 @@
 "filters.sort.newest.first" = "Legújabb előre";
 "filters.sort.oldest.first" = "Legrégebbi előre";
 "filters.active.notice" = "Aktív szűrő: csak az utolsó %d bejegyzés látható. Koppints erre az üzenetre a szűrő eltávolításához";
-"footer.feedback" = "Visszajelzés küldése";
-"footer.review" = "Értékelés írása";
-"footer.share" = "Megosztás barátokkal";
+"footer.feedback" = "Visszajelzés";
+"footer.review" = "Értékelés";
+"footer.share" = "Megosztás";
 "holiday.ascension_day" = "Áldozócsütörtök";
 "holiday.christmas_day" = "Karácsony";
 "holiday.christmas_day_one" = "Első karácsonyi nap";

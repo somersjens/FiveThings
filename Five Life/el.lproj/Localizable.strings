@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Συμπλήρωσε όλα τα πεδία για να κλειδώσεις.";
 "daycard.lock" = "Κλείδωμα";
 "daycard.placeholder.entry" = "Γράψε κάτι καλό…";
+"daycard.placeholder.first.entry.1" = "Είχα μια ωραία κουβέντα με...";
+"daycard.placeholder.first.entry.2" = "Έφαγα κάτι νόστιμο, λεγόταν...";
+"daycard.placeholder.first.entry.3" = "Γέλασα πολύ με...";
+"daycard.placeholder.first.entry.4" = "Με χαιρέτησαν πολύ φιλικά στο/στη...";
+"daycard.placeholder.first.entry.5" = "Σήμερα ξεκίνησα με...";
 "daycard.placeholder.optional" = "Προαιρετικό (πάνω από τον προηγούμενο αριθμό)";
 "daycard.remove.optional" = "Αφαίρεση προαιρετικής καταχώρισης";
 "daycard.score.adjust" = "Ρύθμιση βαθμολογίας";

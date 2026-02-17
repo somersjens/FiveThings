@@ -57,6 +57,11 @@
 "daycard.complete.to.lock" = "Заповніть усі поля, щоб заблокувати.";
 "daycard.lock" = "Заблокувати";
 "daycard.placeholder.entry" = "Напишіть щось хороше…";
+"daycard.placeholder.first.entry.1" = "У мене була класна розмова з...";
+"daycard.placeholder.first.entry.2" = "Я скуштував/скуштувала щось смачне, називалося...";
+"daycard.placeholder.first.entry.3" = "Я дуже сміявся/сміялася з...";
+"daycard.placeholder.first.entry.4" = "Мене дружньо привітали в/у...";
+"daycard.placeholder.first.entry.5" = "Сьогодні я почав/почала з...";
 "daycard.placeholder.optional" = "Необов’язково (більше попередньої кількості)";
 "daycard.remove.optional" = "Видалити необов’язковий пункт";
 "daycard.score.adjust" = "Змінити оцінку";
@@ -85,7 +90,7 @@
 "filters.active.notice" = "Активний фільтр: тільки останні %d записів. Натисніть це повідомлення, щоб прибрати фільтр";
 "footer.feedback" = "Надіслати відгук";
 "footer.review" = "Написати відгук";
-"footer.share" = "Поділитися з друзями";
+"footer.share" = "Поділитися";
 "holiday.ascension_day" = "Вознесіння Господнє";
 "holiday.christmas_day" = "Різдво";
 "holiday.christmas_day_one" = "Перший день Різдва";
