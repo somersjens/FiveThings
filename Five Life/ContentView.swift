@@ -30,11 +30,12 @@ struct ContentView: View {
     @State private var exportingFormat: ExportFormat? = nil
     @State private var shareSheetItem: ShareSheetItem?
     @State private var settingsScrollTask: Task<Void, Never>?
+    @State private var settingsToggleGeneration = 0
     @State private var infoCardScrollTask: Task<Void, Never>?
     @State private var scrollToTopTrigger = 0
     @State private var scrollToFooterTrigger = 0
-    @State private var pendingSettingsOpen = false
-    @State private var pendingSettingsClose = false
+    @State private var settingsToggleRequest = 0
+    @State private var requestedSettingsVisible = false
     @State private var suppressSettingsAutoScroll = false
     @State private var pendingSettingsInfoRequest: SettingsView.SettingsInfo?
     @State private var settingsInfoTask: Task<Void, Never>?
@@ -499,9 +500,11 @@ struct ContentView: View {
                         .accessibilityHidden(true)
                 }
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: 32)
+            .contentShape(Rectangle())
             .padding(.horizontal, 56)
             .buttonStyle(.plain)
+            .zIndex(1)
             .accessibilityLabel(L10n.string("settings.show", language: settings.language))
         }
         .frame(maxWidth: .infinity, alignment: .center)
@@ -723,12 +726,12 @@ struct ContentView: View {
     ) -> some View {
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
+                Color.clear
+                    .frame(height: 1)
+                    .id(settingsTopID)
+
                 LazyVStack(alignment: .leading, spacing: 14) {
                     VStack(spacing: 0) {
-                        Color.clear
-                            .frame(height: 1)
-                            .id(settingsTopID)
-
                         ZStack(alignment: .top) {
                             Color.clear
                                 .frame(height: showSettings ? settingsSectionHeight : 0)
@@ -824,15 +827,8 @@ struct ContentView: View {
                     scrollSettingsIntoView(using: proxy)
                 }
             }
-            .onChange(of: pendingSettingsOpen) { _, shouldOpen in
-                if shouldOpen {
-                    openSettingsAfterScroll(using: proxy)
-                }
-            }
-            .onChange(of: pendingSettingsClose) { _, shouldClose in
-                if shouldClose {
-                    closeSettingsAfterScroll(using: proxy)
-                }
+            .onChange(of: settingsToggleRequest) { _, _ in
+                applySettingsToggleRequest(using: proxy)
             }
             .onChange(of: scrollToTopTrigger) { _, _ in
                 scrollToTop(using: proxy)
@@ -864,8 +860,7 @@ struct ContentView: View {
                         } else {
                             vm.newestFirst = false
                         }
-                        pendingInfoCardScroll = true
-                        pendingSettingsClose = true
+                        requestSettingsVisibility(false, scrollToInfoCardAfterClose: true)
                     } label: {
                         Image(systemName: "info")
                             .font(.system(size: settingsGearSize * scale,
@@ -878,7 +873,7 @@ struct ContentView: View {
                     Button {
                         showsReturnToMainMenuOnly = true
                         hasSeenAccessScreen = false
-                        pendingSettingsClose = true
+                        requestSettingsVisibility(false)
                     } label: {
                         Image("Access_5")
                             .renderingMode(.template)
@@ -892,7 +887,7 @@ struct ContentView: View {
                     .accessibilityLabel(L10n.string("access.back.main.menu", language: settings.language))
 
                     Button {
-                        pendingSettingsClose = true
+                        requestSettingsVisibility(false)
                     } label: {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: settingsGearSize * scale,
@@ -1283,11 +1278,16 @@ struct ContentView: View {
     }
 
     private func handleSettingsToggle() {
-        if showSettings {
-            pendingSettingsClose = true
-        } else {
-            pendingSettingsOpen = true
+        requestSettingsVisibility(!showSettings)
+    }
+
+    private func requestSettingsVisibility(_ shouldShow: Bool,
+                                           scrollToInfoCardAfterClose: Bool = false) {
+        if scrollToInfoCardAfterClose {
+            pendingInfoCardScroll = true
         }
+        requestedSettingsVisible = shouldShow
+        settingsToggleRequest += 1
     }
 
     private func updateUnlockStateIfNeeded() {
@@ -1380,40 +1380,34 @@ struct ContentView: View {
         }
     }
 
-    private func openSettingsAfterScroll(using proxy: ScrollViewProxy) {
+    private func applySettingsToggleRequest(using proxy: ScrollViewProxy) {
         settingsScrollTask?.cancel()
-        settingsScrollTask = Task { @MainActor in
-            let animation = Animation.easeInOut(duration: scrollToTopDuration)
-            await Task.yield()
-            guard !Task.isCancelled, scenePhase == .active else { return }
-            withAnimation(animation) {
-                proxy.scrollTo(settingsTopID, anchor: .top)
-            }
-            suppressSettingsAutoScroll = true
-            pendingSettingsOpen = false
-            withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
-                showSettings = true
-            }
-        }
-    }
+        let shouldShow = requestedSettingsVisible
+        settingsToggleGeneration += 1
+        let generation = settingsToggleGeneration
 
-    private func closeSettingsAfterScroll(using proxy: ScrollViewProxy) {
-        settingsScrollTask?.cancel()
-        settingsScrollTask = Task { @MainActor in
-            let animation = Animation.easeOut(duration: scrollToTopDuration)
-            await Task.yield()
-            guard !Task.isCancelled, scenePhase == .active else { return }
-            withAnimation(animation) {
-                proxy.scrollTo(settingsTopID, anchor: .top)
+        withAnimation(.easeOut(duration: scrollToTopDuration)) {
+            proxy.scrollTo(settingsTopID, anchor: .top)
+        }
+
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(scrollToTopDuration * 1_000_000_000))
+            guard generation == settingsToggleGeneration else { return }
+
+            if shouldShow {
+                suppressSettingsAutoScroll = true
+                withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
+                    showSettings = true
+                }
+                return
             }
+
             let shouldScrollToInfoCard = pendingInfoCardScroll
             pendingInfoCardScroll = false
             if showExportOptions {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showExportOptions = false
                 }
-                let closeDelayNanoseconds = UInt64(0.2 * 1_000_000_000)
-                try? await Task.sleep(nanoseconds: closeDelayNanoseconds)
             }
             withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
                 showSettings = false
@@ -1422,7 +1416,6 @@ struct ContentView: View {
                 scheduleInfoCardScroll(using: proxy,
                                        delay: settingsOpenAnimationDuration + 0.05)
             }
-            pendingSettingsClose = false
         }
     }
 
@@ -1435,7 +1428,7 @@ struct ContentView: View {
             if showSettings {
                 scheduleSettingsInfoPopover(.entriesPerDay, delay: 0.05)
             } else {
-                pendingSettingsOpen = true
+                requestSettingsVisibility(true)
             }
         case "search":
             pulseHighlight($highlightSearchPlaceholder)
@@ -1488,12 +1481,13 @@ struct ContentView: View {
     private func cancelTransientTasks() {
         settingsScrollTask?.cancel()
         settingsScrollTask = nil
+        settingsToggleGeneration = 0
         infoCardScrollTask?.cancel()
         infoCardScrollTask = nil
         settingsInfoTask?.cancel()
         settingsInfoTask = nil
-        pendingSettingsOpen = false
-        pendingSettingsClose = false
+        settingsToggleRequest = 0
+        requestedSettingsVisible = false
         pendingInfoCardScroll = false
         pendingSettingsInfoRequest = nil
     }
