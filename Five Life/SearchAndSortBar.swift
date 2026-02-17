@@ -53,7 +53,7 @@ struct SearchAndSortBar: View {
             )
             .animation(.easeInOut(duration: 0.25), value: highlightSearchPlaceholder)
 
-            if highlightSortArrow || highlightFilterLimit {
+            if highlightFilterLimit {
                 Image(systemName: "arrow.right")
                     .font(.system(size: sortIconSize * responsiveTypeScale, weight: .bold))
                     .foregroundStyle(Color.brandAccent)
@@ -77,6 +77,13 @@ struct SearchAndSortBar: View {
             .accessibilityLabel(L10n.string("filters.show.last",
                                             language: settings.language,
                                             finishedLimit.displayText(language: settings.language)))
+
+            if highlightSortArrow {
+                Image(systemName: "arrow.right")
+                    .font(.system(size: sortIconSize * responsiveTypeScale, weight: .bold))
+                    .foregroundStyle(Color.brandAccent)
+                    .transition(.opacity)
+            }
 
             Button {
                 newestFirst.toggle()
