@@ -50,23 +50,47 @@ final class ContentViewModel: ObservableObject {
     func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) -> Bool {
         settings.clampDailyCount()
 
+        let calendar = Calendar.current
         let today = startOfDay(Date())
-        let descriptor = FetchDescriptor<DayEntry>(
-            predicate: #Predicate { $0.day == today }
-        )
 
-        if let existing = try? modelContext.fetch(descriptor).first {
-            // If settings changed, resize today only when it's unlocked
-            if !existing.isLocked {
-                existing.resizeItemsIfNeeded(to: settings.dailyItemCount)
-            }
-            return false
+        let allEntriesDescriptor = FetchDescriptor<DayEntry>()
+        let allEntries = (try? modelContext.fetch(allEntriesDescriptor)) ?? []
+        let existingDays = Set(allEntries.map(\.day))
+        let hasHistoryBeforeToday = allEntries.contains { $0.day < today }
+
+        var didCreateEntry = false
+        var didResizeToday = false
+
+        if let existingToday = allEntries.first(where: { $0.day == today }), !existingToday.isLocked {
+            let oldItemCount = existingToday.itemCount
+            let oldItems = existingToday.items
+            existingToday.resizeItemsIfNeeded(to: settings.dailyItemCount)
+            didResizeToday = oldItemCount != existingToday.itemCount || oldItems != existingToday.items
         }
 
-        let entry = DayEntry(day: today, itemCount: settings.dailyItemCount)
-        modelContext.insert(entry)
-        try? modelContext.save()
-        return true
+        let recentDays: [Date] = (0..<3)
+            .compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
+            .map(startOfDay)
+            .reversed()
+
+        for day in recentDays {
+            if existingDays.contains(day) {
+                continue
+            }
+            if day != today && !hasHistoryBeforeToday {
+                continue
+            }
+
+            let entry = DayEntry(day: day, itemCount: settings.dailyItemCount)
+            modelContext.insert(entry)
+            didCreateEntry = true
+        }
+
+        if didCreateEntry || didResizeToday {
+            try? modelContext.save()
+        }
+
+        return didCreateEntry
     }
 
     func lock(_ entry: DayEntry, requiredCount: Int, settings: SettingsStore, modelContext: ModelContext) {
