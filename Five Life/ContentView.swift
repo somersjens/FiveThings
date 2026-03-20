@@ -500,10 +500,10 @@ struct ContentView: View {
                     scrollToTopTrigger += 1
                 } label: {
                     Image(systemName: "arrow.up")
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(highlightScrollToTop ? .orange : Color.brandAccent)
                         .frame(width: 32, height: 32)
-                        .scaleEffect(highlightScrollToTop ? 1.2 : 1)
+                        .scaleEffect(highlightScrollToTop ? 1.15 : 1)
                         .animation(.easeInOut(duration: 0.25), value: highlightScrollToTop)
                 }
                 .buttonStyle(.plain)
