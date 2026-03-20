@@ -23,6 +23,7 @@ struct AccessScreenView: View {
     @ScaledMetric(relativeTo: .headline) private var paymentIconSize: CGFloat = 16
     @ScaledMetric(relativeTo: .headline) private var paymentButtonSize: CGFloat = 32
     private let accessScale: CGFloat = 1.1
+    private let cardHorizontalPaddingMultiplier: CGFloat = 8
     private let inAppPaymentProductID = "20012026"
 
     private var cards: [String] {
@@ -62,7 +63,9 @@ struct AccessScreenView: View {
 
                             TabView(selection: $currentCardIndex) {
                                 ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
-                                    cardView(text: card, index: index, width: geometry.size.width)
+                                    cardView(text: card,
+                                             index: index,
+                                             availableWidth: geometry.size.width - (horizontalContentPadding(for: geometry.size.width) * 2))
                                         .tag(index)
                                 }
                             }
@@ -128,7 +131,7 @@ struct AccessScreenView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: geometry.size.height)
-                    .padding(.horizontal, 30 * accessScale)
+                    .padding(.horizontal, horizontalContentPadding(for: geometry.size.width))
                 }
                 if showConfetti {
                     CloverConfettiView()
@@ -155,8 +158,10 @@ struct AccessScreenView: View {
         }
     }
 
-    private func cardView(text: String, index: Int, width: CGFloat) -> some View {
-        let cardWidth = min(width * 0.86 * accessScale, maxContentWidth * responsiveTypeScale * accessScale)
+    private func cardView(text: String, index: Int, availableWidth: CGFloat) -> some View {
+        let cardHorizontalPadding = cardHorizontalPaddingMultiplier * accessScale
+        let cardWidth = min(max(availableWidth - (cardHorizontalPadding * 2), 0),
+                            maxContentWidth * responsiveTypeScale * accessScale)
         return Text(formattedCardText(text))
             .font(.system(size: cardFontSize * responsiveTypeScale))
             .foregroundStyle(.primary)
@@ -168,7 +173,6 @@ struct AccessScreenView: View {
             .background(
                 RoundedRectangle(cornerRadius: 20 * accessScale, style: .continuous)
                     .fill(Color.brandSurface)
-                    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
             )
             .overlay(alignment: .bottomTrailing) {
                 if index == 4 {
@@ -177,6 +181,10 @@ struct AccessScreenView: View {
                 }
             }
             .padding(.horizontal, 8 * accessScale)
+    }
+
+    private func horizontalContentPadding(for width: CGFloat) -> CGFloat {
+        min(30 * accessScale, max(16, width * 0.05))
     }
 
     private func formattedCardText(_ text: String) -> AttributedString {
