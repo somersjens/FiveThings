@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Nyeste først";
 "filters.sort.oldest.first" = "Eldste først";
 "filters.active.notice" = "Aktivt filter for de %d nyeste innleggene. Trykk på denne meldingen for å fjerne filteret";
-"footer.feedback" = "Send feedback";
-"footer.review" = "Skriv anmeldelse";
-"footer.share" = "Del med venner";
+"footer.feedback" = "Feedback";
+"footer.review" = "Anmeldelse";
+"footer.share" = "Del";
 "holiday.ascension_day" = "Kristi himmelfartsdag";
 "holiday.christmas_day" = "1. juledag";
 "holiday.christmas_day_one" = "1. juledag";

@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "ใหม่ที่สุดก่อน";
 "filters.sort.oldest.first" = "เก่าสุดก่อน";
 "filters.active.notice" = "กำลังกรอง: แสดงเฉพาะ %d รายการล่าสุด แตะข้อความนี้เพื่อยกเลิกการกรอง";
-"footer.feedback" = "ส่งความคิดเห็น";
-"footer.review" = "เขียนรีวิว";
-"footer.share" = "แชร์กับเพื่อน";
+"footer.feedback" = "ติชม";
+"footer.review" = "รีวิว";
+"footer.share" = "แชร์";
 "holiday.ascension_day" = "วันสมโภชพระเยซูขึ้นสวรรค์";
 "holiday.christmas_day" = "วันคริสต์มาส";
 "holiday.christmas_day_one" = "วันคริสต์มาสวันแรก";

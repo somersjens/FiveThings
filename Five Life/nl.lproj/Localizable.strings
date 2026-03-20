@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Nieuw naar oud";
 "filters.sort.oldest.first" = "Oud naar nieuw";
 "filters.active.notice" = "Filter actief voor de %d meest recente berichten, tik op dit bericht om de filter eraf te halen";
-"footer.feedback" = "Stuur feedback";
-"footer.review" = "Schrijf een review";
-"footer.share" = "Deel met vrienden";
+"footer.feedback" = "Feedback";
+"footer.review" = "Review";
+"footer.share" = "Delen";
 "holiday.ascension_day" = "Hemelvaart";
 "holiday.christmas_day" = "Kerstmis";
 "holiday.christmas_day_one" = "Eerste kerstdag";

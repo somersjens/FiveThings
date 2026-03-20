@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Más recientes primero";
 "filters.sort.oldest.first" = "Más antiguas primero";
 "filters.active.notice" = "Filtro activo: solo se muestran las %d entradas más recientes. Pulsa este mensaje para quitar el filtro";
-"footer.feedback" = "Enviar opinión";
-"footer.review" = "Escribir reseña";
+"footer.feedback" = "Opinión";
+"footer.review" = "Reseña";
 "footer.share" = "Compartir";
 "holiday.ascension_day" = "Ascensión";
 "holiday.christmas_day" = "Navidad";

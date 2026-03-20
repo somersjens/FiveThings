@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "חדשים קודם";
 "filters.sort.oldest.first" = "ישנים קודם";
 "filters.active.notice" = "מסנן פעיל: רק %d הפריטים האחרונים מוצגים. לחץ על ההודעה הזו לביטול המסנן";
-"footer.feedback" = "שלח משוב";
-"footer.review" = "כתוב ביקורת";
-"footer.share" = "שתף עם חברים";
+"footer.feedback" = "משוב";
+"footer.review" = "ביקורת";
+"footer.share" = "שתף";
 "holiday.ascension_day" = "חג העלייה";
 "holiday.christmas_day" = "חג המולד";
 "holiday.christmas_day_one" = "יום המולד הראשון";

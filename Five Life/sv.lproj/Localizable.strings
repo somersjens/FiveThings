@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Nytt till gammalt";
 "filters.sort.oldest.first" = "Gammalt till nytt";
 "filters.active.notice" = "Aktivt filter för de %d senaste inläggen. Tryck på detta meddelande för att ta bort filtret";
-"footer.feedback" = "Skicka feedback";
-"footer.review" = "Skriv en recension";
-"footer.share" = "Dela med vänner";
+"footer.feedback" = "Feedback";
+"footer.review" = "Recension";
+"footer.share" = "Dela";
 "holiday.ascension_day" = "Kristi himmelsfärdsdag";
 "holiday.christmas_day" = "Juldagen";
 "holiday.christmas_day_one" = "Juldagen";

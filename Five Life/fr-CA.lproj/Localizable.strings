@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Du plus récent au plus ancien";
 "filters.sort.oldest.first" = "Du plus ancien au plus récent";
 "filters.active.notice" = "Filtre actif pour les %d publications les plus récentes. Appuie sur ce message pour supprimer le filtre";
-"footer.feedback" = "Envoyer des commentaires";
-"footer.review" = "Rédiger un avis";
-"footer.share" = "Partager avec des amis";
+"footer.feedback" = "Retour";
+"footer.review" = "Avis";
+"footer.share" = "Partager";
 "holiday.ascension_day" = "Ascension";
 "holiday.christmas_day" = "Noël";
 "holiday.christmas_day_one" = "Noël";

@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "最新在前";
 "filters.sort.oldest.first" = "最早在前";
 "filters.active.notice" = "当前过滤：仅显示最近 %d 条。点击此消息移除过滤";
-"footer.feedback" = "发送反馈";
-"footer.review" = "撰写评价";
-"footer.share" = "分享给朋友";
+"footer.feedback" = "反馈";
+"footer.review" = "评价";
+"footer.share" = "分享";
 "holiday.ascension_day" = "耶稣升天日";
 "holiday.christmas_day" = "圣诞节";
 "holiday.christmas_day_one" = "圣诞节第一天";

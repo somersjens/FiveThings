@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "புதியது முதலில்";
 "filters.sort.oldest.first" = "பழையது முதலில்";
 "filters.active.notice" = "%d மிக சமீபத்திய இடுகைகளுக்கான செயலில் உள்ள வடிகட்டி. வடிகட்டியை அகற்ற இந்த செய்தியைத் தொடு";
-"footer.feedback" = "கருத்து அனுப்பு";
-"footer.review" = "மதிப்புரை எழுது";
-"footer.share" = "நண்பர்களுடன் பகிர்";
+"footer.feedback" = "கருத்து";
+"footer.review" = "மதிப்புரை";
+"footer.share" = "பகிர்";
 "holiday.ascension_day" = "ஏறுதல் நாள்";
 "holiday.christmas_day" = "கிறிஸ்துமஸ்";
 "holiday.christmas_day_one" = "கிறிஸ்துமஸ்";

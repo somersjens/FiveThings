@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Més recents primer";
 "filters.sort.oldest.first" = "Més antigues primer";
 "filters.active.notice" = "Filtre actiu: només es mostren les %d entrades més recents. Prem aquest missatge per treure el filtre";
-"footer.feedback" = "Envia comentaris";
-"footer.review" = "Escriu ressenya";
+"footer.feedback" = "Comenta";
+"footer.review" = "Ressenya";
 "footer.share" = "Comparteix";
 "holiday.ascension_day" = "Ascensió";
 "holiday.christmas_day" = "Nadal";

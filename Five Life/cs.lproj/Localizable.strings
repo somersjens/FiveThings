@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Od nejnovějšího";
 "filters.sort.oldest.first" = "Od nejstaršího";
 "filters.active.notice" = "Aktivní filtr pro %d nejnovějších příspěvků. Klepnutím na tuto zprávu filtr odstraníš";
-"footer.feedback" = "Poslat zpětnou vazbu";
-"footer.review" = "Napsat recenzi";
+"footer.feedback" = "Názor";
+"footer.review" = "Recenze";
 "footer.share" = "Sdílet";
 "holiday.ascension_day" = "Nanebevstoupení Páně";
 "holiday.christmas_day" = "Vánoce";

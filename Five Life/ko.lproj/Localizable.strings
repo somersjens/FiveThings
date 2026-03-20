@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "최신순";
 "filters.sort.oldest.first" = "오래된순";
 "filters.active.notice" = "필터 적용 중: 최근 %d개만 표시. 이 메시지를 탭하면 필터 해제됩니다";
-"footer.feedback" = "피드백 보내기";
-"footer.review" = "리뷰 쓰기";
-"footer.share" = "친구와 공유";
+"footer.feedback" = "피드백";
+"footer.review" = "리뷰";
+"footer.share" = "공유";
 "holiday.ascension_day" = "승천일";
 "holiday.christmas_day" = "크리스마스";
 "holiday.christmas_day_one" = "크리스마스 당일";

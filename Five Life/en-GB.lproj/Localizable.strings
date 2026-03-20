@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "New to old";
 "filters.sort.oldest.first" = "Old to new";
 "filters.active.notice" = "Active filter for the %d most recent posts. Tap this message to remove the filter";
-"footer.feedback" = "Send feedback";
-"footer.review" = "Write a review";
-"footer.share" = "Share with friends";
+"footer.feedback" = "Feedback";
+"footer.review" = "Review";
+"footer.share" = "Share";
 "holiday.ascension_day" = "Ascension Day";
 "holiday.christmas_day" = "Christmas Day";
 "holiday.christmas_day_one" = "Christmas Day";

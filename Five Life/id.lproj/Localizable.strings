@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Terbaru dulu";
 "filters.sort.oldest.first" = "Terlama dulu";
 "filters.active.notice" = "Filter aktif untuk %d posting terbaru. Ketuk pesan ini untuk menghapus filter";
-"footer.feedback" = "Kirim masukan";
-"footer.review" = "Tulis ulasan";
-"footer.share" = "Bagikan ke teman";
+"footer.feedback" = "Masukan";
+"footer.review" = "Ulasan";
+"footer.share" = "Bagikan";
 "holiday.ascension_day" = "Hari Kenaikan";
 "holiday.christmas_day" = "Natal";
 "holiday.christmas_day_one" = "Natal";

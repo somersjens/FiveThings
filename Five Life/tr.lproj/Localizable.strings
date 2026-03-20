@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Yeniden eskiye";
 "filters.sort.oldest.first" = "Eskiden yeniye";
 "filters.active.notice" = "%d en son gönderi için aktif filtre. Filtreyi kaldırmak için bu mesaja dokun";
-"footer.feedback" = "Geri bildirim gönder";
-"footer.review" = "Yorum yaz";
-"footer.share" = "Arkadaşlarla paylaş";
+"footer.feedback" = "Feedback";
+"footer.review" = "Yorum";
+"footer.share" = "Paylaş";
 "holiday.ascension_day" = "Yükseliş Günü";
 "holiday.christmas_day" = "Noel";
 "holiday.christmas_day_one" = "Noel";

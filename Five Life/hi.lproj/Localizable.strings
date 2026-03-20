@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "नवीनतम पहले";
 "filters.sort.oldest.first" = "सबसे पुराना पहले";
 "filters.active.notice" = "फ़िल्टर चालू है: केवल नवीनतम %d प्रविष्टियाँ दिख रही हैं। इस संदेश पर टैप करके फ़िल्टर हटाएँ";
-"footer.feedback" = "फ़ीडबैक भेजें";
-"footer.review" = "समीक्षा लिखें";
-"footer.share" = "दोस्तों संग शेयर";
+"footer.feedback" = "फ़ीडबैक";
+"footer.review" = "समीक्षा";
+"footer.share" = "शेयर";
 "holiday.ascension_day" = "आरोहण दिवस";
 "holiday.christmas_day" = "क्रिसमस";
 "holiday.christmas_day_one" = "क्रिसमस का पहला दिन";

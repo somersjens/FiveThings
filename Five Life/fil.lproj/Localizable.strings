@@ -83,9 +83,9 @@
 "filters.sort.newest.first" = "Pinakabago muna";
 "filters.sort.oldest.first" = "Pinakaluma muna";
 "filters.active.notice" = "Aktibong filter para sa %d pinakabagong posts. Pindutin ang mensaheng ito para alisin ang filter";
-"footer.feedback" = "Magpadala ng feedback";
-"footer.review" = "Magsulat ng review";
-"footer.share" = "I-share sa mga kaibigan";
+"footer.feedback" = "Feedback";
+"footer.review" = "Review";
+"footer.share" = "I-share";
 "holiday.ascension_day" = "Araw ng Pag-akyat";
 "holiday.christmas_day" = "Pasko";
 "holiday.christmas_day_one" = "Pasko";

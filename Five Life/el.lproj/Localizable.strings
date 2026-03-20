@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Νεότερα πρώτα";
 "filters.sort.oldest.first" = "Παλαιότερα πρώτα";
 "filters.active.notice" = "Ενεργό φίλτρο: εμφανίζονται μόνο οι τελευταίες %d καταχωρίσεις. Πάτησε αυτό το μήνυμα για αφαίρεση φίλτρου";
-"footer.feedback" = "Αποστολή σχολίων";
-"footer.review" = "Γράψε κριτική";
-"footer.share" = "Μοιράσου με φίλους";
+"footer.feedback" = "Σχόλια";
+"footer.review" = "Κριτική";
+"footer.share" = "Μοιράσου";
 "holiday.ascension_day" = "Ανάληψη";
 "holiday.christmas_day" = "Χριστούγεννα";
 "holiday.christmas_day_one" = "Πρώτη μέρα Χριστουγέννων";

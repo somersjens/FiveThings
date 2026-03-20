@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Legújabb előre";
 "filters.sort.oldest.first" = "Legrégebbi előre";
 "filters.active.notice" = "Aktív szűrő: csak az utolsó %d bejegyzés látható. Koppints erre az üzenetre a szűrő eltávolításához";
-"footer.feedback" = "Visszajelzés";
-"footer.review" = "Értékelés";
-"footer.share" = "Megosztás";
+"footer.feedback" = "Feedback";
+"footer.review" = "Értékelj";
+"footer.share" = "Oszd meg";
 "holiday.ascension_day" = "Áldozócsütörtök";
 "holiday.christmas_day" = "Karácsony";
 "holiday.christmas_day_one" = "Első karácsonyi nap";

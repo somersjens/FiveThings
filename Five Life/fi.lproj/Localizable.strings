@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Uusimmasta vanhimpaan";
 "filters.sort.oldest.first" = "Vanhimmasta uusimpaan";
 "filters.active.notice" = "Aktiivinen suodatin %d uusimmalle julkaisulle. Poista suodatin napauttamalla tätä viestiä";
-"footer.feedback" = "Lähetä palaute";
-"footer.review" = "Kirjoita arvio";
-"footer.share" = "Jaa ystäville";
+"footer.feedback" = "Palaute";
+"footer.review" = "Arvio";
+"footer.share" = "Jaa";
 "holiday.ascension_day" = "Helatorstai";
 "holiday.christmas_day" = "Joulupäivä";
 "holiday.christmas_day_one" = "Joulupäivä";

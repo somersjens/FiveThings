@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "最新在前";
 "filters.sort.oldest.first" = "最早在前";
 "filters.active.notice" = "目前過濾：僅顯示最近 %d 條。點擊此訊息移除過濾";
-"footer.feedback" = "傳送意見回饋";
-"footer.review" = "撰寫評價";
-"footer.share" = "分享給朋友";
+"footer.feedback" = "回饋";
+"footer.review" = "評價";
+"footer.share" = "分享";
 "holiday.ascension_day" = "耶穌升天日";
 "holiday.christmas_day" = "聖誕節";
 "holiday.christmas_day_one" = "聖誕節第一天";

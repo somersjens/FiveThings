@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Cele mai noi primele";
 "filters.sort.oldest.first" = "Cele mai vechi primele";
 "filters.active.notice" = "Filtru activ: se afișează doar ultimele %d intrări. Atinge acest mesaj pentru a elimina filtrul";
-"footer.feedback" = "Trimite feedback";
-"footer.review" = "Scrie recenzie";
+"footer.feedback" = "Feedback";
+"footer.review" = "Recenzie";
 "footer.share" = "Distribuie";
 "holiday.ascension_day" = "Înălțarea Domnului";
 "holiday.christmas_day" = "Crăciun";

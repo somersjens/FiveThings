@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Terbaru dahulu";
 "filters.sort.oldest.first" = "Terlama dahulu";
 "filters.active.notice" = "Penapis aktif: hanya %d entri terbaru dipaparkan. Tekan mesej ini untuk buang penapis";
-"footer.feedback" = "Hantar maklum balas";
-"footer.review" = "Tulis ulasan";
+"footer.feedback" = "Maklum balas";
+"footer.review" = "Ulasan";
 "footer.share" = "Kongsi";
 "holiday.ascension_day" = "Hari Kenaikan Isa Al-Masih";
 "holiday.christmas_day" = "Hari Krismas";

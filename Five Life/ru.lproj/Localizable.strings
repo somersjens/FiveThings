@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Сначала новые";
 "filters.sort.oldest.first" = "Сначала старые";
 "filters.active.notice" = "Активный фильтр: только последние %d записей. Нажми на это сообщение, чтобы убрать фильтр";
-"footer.feedback" = "Отправить отзыв";
-"footer.review" = "Написать отзыв";
+"footer.feedback" = "Фидбек";
+"footer.review" = "Отзыв";
 "footer.share" = "Поделиться";
 "holiday.ascension_day" = "Вознесение Господне";
 "holiday.christmas_day" = "Рождество";

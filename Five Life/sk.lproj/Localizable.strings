@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Najnovšie najprv";
 "filters.sort.oldest.first" = "Najstaršie najprv";
 "filters.active.notice" = "Aktívny filter: zobrazujú sa iba posledných %d záznamov. Kliknutím na túto správu filter vypneš";
-"footer.feedback" = "Poslať spätnú väzbu";
-"footer.review" = "Napísať recenziu";
+"footer.feedback" = "Feedback";
+"footer.review" = "Recenzia";
 "footer.share" = "Zdieľať";
 "holiday.ascension_day" = "Nanebovstúpenie Pána";
 "holiday.christmas_day" = "Vianoce";

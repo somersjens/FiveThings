@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "সবচেয়ে নতুন প্রথমে";
 "filters.sort.oldest.first" = "সবচেয়ে পুরোনো প্রথমে";
 "filters.active.notice" = "%d সবচেয়ে সাম্প্রতিক পোস্টের জন্য সক্রিয় ফিল্টার। ফিল্টার সরাতে এই বার্তায় চাপ দাও";
-"footer.feedback" = "ফিডব্যাক দিন";
-"footer.review" = "রিভিউ লিখুন";
-"footer.share" = "বন্ধুদের সাথে শেয়ার";
+"footer.feedback" = "ফিডব্যাক";
+"footer.review" = "রিভিউ";
+"footer.share" = "শেয়ার";
 "holiday.ascension_day" = "আরোহণ দিবস";
 "holiday.christmas_day" = "ক্রিসমাস";
 "holiday.christmas_day_one" = "ক্রিসমাস";

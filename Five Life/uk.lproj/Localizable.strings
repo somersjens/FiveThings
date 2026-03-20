@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Спочатку нові";
 "filters.sort.oldest.first" = "Спочатку старі";
 "filters.active.notice" = "Активний фільтр: тільки останні %d записів. Натисніть це повідомлення, щоб прибрати фільтр";
-"footer.feedback" = "Надіслати відгук";
-"footer.review" = "Написати відгук";
+"footer.feedback" = "Фідбек";
+"footer.review" = "Відгук";
 "footer.share" = "Поділитися";
 "holiday.ascension_day" = "Вознесіння Господнє";
 "holiday.christmas_day" = "Різдво";

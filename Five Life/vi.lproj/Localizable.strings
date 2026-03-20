@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "Mới trước";
 "filters.sort.oldest.first" = "Cũ trước";
 "filters.active.notice" = "Đang lọc: chỉ hiện %d mục mới nhất. Chạm thông báo này để bỏ lọc";
-"footer.feedback" = "Gửi phản hồi";
-"footer.review" = "Viết đánh giá";
-"footer.share" = "Chia sẻ với bạn bè";
+"footer.feedback" = "Góp ý";
+"footer.review" = "Đánh giá";
+"footer.share" = "Chia sẻ";
 "holiday.ascension_day" = "Lễ Thăng Thiên";
 "holiday.christmas_day" = "Lễ Giáng Sinh";
 "holiday.christmas_day_one" = "Ngày Giáng Sinh";

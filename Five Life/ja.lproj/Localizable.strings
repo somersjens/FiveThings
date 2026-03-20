@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "新しい順";
 "filters.sort.oldest.first" = "古い順";
 "filters.active.notice" = "フィルター有効：最新 %d 件のみ表示中。このメッセージをタップして解除";
-"footer.feedback" = "フィードバックを送る";
-"footer.review" = "レビューを書く";
-"footer.share" = "友達にシェア";
+"footer.feedback" = "感想";
+"footer.review" = "レビュー";
+"footer.share" = "シェア";
 "holiday.ascension_day" = "キリスト昇天日";
 "holiday.christmas_day" = "クリスマス";
 "holiday.christmas_day_one" = "クリスマス当日";

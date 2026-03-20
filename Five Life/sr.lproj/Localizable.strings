@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Najnovije prvo";
 "filters.sort.oldest.first" = "Najstarije prvo";
 "filters.active.notice" = "Aktivan filter: prikazuju se samo poslednjih %d unosa. Pritisni ovu poruku da ukloniš filter";
-"footer.feedback" = "Pošalji povratne info";
-"footer.review" = "Napiši recenziju";
+"footer.feedback" = "Feedback";
+"footer.review" = "Recenzija";
 "footer.share" = "Podeli";
 "holiday.ascension_day" = "Vaznesenje Gospodnje";
 "holiday.christmas_day" = "Božić";

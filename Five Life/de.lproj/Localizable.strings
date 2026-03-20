@@ -88,8 +88,8 @@
 "filters.sort.newest.first" = "Neu nach alt";
 "filters.sort.oldest.first" = "Alt nach neu";
 "filters.active.notice" = "Aktiver Filter: nur die %d neuesten Beiträge. Tippe hier, um den Filter zu entfernen";
-"footer.feedback" = "Feedback senden";
-"footer.review" = "Bewertung schreiben";
+"footer.feedback" = "Feedback";
+"footer.review" = "Bewerten";
 "footer.share" = "Teilen";
 "holiday.ascension_day" = "Christi Himmelfahrt";
 "holiday.christmas_day" = "Weihnachtsfeiertag";

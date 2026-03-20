@@ -88,9 +88,9 @@
 "filters.sort.newest.first" = "الأحدث أولاً";
 "filters.sort.oldest.first" = "الأقدم أولاً";
 "filters.active.notice" = "تصفية نشطة لأحدث %d إدخالات. اضغط هنا لإزالة التصفية";
-"footer.feedback" = "إرسال تعليق";
-"footer.review" = "كتابة تقييم";
-"footer.share" = "مشاركة مع الأصدقاء";
+"footer.feedback" = "تعليق";
+"footer.review" = "قيّم";
+"footer.share" = "شارك";
 "holiday.ascension_day" = "عيد الصعود";
 "holiday.christmas_day" = "عيد الميلاد";
 "holiday.christmas_day_one" = "اليوم الأول لعيد الميلاد";
