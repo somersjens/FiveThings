@@ -920,11 +920,13 @@ struct SettingsView: View {
             return
         }
 
-        let calendar = Calendar.current
-        let normalizedDay = calendar.startOfDay(for: selectedDay)
+        let normalizedDay = DayIdentity.canonicalDate(for: DayIdentity.identifier(for: selectedDay))
+        let selectedDayIdentifier = DayIdentity.identifier(for: selectedDay)
 
-        let descriptor = FetchDescriptor<DayEntry>(predicate: #Predicate { $0.day == normalizedDay })
-        let existing = (try? modelContext.fetch(descriptor))?.first
+        let descriptor = FetchDescriptor<DayEntry>()
+        let existing = (try? modelContext.fetch(descriptor))?.first { entry in
+            entry.normalizedDayIdentifier == selectedDayIdentifier
+        }
         if existing != nil {
             if let existing {
                 addDayHasExistingEntry = false
@@ -944,7 +946,7 @@ struct SettingsView: View {
             return
         }
 
-        let entry = DayEntry(day: normalizedDay, itemCount: settings.dailyItemCount)
+        let entry = DayEntry(dayIdentifier: selectedDayIdentifier, itemCount: settings.dailyItemCount)
         modelContext.insert(entry)
         try? modelContext.save()
         showAddDayMessage(L10n.string("settings.day.added", language: settings.language), isError: false)
@@ -973,8 +975,9 @@ struct SettingsView: View {
     }
 
     private func isAddDayWithinRange(_ date: Date) -> Bool {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        let today = DayIdentity.canonicalDate(for: DayIdentity.todayIdentifier())
         guard let minDate = calendar.date(byAdding: .year, value: -100, to: today),
               let maxDate = calendar.date(byAdding: .year, value: 100, to: today) else {
             return true
@@ -1039,9 +1042,11 @@ struct SettingsView: View {
             addDayHasExistingEntry = false
             return
         }
-        let normalizedDay = Calendar.current.startOfDay(for: selectedDay)
-        let descriptor = FetchDescriptor<DayEntry>(predicate: #Predicate { $0.day == normalizedDay })
-        addDayHasExistingEntry = ((try? modelContext.fetch(descriptor))?.first) != nil
+        let selectedDayIdentifier = DayIdentity.identifier(for: selectedDay)
+        let descriptor = FetchDescriptor<DayEntry>()
+        addDayHasExistingEntry = ((try? modelContext.fetch(descriptor))?.contains { entry in
+            entry.normalizedDayIdentifier == selectedDayIdentifier
+        }) ?? false
     }
 
     private struct AddDayDateFormat {
@@ -1549,20 +1554,22 @@ struct SettingsView: View {
     }
 
     private func dateFrom(day: Int, month: Int, year: Int) -> Date? {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
         var components = DateComponents()
-        components.calendar = Calendar.current
+        components.calendar = calendar
+        components.timeZone = TimeZone(secondsFromGMT: 0)
         components.day = day
         components.month = month
         components.year = year
-        guard let date = components.date else { return nil }
-        let calendar = Calendar.current
-        let normalized = calendar.startOfDay(for: date)
-        guard calendar.component(.day, from: normalized) == day,
-              calendar.component(.month, from: normalized) == month,
-              calendar.component(.year, from: normalized) == year else {
+        guard let date = calendar.date(from: components) else { return nil }
+        let validated = calendar.dateComponents([.year, .month, .day], from: date)
+        guard validated.day == day,
+              validated.month == month,
+              validated.year == year else {
             return nil
         }
-        return normalized
+        return DayIdentity.canonicalDate(for: DayIdentity.identifier(year: year, month: month, day: day))
     }
 
     private func handleFaceIdToggleChange(_ enabled: Bool) {
@@ -1713,6 +1720,7 @@ struct SettingsView: View {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.dateFormat = "dd-MM-yyyy"
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
 
         var issues: Set<ImportIssue> = []
         var entriesByDate: [Date: [Int: String]] = [:]
@@ -1731,7 +1739,7 @@ struct SettingsView: View {
                 issues.insert(.date)
                 continue
             }
-            let normalizedDate = Calendar.current.startOfDay(for: date)
+            let normalizedDate = DayIdentity.canonicalDate(for: DayIdentity.canonicalIdentifier(for: date))
 
             let numberText = fields[1].trimmingCharacters(in: .whitespacesAndNewlines)
             guard let number = Int(numberText), (1...10).contains(number) else {
@@ -1773,7 +1781,7 @@ struct SettingsView: View {
 
         let entries = entriesByDate.map { date, itemsByNumber in
             let maxNumber = maxNumberByDate[date] ?? 1
-            let entry = DayEntry(day: date, itemCount: maxNumber)
+            let entry = DayEntry(dayIdentifier: DayIdentity.canonicalIdentifier(for: date), itemCount: maxNumber)
             for (number, text) in itemsByNumber {
                 let index = number - 1
                 if index >= 0, index < entry.items.count {
@@ -1791,11 +1799,11 @@ struct SettingsView: View {
 
     private func mergeImportedEntries(_ entries: [DayEntry]) {
         for entry in entries {
-            let normalizedDate = Calendar.current.startOfDay(for: entry.day)
-            let descriptor = FetchDescriptor<DayEntry>(
-                predicate: #Predicate { $0.day == normalizedDate }
-            )
-            if let existing = try? modelContext.fetch(descriptor).first {
+            entry.normalizeDayIdentity()
+            let descriptor = FetchDescriptor<DayEntry>()
+            if let existing = (try? modelContext.fetch(descriptor))?.first(where: {
+                $0.normalizedDayIdentifier == entry.normalizedDayIdentifier
+            }) {
                 existing.itemCount = entry.itemCount
                 existing.items = entry.items
                 existing.isLocked = true

@@ -4,6 +4,7 @@ import SwiftData
 
 struct DayEntrySnapshot: Codable, Equatable {
     var id: UUID
+    var dayIdentifier: String?
     var day: Date
     var itemCount: Int
     var items: [String]
@@ -14,6 +15,7 @@ struct DayEntrySnapshot: Codable, Equatable {
     var updatedAt: Date
 
     init(id: UUID,
+         dayIdentifier: String? = nil,
          day: Date,
          itemCount: Int,
          items: [String],
@@ -23,7 +25,8 @@ struct DayEntrySnapshot: Codable, Equatable {
          createdAt: Date,
          updatedAt: Date) {
         self.id = id
-        self.day = day
+        self.dayIdentifier = dayIdentifier ?? DayIdentity.identifier(for: day)
+        self.day = DayIdentity.canonicalDate(for: self.dayIdentifier ?? DayIdentity.identifier(for: day))
         self.itemCount = itemCount
         self.items = items
         self.isLocked = isLocked
@@ -35,7 +38,8 @@ struct DayEntrySnapshot: Codable, Equatable {
 
     init(from entry: DayEntry) {
         id = entry.id
-        day = entry.day
+        dayIdentifier = entry.normalizedDayIdentifier
+        day = DayIdentity.canonicalDate(for: entry.normalizedDayIdentifier)
         let clampedCount = max(1, min(10, entry.itemCount))
         itemCount = clampedCount
         if entry.items.count > clampedCount {
@@ -50,6 +54,12 @@ struct DayEntrySnapshot: Codable, Equatable {
         score = entry.score
         createdAt = entry.createdAt
         updatedAt = entry.updatedAt
+    }
+}
+
+extension DayEntrySnapshot {
+    var normalizedDayIdentifier: String {
+        dayIdentifier ?? DayIdentity.identifier(for: day)
     }
 }
 
@@ -303,7 +313,7 @@ final class AppleSyncManager {
         deleteAllEntries(modelContext: modelContext)
         snapshots.forEach { snapshot in
             let sanitizedSnapshot = sanitizeSnapshot(snapshot)
-            let entry = DayEntry(day: sanitizedSnapshot.day, itemCount: sanitizedSnapshot.itemCount)
+            let entry = DayEntry(dayIdentifier: sanitizedSnapshot.normalizedDayIdentifier, itemCount: sanitizedSnapshot.itemCount)
             entry.id = sanitizedSnapshot.id
             entry.items = sanitizedSnapshot.items
             entry.isLocked = sanitizedSnapshot.isLocked
@@ -326,7 +336,8 @@ final class AppleSyncManager {
         }
         return DayEntrySnapshot(
             id: snapshot.id,
-            day: snapshot.day,
+            dayIdentifier: snapshot.normalizedDayIdentifier,
+            day: DayIdentity.canonicalDate(for: snapshot.normalizedDayIdentifier),
             itemCount: clampedCount,
             items: sanitizedItems,
             isLocked: snapshot.isLocked,
@@ -342,10 +353,9 @@ final class AppleSyncManager {
         guard !appleEntries.isEmpty else {
             return localEntries.map { DayEntrySnapshot(from: $0) }
         }
-        let calendar = Calendar.current
-        var mergedByDay: [Date: DayEntrySnapshot] = [:]
+        var mergedByDay: [String: DayEntrySnapshot] = [:]
         for appleSnapshot in appleEntries {
-            let dayKey = calendar.startOfDay(for: appleSnapshot.day)
+            let dayKey = appleSnapshot.normalizedDayIdentifier
             if let existing = mergedByDay[dayKey] {
                 mergedByDay[dayKey] = preferredSnapshot(appleSnapshot, existing)
             } else {
@@ -353,7 +363,7 @@ final class AppleSyncManager {
             }
         }
         for localSnapshot in localEntries.map({ DayEntrySnapshot(from: $0) }) {
-            let dayKey = calendar.startOfDay(for: localSnapshot.day)
+            let dayKey = localSnapshot.normalizedDayIdentifier
             guard let appleSnapshot = mergedByDay[dayKey] else {
                 mergedByDay[dayKey] = localSnapshot
                 continue
@@ -431,19 +441,18 @@ final class AppleSyncManager {
 
     private func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) {
         settings.clampDailyCount()
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let descriptor = FetchDescriptor<DayEntry>(
-            predicate: #Predicate { $0.day == today }
-        )
-        if let existing = try? modelContext.fetch(descriptor).first {
+        let todayIdentifier = DayIdentity.todayIdentifier()
+        let descriptor = FetchDescriptor<DayEntry>()
+        if let existing = (try? modelContext.fetch(descriptor))?.first(where: {
+            $0.normalizedDayIdentifier == todayIdentifier
+        }) {
             if !existing.isLocked {
                 existing.resizeItemsIfNeeded(to: settings.dailyItemCount)
             }
             return
         }
 
-        let entry = DayEntry(day: today, itemCount: settings.dailyItemCount)
+        let entry = DayEntry(dayIdentifier: todayIdentifier, itemCount: settings.dailyItemCount)
         modelContext.insert(entry)
         try? modelContext.save()
     }
@@ -531,6 +540,7 @@ final class AppleSyncManager {
     private func snapshotsMatchIgnoringUpdatedAt(_ lhs: DayEntrySnapshot,
                                                  _ rhs: DayEntrySnapshot) -> Bool {
         lhs.id == rhs.id
+            && lhs.normalizedDayIdentifier == rhs.normalizedDayIdentifier
             && lhs.day == rhs.day
             && lhs.itemCount == rhs.itemCount
             && lhs.items == rhs.items

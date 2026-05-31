@@ -43,50 +43,50 @@ final class ContentViewModel: ObservableObject {
     @Published private(set) var searchSnapshots: [UUID: DayEntrySnapshot] = [:]
 
     func startOfDay(_ date: Date) -> Date {
-        Calendar.current.startOfDay(for: date)
+        DayIdentity.canonicalDate(for: DayIdentity.identifier(for: date))
     }
 
     @discardableResult
     func ensureTodayEntry(modelContext: ModelContext, settings: SettingsStore) -> Bool {
         settings.clampDailyCount()
 
-        let calendar = Calendar.current
-        let today = startOfDay(Date())
+        let todayIdentifier = DayIdentity.todayIdentifier()
 
         let allEntriesDescriptor = FetchDescriptor<DayEntry>()
         let allEntries = (try? modelContext.fetch(allEntriesDescriptor)) ?? []
-        let existingDays = Set(allEntries.map(\.day))
-        let hasHistoryBeforeToday = allEntries.contains { $0.day < today }
+        let didNormalizeEntries = normalizeAndMergeDuplicateEntries(allEntries, modelContext: modelContext)
+        let activeEntries = (try? modelContext.fetch(allEntriesDescriptor)) ?? allEntries
+        let existingDayIdentifiers = Set(activeEntries.map(\.normalizedDayIdentifier))
+        let hasHistoryBeforeToday = activeEntries.contains { $0.normalizedDayIdentifier < todayIdentifier }
 
         var didCreateEntry = false
         var didResizeToday = false
 
-        if let existingToday = allEntries.first(where: { $0.day == today }), !existingToday.isLocked {
+        if let existingToday = activeEntries.first(where: { $0.normalizedDayIdentifier == todayIdentifier }), !existingToday.isLocked {
             let oldItemCount = existingToday.itemCount
             let oldItems = existingToday.items
             existingToday.resizeItemsIfNeeded(to: settings.dailyItemCount)
             didResizeToday = oldItemCount != existingToday.itemCount || oldItems != existingToday.items
         }
 
-        let recentDays: [Date] = (0..<3)
-            .compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }
-            .map(startOfDay)
+        let recentDayIdentifiers = (0..<3)
+            .compactMap { DayIdentity.addingDays(-$0, to: todayIdentifier) }
             .reversed()
 
-        for day in recentDays {
-            if existingDays.contains(day) {
+        for dayIdentifier in recentDayIdentifiers {
+            if existingDayIdentifiers.contains(dayIdentifier) {
                 continue
             }
-            if day != today && !hasHistoryBeforeToday {
+            if dayIdentifier != todayIdentifier && !hasHistoryBeforeToday {
                 continue
             }
 
-            let entry = DayEntry(day: day, itemCount: settings.dailyItemCount)
+            let entry = DayEntry(dayIdentifier: dayIdentifier, itemCount: settings.dailyItemCount)
             modelContext.insert(entry)
             didCreateEntry = true
         }
 
-        if didCreateEntry || didResizeToday {
+        if didCreateEntry || didResizeToday || didNormalizeEntries {
             try? modelContext.save()
         }
 
@@ -170,12 +170,12 @@ final class ContentViewModel: ObservableObject {
             return nil
         }
 
-        let nextReminderStart = startOfDay(nextReminder)
-        guard let targetDay = calendar.date(byAdding: .day, value: -1, to: nextReminderStart) else {
+        let nextReminderIdentifier = DayIdentity.identifier(for: nextReminder, calendar: calendar)
+        guard let targetDayIdentifier = DayIdentity.addingDays(-1, to: nextReminderIdentifier) else {
             return nil
         }
 
-        if let entry = allEntries.first(where: { $0.day == targetDay }) {
+        if let entry = allEntries.first(where: { $0.normalizedDayIdentifier == targetDayIdentifier }) {
             return entry.isLocked ? nil : nextReminder
         }
 
@@ -192,8 +192,8 @@ final class ContentViewModel: ObservableObject {
         }
 
         for _ in 0..<370 {
-            let reminderStart = startOfDay(nextReminder)
-            if let entry = allEntries.first(where: { $0.day == reminderStart }), entry.isLocked {
+            let reminderDayIdentifier = DayIdentity.identifier(for: nextReminder, calendar: calendar)
+            if let entry = allEntries.first(where: { $0.normalizedDayIdentifier == reminderDayIdentifier }), entry.isLocked {
                 guard let shifted = calendar.date(byAdding: .day, value: 1, to: nextReminder) else {
                     return nil
                 }
@@ -214,6 +214,69 @@ final class ContentViewModel: ObservableObject {
         default:
             return Array(sortedByNewest.prefix(finishedLimit.rawValue))
         }
+    }
+
+    private func normalizeAndMergeDuplicateEntries(_ entries: [DayEntry], modelContext: ModelContext) -> Bool {
+        var didChange = false
+        var entriesByIdentifier: [String: DayEntry] = [:]
+
+        for entry in entries {
+            didChange = entry.normalizeDayIdentity() || didChange
+            let identifier = entry.normalizedDayIdentifier
+            guard let existing = entriesByIdentifier[identifier] else {
+                entriesByIdentifier[identifier] = entry
+                continue
+            }
+
+            let keeper = preferredEntry(existing, entry)
+            let duplicate = keeper === existing ? entry : existing
+            merge(duplicate, into: keeper)
+            modelContext.delete(duplicate)
+            entriesByIdentifier[identifier] = keeper
+            didChange = true
+        }
+
+        return didChange
+    }
+
+    private func preferredEntry(_ lhs: DayEntry, _ rhs: DayEntry) -> DayEntry {
+        let lhsMeaningful = isMeaningful(lhs)
+        let rhsMeaningful = isMeaningful(rhs)
+        if lhsMeaningful != rhsMeaningful {
+            return lhsMeaningful ? lhs : rhs
+        }
+        return lhs.updatedAt >= rhs.updatedAt ? lhs : rhs
+    }
+
+    private func isMeaningful(_ entry: DayEntry) -> Bool {
+        if entry.isLocked || entry.wasCompleted || entry.score != nil { return true }
+        return entry.items.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
+    private func merge(_ duplicate: DayEntry, into keeper: DayEntry) {
+        guard duplicate !== keeper else { return }
+        if !isMeaningful(keeper), isMeaningful(duplicate) {
+            keeper.itemCount = duplicate.itemCount
+            keeper.items = duplicate.items
+            keeper.isLocked = duplicate.isLocked
+            keeper.wasCompleted = duplicate.wasCompleted
+            keeper.score = duplicate.score
+        } else {
+            keeper.itemCount = max(keeper.itemCount, duplicate.itemCount)
+            keeper.ensureItemsCount(atLeast: keeper.itemCount)
+            for (index, item) in duplicate.items.enumerated() where index < keeper.items.count {
+                if keeper.items[index].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                   !item.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    keeper.items[index] = item
+                }
+            }
+            keeper.isLocked = keeper.isLocked || duplicate.isLocked
+            keeper.wasCompleted = keeper.wasCompleted || duplicate.wasCompleted
+            keeper.score = keeper.score ?? duplicate.score
+        }
+        keeper.createdAt = min(keeper.createdAt, duplicate.createdAt)
+        keeper.updatedAt = max(keeper.updatedAt, duplicate.updatedAt)
+        _ = duplicate.items.count
     }
 
     private func scheduleSave(for entry: DayEntry, modelContext: ModelContext) {

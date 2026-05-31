@@ -24,12 +24,14 @@ enum ExportService {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "dd-MM-yyyy"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
     }()
     private static let pdfHeaderDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "dd-MM-yyyy"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
     }()
 

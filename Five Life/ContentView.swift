@@ -66,6 +66,7 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "dd-MM-yyyy"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
     }()
 
@@ -90,7 +91,7 @@ struct ContentView: View {
 
     private func requiredCount(for entry: DayEntry) -> Int {
         if entry.isLocked { return entry.itemCount }
-        if Calendar.current.isDate(entry.day, inSameDayAs: Date()) { return settings.dailyItemCount }
+        if entry.normalizedDayIdentifier == DayIdentity.todayIdentifier() { return settings.dailyItemCount }
         return min(entry.itemCount, settings.dailyItemCount)
     }
 
@@ -429,17 +430,15 @@ struct ContentView: View {
     }
 
     private func calculateStreak(from entries: [DayEntry]) -> Int {
-        let calendar = Calendar.current
-        let uniqueDays = Array(Set(entries.map { calendar.startOfDay(for: $0.day) }))
-            .sorted(by: >)
+        let uniqueDays = Array(Set(entries.map(\.normalizedDayIdentifier))).sorted(by: >)
         guard let mostRecent = uniqueDays.first else { return 0 }
         var streak = 1
         var currentDay = mostRecent
         for day in uniqueDays.dropFirst() {
-            guard let expected = calendar.date(byAdding: .day, value: -1, to: currentDay) else {
+            guard let expected = DayIdentity.addingDays(-1, to: currentDay) else {
                 break
             }
-            if calendar.isDate(day, inSameDayAs: expected) {
+            if day == expected {
                 streak += 1
                 currentDay = day
             } else {
