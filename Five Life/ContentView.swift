@@ -1283,7 +1283,7 @@ struct ContentView: View {
                                                 newestFirst: newestFirst
                                                ))
 
-            shareSheetItem = ShareSheetItem(items: [url])
+            shareSheetItem = ShareSheetItem(items: [url], cleanupURLs: [url])
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 showExportOptions = false
             }

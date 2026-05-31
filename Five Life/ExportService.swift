@@ -51,12 +51,12 @@ enum ExportService {
             guard let data = csvString.data(using: .utf8) else {
                 throw ExportError.encodingFailed
             }
-            try data.write(to: destination, options: .atomic)
+            try data.write(to: destination, options: [.atomic, .completeFileProtection])
         case .pdf:
             let pdfData = pdfContent(entries: entries,
                                      language: language,
                                      filterContext: filterContext)
-            try pdfData.write(to: destination, options: .atomic)
+            try pdfData.write(to: destination, options: [.atomic, .completeFileProtection])
         }
         return destination
     }

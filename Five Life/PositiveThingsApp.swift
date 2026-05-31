@@ -4,6 +4,10 @@ import SwiftData
 
 @main
 struct PositiveThingsApp: App {
+    init() {
+        DataProtectionManager.configureDefaultFileProtection()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

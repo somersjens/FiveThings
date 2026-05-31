@@ -19,7 +19,7 @@ struct RootContentBaseModifier: ViewModifier {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: shareSheetItem) { item in
-                ShareSheet(items: item.items)
+                ShareSheet(items: item.items, cleanupURLs: item.cleanupURLs)
             }
             .overlay {
                 if hasSeenAccessScreen {
