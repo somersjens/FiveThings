@@ -119,6 +119,16 @@ struct DayCardView: View {
         !entry.isLocked && entry.isComplete(requiredCount: requiredCount) && !showSuccess
     }
 
+    private var isTypingFocused: Bool {
+        focusedIndex != nil
+    }
+
+    private var showsKeyboardDismissButton: Bool {
+        !entry.isLocked
+            && isTypingFocused
+            && !entry.isComplete(requiredCount: requiredCount)
+    }
+
     private var outlineColor: Color {
         if showSuccess { return Color.brandAccent }
         if shouldPulse { return .yellow }
@@ -260,6 +270,8 @@ struct DayCardView: View {
                 if entry.isLocked {
                     vm.unlock(entry, settings: settings, modelContext: modelContext)
                     showSuccess = false
+                } else if showsKeyboardDismissButton {
+                    focusedIndex = nil
                 } else {
                     // If unlocked: allow lock only if complete, otherwise show hint
                     if entry.isComplete(requiredCount: requiredCount) {
@@ -273,7 +285,11 @@ struct DayCardView: View {
                     }
                 }
             } label: {
-                Image(systemName: entry.isLocked ? "lock.fill" : (shouldPulse ? "lock.open.fill" : "lock.open"))
+                Image(systemName: entry.isLocked
+                      ? "lock.fill"
+                      : (showsKeyboardDismissButton
+                         ? "checkmark"
+                         : (shouldPulse ? "lock.open.fill" : "lock.open")))
                     .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
                     .foregroundStyle(highlightLockIcon ? .orange : .primary)
                     .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
@@ -285,7 +301,9 @@ struct DayCardView: View {
             .buttonStyle(.plain)
             .accessibilityLabel(entry.isLocked
                                 ? L10n.string("daycard.unlock", language: settings.language)
-                                : L10n.string("daycard.lock", language: settings.language))
+                                : (showsKeyboardDismissButton
+                                   ? L10n.string("common.done", language: settings.language)
+                                   : L10n.string("daycard.lock", language: settings.language)))
         }
         .sheet(isPresented: $showScoreEditor) {
             scoreEditorSheet
