@@ -18,12 +18,16 @@ struct InfoCardView: View {
     @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
     @ScaledMetric(relativeTo: .footnote) private var headerIconFontSize: CGFloat = 14
     @ScaledMetric(relativeTo: .subheadline) private var titleFontSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .body) private var bodyFontSize: CGFloat = 17
     @State private var highlightLinks = false
     @State private var highlightedLink: URL?
 
     private var scaledRowSpacing: CGFloat { rowSpacing * responsiveTypeScale }
     private var scaledHeaderIconSize: CGFloat { headerIconSize * responsiveTypeScale }
     private var scaledHeaderIconFontSize: CGFloat { headerIconFontSize * responsiveTypeScale }
+    private var cardContentPadding: CGFloat {
+        ResponsiveTypeScale.cardContentPadding(for: responsiveTypeScale)
+    }
 
     private var entryRowMinHeight: CGFloat {
         UIFontMetrics(forTextStyle: .body).scaledValue(for: 34 * responsiveTypeScale)
@@ -38,7 +42,7 @@ struct InfoCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12 * responsiveTypeScale) {
             header
 
             VStack(spacing: scaledRowSpacing) {
@@ -47,7 +51,7 @@ struct InfoCardView: View {
                 }
             }
         }
-        .padding(14)
+        .padding(cardContentPadding)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(cardBackgroundColor)
@@ -83,12 +87,14 @@ struct InfoCardView: View {
     private func rowView(number: Int, text: String) -> some View {
         HStack(alignment: .top, spacing: 6) {
             Text(numberText(number))
-                .font(.system(.body, design: .rounded).weight(.semibold))
-                .frame(width: 22, alignment: .leading)
+                .font(.system(size: bodyFontSize * responsiveTypeScale,
+                              weight: .semibold,
+                              design: .rounded))
+                .frame(width: 22 * responsiveTypeScale, alignment: .leading)
                 .foregroundStyle(.primary)
 
             Text(formattedRowText(text))
-                .font(.body)
+                .font(.system(size: bodyFontSize * responsiveTypeScale))
                 .lineLimit(4)
                 .lineSpacing(0)
                 .fixedSize(horizontal: false, vertical: true)
@@ -107,8 +113,8 @@ struct InfoCardView: View {
                 })
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 6)
-        .padding(.horizontal, 10)
+        .padding(.vertical, 6 * responsiveTypeScale)
+        .padding(.horizontal, 10 * responsiveTypeScale)
         .frame(minHeight: entryRowMinHeight, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)

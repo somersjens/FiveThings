@@ -13,6 +13,7 @@ struct SearchAndSortBar: View {
     @ScaledMetric(relativeTo: .footnote) private var filterFontSize: CGFloat = 12
     @ScaledMetric(relativeTo: .headline) private var sortIconSize: CGFloat = 17
     @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 40
+    @ScaledMetric(relativeTo: .body) private var bodyFontSize: CGFloat = 17
 
     var body: some View {
         HStack(spacing: 10) {
@@ -20,6 +21,7 @@ struct SearchAndSortBar: View {
 
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
+                    .font(.system(size: bodyFontSize * responsiveTypeScale))
                     .foregroundStyle(Color.brandAccent)
 
                 TextField(
@@ -29,6 +31,7 @@ struct SearchAndSortBar: View {
                         .foregroundStyle(Color.brandAccent)
                 )
                 .textFieldStyle(.plain)
+                .font(.system(size: bodyFontSize * responsiveTypeScale))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .foregroundStyle(Color.brandAccent)
@@ -39,6 +42,7 @@ struct SearchAndSortBar: View {
                         text = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: bodyFontSize * responsiveTypeScale))
                             .foregroundStyle(Color.brandAccent)
                     }
                     .buttonStyle(.plain)

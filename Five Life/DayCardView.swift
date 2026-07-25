@@ -34,14 +34,19 @@ struct DayCardView: View {
     @ScaledMetric(relativeTo: .body) private var headerIconSize: CGFloat = 31
     @ScaledMetric(relativeTo: .footnote) private var headerIconFontSize: CGFloat = 14
     @ScaledMetric(relativeTo: .body) private var rowTrailingControlPadding: CGFloat = 28
-    @ScaledMetric(relativeTo: .subheadline) private var dateFontSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .subheadline) private var dateFontSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .subheadline) private var subtitleFontSize: CGFloat = 15
     @ScaledMetric(relativeTo: .title) private var scoreValueFontSize: CGFloat = 32
     @ScaledMetric(relativeTo: .headline) private var removeButtonFontSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .body) private var bodyFontSize: CGFloat = 17
 
     private var scaledRowSpacing: CGFloat { rowSpacing * responsiveTypeScale }
     private var scaledHeaderIconSize: CGFloat { headerIconSize * responsiveTypeScale }
     private var scaledHeaderIconFontSize: CGFloat { headerIconFontSize * responsiveTypeScale }
     private var scaledRowTrailingControlPadding: CGFloat { rowTrailingControlPadding * responsiveTypeScale }
+    private var cardContentPadding: CGFloat {
+        ResponsiveTypeScale.cardContentPadding(for: responsiveTypeScale)
+    }
 
     private var entryRowMinHeight: CGFloat {
         UIFontMetrics(forTextStyle: .body).scaledValue(for: 34 * responsiveTypeScale)
@@ -145,7 +150,7 @@ struct DayCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12 * responsiveTypeScale) {
             header
 
             VStack(spacing: scaledRowSpacing) {
@@ -165,7 +170,7 @@ struct DayCardView: View {
                     .transition(.opacity)
             }
         }
-        .padding(14)
+        .padding(cardContentPadding)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(cardBackgroundColor)
@@ -204,18 +209,27 @@ struct DayCardView: View {
             VStack(alignment: .leading, spacing: 6) {
                 highlightedText(dateString,
                                 baseFont: .system(size: dateFontSize * responsiveTypeScale, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+                    .allowsTightening(true)
 
                 if holidayNames.isEmpty {
                     if let phase = moonPhase {
                         moonLine(phase)
                     } else {
                         Text(" ")
-                            .font(.subheadline)
+                            .font(.system(size: subtitleFontSize * responsiveTypeScale))
                             .foregroundStyle(.white)
                     }
                 } else {
                     ForEach(holidayNames.prefix(2), id: \.self) { holiday in
-                        highlightedText(holiday, baseFont: .subheadline)
+                        highlightedText(
+                            holiday,
+                            baseFont: .system(size: subtitleFontSize * responsiveTypeScale)
+                        )
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.68)
+                            .allowsTightening(true)
                             .foregroundStyle(.primary)
                     }
                     if let phase = moonPhase {
@@ -223,6 +237,8 @@ struct DayCardView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .layoutPriority(1)
 
             Spacer()
 
@@ -326,9 +342,13 @@ struct DayCardView: View {
         return HStack(spacing: 6) {
             Image(systemName: phase.sfSymbolName)
             highlightedText(moonDescription ?? phase.localizedName(language: settings.language),
-                            baseFont: .subheadline)
+                            baseFont: .system(size: subtitleFontSize * responsiveTypeScale))
+                .lineLimit(1)
+                .minimumScaleFactor(0.68)
+                .allowsTightening(true)
         }
-        .font(.subheadline)
+        .font(.system(size: subtitleFontSize * responsiveTypeScale))
+        .lineLimit(1)
         .foregroundStyle(.primary)
     }
 
@@ -400,8 +420,8 @@ struct DayCardView: View {
                               trackSize: Bool) -> some View {
         let baseRow = rowContent(idx: idx)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
+            .padding(.vertical, 6 * responsiveTypeScale)
+            .padding(.horizontal, 10 * responsiveTypeScale)
             .frame(minHeight: entryRowMinHeight, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -455,8 +475,10 @@ struct DayCardView: View {
         let placeholderText = placeholderText(for: idx, showsOptionalPlaceholder: showsOptionalPlaceholder)
         return HStack(alignment: .top, spacing: 6) {
             Text(localizedIndexString(idx + 1))
-                .font(.system(.body, design: .rounded).weight(.semibold))
-                .frame(width: 22, alignment: .leading)
+                .font(.system(size: bodyFontSize * responsiveTypeScale,
+                              weight: .semibold,
+                              design: .rounded))
+                .frame(width: 22 * responsiveTypeScale, alignment: .leading)
                 .foregroundStyle(.primary)
 
             rowTextView(placeholderText: placeholderText, idx: idx)
@@ -521,7 +543,7 @@ struct DayCardView: View {
             axis: .vertical
         )
         .textFieldStyle(.plain)
-        .font(.body)
+        .font(.system(size: bodyFontSize * responsiveTypeScale))
         .lineLimit(1...4)
         .lineSpacing(0)
         .fixedSize(horizontal: false, vertical: true)

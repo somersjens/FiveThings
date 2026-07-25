@@ -6,6 +6,7 @@ import SwiftData
 struct PositiveThingsApp: App {
     init() {
         DataProtectionManager.configureDefaultFileProtection()
+        UserDefaults.standard.removeObject(forKey: "faceIdLockEnabled")
     }
 
     var body: some Scene {

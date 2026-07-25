@@ -1,5 +1,4 @@
 //NEW DOC  ContentView.swift
-import LocalAuthentication
 import SwiftUI
 import SwiftData
 
@@ -22,8 +21,6 @@ struct ContentView: View {
 
     @State private var showSettings: Bool = false
     @State private var showSecretMenu: Bool = false
-    @State private var isUnlocked: Bool = true
-    @State private var isUnlocking: Bool = false
     @State private var hasAppeared: Bool = false
     @State private var midnightTask: Task<Void, Never>?
     @State private var showExportOptions: Bool = false
@@ -59,8 +56,11 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @ScaledMetric(relativeTo: .headline) private var statsValueFontSize: CGFloat = 18
-    @ScaledMetric(relativeTo: .title) private var lockIconSize: CGFloat = 48
     @ScaledMetric(relativeTo: .headline) private var settingsGearSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .headline) private var headlineFontSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .footnote) private var footnoteFontSize: CGFloat = 13
+    @ScaledMetric(relativeTo: .caption) private var captionFontSize: CGFloat = 12
+    @ScaledMetric(relativeTo: .title3) private var title3FontSize: CGFloat = 20
 
     private static let numericDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -351,7 +351,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
         }
-        .font(.footnote.weight(.semibold))
+        .font(.system(size: footnoteFontSize, weight: .semibold))
         .foregroundStyle(highlightFooterLinks ? .orange : Color.brandAccent)
         .animation(.easeInOut(duration: 0.25), value: highlightFooterLinks)
         .id(footerLinksID)
@@ -364,7 +364,7 @@ struct ContentView: View {
             }
         } label: {
             Text(L10n.string("cards.empty.limit.notice", language: settings.language))
-                .font(.footnote.weight(.semibold))
+                .font(.system(size: footnoteFontSize * scale, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -388,7 +388,7 @@ struct ContentView: View {
             }
         } label: {
             Text(L10n.string("filters.active.notice", language: settings.language, limit.rawValue))
-                .font(.footnote.weight(.semibold))
+                .font(.system(size: footnoteFontSize * scale, weight: .semibold))
                 .foregroundStyle(Color.brandAccent)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -473,24 +473,46 @@ struct ContentView: View {
         return formatter.string(from: NSNumber(value: count)) ?? "\(count)"
     }
 
-    private var headerView: some View {
-        ZStack {
+    private func headerView(
+        scale: CGFloat,
+        isTabletLayout: Bool,
+        horizontalContentPadding: CGFloat
+    ) -> some View {
+        let actionSize: CGFloat = isTabletLayout ? 64 : 44
+        let actionIconSize: CGFloat = isTabletLayout ? 28 : 19
+        // Match the optical centers of the visible glyphs. The numbered text is
+        // leading-aligned inside a wider frame, while the open-lock glyph carries
+        // slightly more visual weight on its trailing side.
+        let cardContentPadding = ResponsiveTypeScale.cardContentPadding(for: scale)
+        let numberedColumnCenterInset = cardContentPadding + (15 * scale)
+        let lockControlCenterInset = cardContentPadding + (14.25 * scale)
+        let leadingActionPadding = horizontalContentPadding
+            + numberedColumnCenterInset
+            - (actionSize / 2)
+        let trailingActionPadding = horizontalContentPadding
+            + lockControlCenterInset
+            - (actionSize / 2)
+
+        return ZStack {
             HStack {
                 Button {
                     handleSettingsToggle()
                 } label: {
                     Image(systemName: "gearshape.fill")
+                        .font(.system(size: actionIconSize, weight: .semibold))
                         .foregroundStyle(Color.brandAccent)
-                        .frame(width: 32, height: 32)
+                        .frame(width: actionSize, height: actionSize)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.string("settings.show", language: settings.language))
+                .padding(.leading, leadingActionPadding)
 
                 Spacer()
 
                 if highlightScrollToTop {
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.system(size: 17 * scale, weight: .bold))
                         .foregroundStyle(.orange)
                         .transition(.opacity)
                 }
@@ -499,22 +521,25 @@ struct ContentView: View {
                     scrollToTopTrigger += 1
                 } label: {
                     Image(systemName: "arrow.up")
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.system(size: actionIconSize, weight: .bold))
                         .foregroundStyle(highlightScrollToTop ? .orange : Color.brandAccent)
-                        .frame(width: 32, height: 32)
+                        .frame(width: actionSize, height: actionSize)
+                        .contentShape(Rectangle())
                         .scaleEffect(highlightScrollToTop ? 1.15 : 1)
                         .animation(.easeInOut(duration: 0.25), value: highlightScrollToTop)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.string("scroll.to.top", language: settings.language))
+                .padding(.trailing, trailingActionPadding)
             }
+            .zIndex(2)
 
             Button {
                 handleSettingsToggle()
             } label: {
                 HStack(spacing: 6) {
                     Text(lifeTitle)
-                        .font(.title.bold())
+                        .font(.system(size: 28 * scale, weight: .bold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                         .allowsTightening(true)
@@ -522,20 +547,19 @@ struct ContentView: View {
                     Image("NoBackground")
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 24)
+                        .frame(height: 24 * scale)
                         .accessibilityHidden(true)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 32)
+            .frame(maxWidth: .infinity, minHeight: actionSize)
             .contentShape(Rectangle())
-            .padding(.horizontal, 56)
+            .padding(.horizontal, actionSize + 12)
             .buttonStyle(.plain)
             .zIndex(1)
             .accessibilityLabel(L10n.string("settings.show", language: settings.language))
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, isTabletLayout ? 10 : 6)
         .background(mainBackground)
     }
 
@@ -551,7 +575,6 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 4)
-        .padding(.horizontal, 8)
     }
 
     private func statisticsBox(title: String, value: Int, scale: CGFloat) -> some View {
@@ -564,7 +587,7 @@ struct ContentView: View {
                 .minimumScaleFactor(0.6)
                 .monospacedDigit()
             Text(title)
-                .font(.caption.weight(.semibold))
+                .font(.system(size: captionFontSize * scale, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
@@ -577,42 +600,11 @@ struct ContentView: View {
         )
     }
 
-    @ViewBuilder
-    private func lockOverlay(scale: CGFloat) -> some View {
-        if settings.faceIdLockEnabled && !isUnlocked {
-            mainBackground
-                .ignoresSafeArea()
-
-            VStack(spacing: 16) {
-                Image(systemName: "faceid")
-                    .font(.system(size: lockIconSize * scale))
-                    .foregroundStyle(.secondary)
-
-                Text(L10n.string("lock.faceid.title", language: settings.language))
-                    .font(.title3.weight(.semibold))
-                    .multilineTextAlignment(.center)
-
-                Button {
-                    attemptUnlock()
-                } label: {
-                    Text(L10n.string("lock.faceid.action", language: settings.language))
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(.secondary.opacity(0.12))
-                        )
-                }
-                .disabled(isUnlocking)
-            }
-            .padding(24)
-        }
-    }
-
     var body: some View {
         GeometryReader { proxy in
             let scale = ResponsiveTypeScale.scale(for: proxy.size.width)
+            let isTabletLayout = ResponsiveTypeScale.isTabletLayout(width: proxy.size.width)
+            let horizontalContentPadding = ResponsiveTypeScale.horizontalContentPadding(for: proxy.size.width)
             let unfinishedEntries = unfinished
             let finishedEntries = finished
             let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
@@ -627,6 +619,8 @@ struct ContentView: View {
             NavigationStack {
                 rootContent(
                     scale: scale,
+                    isTabletLayout: isTabletLayout,
+                    horizontalContentPadding: horizontalContentPadding,
                     unfinishedEntries: unfinishedEntries,
                     finishedEntries: finishedEntries,
                     thirdEmptyEntryID: thirdEmptyEntryID,
@@ -643,6 +637,8 @@ struct ContentView: View {
 
     private func rootContent(
         scale: CGFloat,
+        isTabletLayout: Bool,
+        horizontalContentPadding: CGFloat,
         unfinishedEntries: [DayEntry],
         finishedEntries: [DayEntry],
         thirdEmptyEntryID: DayEntry.ID?,
@@ -651,11 +647,17 @@ struct ContentView: View {
         pinnedFinishedEntries: [DayEntry],
         remainingFinishedEntries: [DayEntry]
     ) -> some View {
-        let header = AnyView(headerView)
-        let overlay = AnyView(lockOverlay(scale: scale))
+        let header = AnyView(
+            headerView(
+                scale: scale,
+                isTabletLayout: isTabletLayout,
+                horizontalContentPadding: horizontalContentPadding
+            )
+        )
         return ZStack {
             scrollContent(
                 scale: scale,
+                horizontalContentPadding: horizontalContentPadding,
                 unfinishedEntries: unfinishedEntries,
                 finishedEntries: finishedEntries,
                 thirdEmptyEntryID: thirdEmptyEntryID,
@@ -676,8 +678,7 @@ struct ContentView: View {
             mainBackground: mainBackground,
             hasSeenAccessScreen: hasSeenAccessScreen,
             headerView: header,
-            shareSheetItem: $shareSheetItem,
-            lockOverlay: overlay
+            shareSheetItem: $shareSheetItem
         ))
         .modifier(RootContentTaskModifier(
             settings: settings,
@@ -712,23 +713,18 @@ struct ContentView: View {
         ))
         .modifier(RootContentLifecycleModifier(
             hasAppeared: $hasAppeared,
-            isUnlocked: $isUnlocked,
             lastUnfinishedCount: $lastUnfinishedCount,
-            settings: settings,
             unfinishedEntries: unfinishedEntries,
-            updateUnlockStateIfNeeded: updateUnlockStateIfNeeded,
             showNextSeeYouTomorrowMessage: showNextSeeYouTomorrowMessage
         ))
         .modifier(RootContentScenePhaseModifier(
-            isUnlocked: $isUnlocked,
             midnightTask: $midnightTask,
             settings: settings,
             vm: vm,
             modelContext: modelContext,
             scenePhase: scenePhase,
             refreshEntryLists: refreshEntryLists,
-            scheduleMidnightRefresh: scheduleMidnightRefresh,
-            updateUnlockStateIfNeeded: updateUnlockStateIfNeeded
+            scheduleMidnightRefresh: scheduleMidnightRefresh
         ))
         .onChange(of: scenePhase) { _, phase in
             if phase != .active {
@@ -742,6 +738,7 @@ struct ContentView: View {
 
     private func scrollContent(
         scale: CGFloat,
+        horizontalContentPadding: CGFloat,
         unfinishedEntries: [DayEntry],
         finishedEntries: [DayEntry],
         thirdEmptyEntryID: DayEntry.ID?,
@@ -756,7 +753,7 @@ struct ContentView: View {
                     .frame(height: 1)
                     .id(settingsTopID)
 
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 14 * scale) {
                     VStack(spacing: 0) {
                         ZStack(alignment: .top) {
                             Color.clear
@@ -797,7 +794,8 @@ struct ContentView: View {
                     }
                     .padding(.top, 10)
                 }
-                .padding(16)
+                .padding(.horizontal, horizontalContentPadding)
+                .padding(.vertical, 16 * scale)
             }
             .onTapGesture {
                 if showExportOptions {
@@ -871,7 +869,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(L10n.string("settings.title", language: settings.language))
-                    .font(.title3.weight(.semibold))
+                    .font(.system(size: title3FontSize * scale, weight: .semibold))
                     .onTapGesture(count: 5) {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             showSecretMenu = true
@@ -938,7 +936,7 @@ struct ContentView: View {
 
                 if shouldShowNightModeNotificationNotice {
                     Text(L10n.string("settings.notifications.night.mode.notice", language: settings.language))
-                        .font(.footnote.weight(.semibold))
+                        .font(.system(size: footnoteFontSize * scale, weight: .semibold))
                         .foregroundStyle(Color.brandAccent)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -953,7 +951,7 @@ struct ContentView: View {
                     }
                 } label: {
                     Text(L10n.string("export.title", language: settings.language))
-                        .font(.headline)
+                        .font(.system(size: headlineFontSize * scale, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -963,7 +961,7 @@ struct ContentView: View {
                         )
                 }
                 .buttonStyle(.plain)
-                .frame(maxWidth: 260)
+                .frame(maxWidth: scale >= 1.30 ? 360 : 260)
                 .padding(.bottom, 0)
 
                 if showExportOptions {
@@ -976,9 +974,10 @@ struct ContentView: View {
                                 }
                             } label: {
                                 Text(L10n.string("export.pdf", language: settings.language))
-                                    .font(.headline)
+                                    .font(.system(size: headlineFontSize * scale, weight: .semibold))
                                     .foregroundStyle(exportingFormat == .pdf ? .white : .primary)
-                                    .frame(width: 80, height: 36)
+                                    .frame(width: scale >= 1.30 ? 112 : 80,
+                                           height: scale >= 1.30 ? 48 : 36)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                                             .fill(Color.brandAccent.opacity(exportingFormat == .pdf ? 1.0 : 0.2))
@@ -994,9 +993,10 @@ struct ContentView: View {
                                 }
                             } label: {
                                 Text(L10n.string("export.csv", language: settings.language))
-                                    .font(.headline)
+                                    .font(.system(size: headlineFontSize * scale, weight: .semibold))
                                     .foregroundStyle(exportingFormat == .csv ? .white : .primary)
-                                    .frame(width: 80, height: 36)
+                                    .frame(width: scale >= 1.30 ? 112 : 80,
+                                           height: scale >= 1.30 ? 48 : 36)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                                             .fill(Color.brandAccent.opacity(exportingFormat == .csv ? 1.0 : 0.2))
@@ -1012,7 +1012,7 @@ struct ContentView: View {
                             handleExportFilterNoticeTap()
                         } label: {
                             Text(exportFilterNoticeText())
-                                .font(.footnote.weight(.semibold))
+                                .font(.system(size: footnoteFontSize * scale, weight: .semibold))
                                 .foregroundStyle(Color.brandAccent)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 260, alignment: .center)
@@ -1026,17 +1026,17 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 14)
+            .padding(.horizontal, scale >= 1.30 ? 20 : 14)
             .padding(.top, 8)
-            .padding(.bottom, 14)
+            .padding(.bottom, scale >= 1.30 ? 20 : 14)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(settingsCardInnerBackground)
             )
-            .padding(.horizontal, 14)
-            .padding(.bottom, 14)
+            .padding(.horizontal, scale >= 1.30 ? 20 : 14)
+            .padding(.bottom, scale >= 1.30 ? 20 : 14)
         }
-        .padding(.top, 8)
+        .padding(.top, scale >= 1.30 ? 16 : 12)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(settingsCardOuterBackground)
@@ -1138,7 +1138,7 @@ struct ContentView: View {
                            value: showSettings)
             } else {
                 Text(L10n.string(seeYouTomorrowMessageKey, language: settings.language))
-                    .font(.title3.weight(.semibold))
+                    .font(.system(size: title3FontSize * scale, weight: .semibold))
                     .foregroundStyle(Color.brandAccent)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .multilineTextAlignment(.center)
@@ -1351,39 +1351,6 @@ struct ContentView: View {
         }
         withAnimation(.easeInOut(duration: settingsOpenAnimationDuration)) {
             showSettings = false
-        }
-    }
-
-    private func updateUnlockStateIfNeeded() {
-        if !settings.faceIdLockEnabled {
-            isUnlocked = true
-            return
-        }
-
-        guard !isUnlocked else {
-            return
-        }
-        attemptUnlock()
-    }
-
-    private func attemptUnlock() {
-        guard settings.faceIdLockEnabled, !isUnlocking else { return }
-
-        let context = LAContext()
-        var error: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            isUnlocked = false
-            return
-        }
-
-        isUnlocking = true
-        let reason = L10n.string("lock.faceid.reason", language: settings.language)
-
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
-            Task { @MainActor in
-                isUnlocked = success
-                isUnlocking = false
-            }
         }
     }
 

@@ -8,6 +8,13 @@ enum DateFormatting {
         f.dateStyle = .full
         f.timeStyle = .none
         f.timeZone = TimeZone(secondsFromGMT: 0)
-        return f.string(from: date)
+        let formatted = f.string(from: date)
+        guard let firstCharacter = formatted.first,
+              firstCharacter.unicodeScalars.contains(where: CharacterSet.letters.contains) else {
+            return formatted
+        }
+
+        let capitalizedFirstCharacter = String(firstCharacter).uppercased(with: f.locale)
+        return capitalizedFirstCharacter + formatted.dropFirst()
     }
 }

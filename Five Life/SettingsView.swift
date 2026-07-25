@@ -1,10 +1,26 @@
 //NEW DOC  SettingsView.swift
 import AuthenticationServices
-import LocalAuthentication
 import SwiftUI
 import SwiftData
 import UIKit
 import UniformTypeIdentifiers
+
+private struct TabletSettingsSwitchModifier: ViewModifier {
+    let isTabletLayout: Bool
+
+    func body(content: Content) -> some View {
+        let scale: CGFloat = isTabletLayout ? 1.10 : 1
+        content
+            .scaleEffect(scale, anchor: .trailing)
+            .frame(width: 51 * scale, height: 31 * scale, alignment: .trailing)
+    }
+}
+
+private extension View {
+    func tabletSettingsSwitch(isTabletLayout: Bool) -> some View {
+        modifier(TabletSettingsSwitchModifier(isTabletLayout: isTabletLayout))
+    }
+}
 
 struct SettingsView: View {
     @ObservedObject var settings: SettingsStore
@@ -22,14 +38,16 @@ struct SettingsView: View {
     @ScaledMetric(relativeTo: .headline) private var addDayButtonSize: CGFloat = 28
     @ScaledMetric(relativeTo: .footnote) private var stepperFontSize: CGFloat = 14
     @ScaledMetric(relativeTo: .body) private var stepperButtonSize: CGFloat = 28
+    @ScaledMetric(relativeTo: .body) private var bodyFontSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .headline) private var headlineFontSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .footnote) private var footnoteFontSize: CGFloat = 13
+    @ScaledMetric(relativeTo: .caption) private var captionFontSize: CGFloat = 12
+    @ScaledMetric(relativeTo: .body) private var addDayInputFontSize: CGFloat = 15
 
     @State private var dailyReminderEnabled: Bool = false
     @State private var nextDayReminderEnabled: Bool = false
     @State private var dailyReminderPickerDate: Date = Date()
     @State private var nextDayReminderPickerDate: Date = Date()
-    @State private var faceIdLockEnabled: Bool = false
-    @State private var isFaceIdAuthenticating: Bool = false
-    @State private var showFaceIdSettingsAlert: Bool = false
     @State private var appleIdConnected: Bool = false
     @State private var addDayDigits: String = ""
     @State private var addDayText: String = ""
@@ -85,7 +103,6 @@ struct SettingsView: View {
         case addDay
         case entriesPerDay
         case appleId
-        case faceId
         case scoreDay
         case statistics
         case holidays
@@ -204,12 +221,12 @@ struct SettingsView: View {
             VStack(spacing: 12) {
                 HStack {
                     Text(L10n.string("settings.app.language", language: settings.language))
-                        .font(.headline)
+                        .font(.system(size: headlineFontSize * responsiveTypeScale, weight: .semibold))
                     Spacer()
                     Button(L10n.string("common.done", language: settings.language)) {
                         showLanguagePicker = false
                     }
-                    .font(.headline)
+                    .font(.system(size: headlineFontSize * responsiveTypeScale, weight: .semibold))
                     .foregroundStyle(Color.brandAccent)
                 }
                 .padding(.horizontal, 16)
@@ -229,6 +246,7 @@ struct SettingsView: View {
                         .tag(lang)
                     }
                 }
+                .font(.system(size: addDayInputFontSize * responsiveTypeScale))
                 .pickerStyle(.wheel)
                 .labelsHidden()
                 .frame(maxWidth: .infinity)
@@ -243,7 +261,7 @@ struct SettingsView: View {
     private var deleteAllEntriesSection: some View {
         HStack {
             Text(deleteAllConfirmationTitle)
-                .font(.body.weight(.semibold))
+                .font(.system(size: bodyFontSize * responsiveTypeScale, weight: .semibold))
             Spacer()
             HStack(spacing: 8) {
                 if isDeleteAllConfirming {
@@ -300,7 +318,8 @@ struct SettingsView: View {
                 }
 
                 Text(localizedCountText(settings.dailyItemCount))
-                    .font(.body.monospacedDigit())
+                    .font(.system(size: bodyFontSize * responsiveTypeScale))
+                    .monospacedDigit()
                     .foregroundStyle(Color.brandAccent)
 
                 settingsStepperButton(
@@ -331,25 +350,7 @@ struct SettingsView: View {
                 showsDisconnectedWarning: settings.appleIdEverConnected && !appleIdConnected,
                 isEnabled: !isSigningInWithApple)
                     .accessibilityLabel(L10n.string("settings.apple.id.connect", language: settings.language))
-            }
-            .frame(minHeight: scaledSettingsRowHeight)
-
-            Divider().overlay(Color.gray.opacity(0.3))
-
-            HStack {
-                infoTitle(L10n.string("settings.faceid.lock", language: settings.language), info: .faceId)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    .layoutPriority(1)
-                Spacer()
-                Toggle("", isOn: Binding(
-                    get: { faceIdLockEnabled },
-                    set: { newValue in
-                        handleFaceIdToggleChange(newValue)
-                    }
-                ))
-                .labelsHidden()
-                .disabled(isFaceIdAuthenticating)
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -360,6 +361,7 @@ struct SettingsView: View {
                 Spacer()
                 Toggle("", isOn: Binding(get: { settings.scoreEnabled }, set: { settings.scoreEnabled = $0 }))
                     .labelsHidden()
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -370,6 +372,7 @@ struct SettingsView: View {
                 Spacer()
                 Toggle("", isOn: Binding(get: { settings.statisticsEnabled }, set: { settings.statisticsEnabled = $0 }))
                     .labelsHidden()
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -380,6 +383,7 @@ struct SettingsView: View {
                 Spacer()
                 Toggle("", isOn: Binding(get: { settings.holidaysEnabled }, set: { settings.holidaysEnabled = $0 }))
                     .labelsHidden()
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -390,6 +394,7 @@ struct SettingsView: View {
                 Spacer()
                 Toggle("", isOn: Binding(get: { settings.moonEnabled }, set: { settings.moonEnabled = $0 }))
                     .labelsHidden()
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -432,7 +437,7 @@ struct SettingsView: View {
     private func secretActionRow(title: String, yesAction: @escaping () -> Void) -> some View {
         HStack {
             Text(title)
-                .font(.body.weight(.semibold))
+                .font(.system(size: bodyFontSize * responsiveTypeScale, weight: .semibold))
             Spacer()
             HStack(spacing: 8) {
                 deleteAllActionButton(
@@ -483,19 +488,19 @@ struct SettingsView: View {
 
             if let rangeWarning = addDayRangeWarning {
                 Text(rangeWarning)
-                    .font(.footnote)
+                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
                     .foregroundStyle(.red)
             }
 
             if let instruction = addDayInstructionText {
                 Text(instruction.text)
-                    .font(.footnote)
+                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
                     .foregroundStyle(instruction.isError ? .red : Color.brandAccent)
             }
 
             if let message = addDayMessage {
                 Text(message)
-                    .font(.footnote)
+                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
                     .foregroundStyle(addDayMessageIsError ? .red : Color.brandAccent)
                     .transition(.opacity)
             }
@@ -570,12 +575,14 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(addDayDisplayText(addDayDigits))
-                .font(.body.monospacedDigit())
+                .font(.system(size: addDayInputFontSize * responsiveTypeScale))
+                .monospacedDigit()
                 .foregroundStyle(Color.brandAccent)
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(width: fieldWidth, height: 21)
+        .frame(width: fieldWidth,
+               height: max(21, (addDayInputFontSize * responsiveTypeScale) + 4))
         .padding(.vertical, 3)
         .padding(.horizontal, 8)
         .background(
@@ -589,7 +596,7 @@ struct SettingsView: View {
     }
 
     private func addDayFieldWidth(for format: AddDayDateFormat) -> CGFloat {
-        let font = UIFont.monospacedDigitSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize,
+        let font = UIFont.monospacedDigitSystemFont(ofSize: addDayInputFontSize * responsiveTypeScale,
                                                     weight: .regular)
         let formatText = format.formatString as NSString
         let width = formatText.size(withAttributes: [.font: font]).width
@@ -616,6 +623,7 @@ struct SettingsView: View {
                 }
                 Toggle("", isOn: $dailyReminderEnabled)
                     .labelsHidden()
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
@@ -635,13 +643,14 @@ struct SettingsView: View {
                 }
                 Toggle("", isOn: $nextDayReminderEnabled)
                     .labelsHidden()
+                    .tabletSettingsSwitch(isTabletLayout: responsiveTypeScale >= 1.30)
             }
             .frame(minHeight: scaledSettingsRowHeight)
 
             if notifier.authorizationStatus == .denied,
                (dailyReminderEnabled || nextDayReminderEnabled) {
                 Text(L10n.string("settings.notifications.disabled", language: settings.language))
-                    .font(.footnote)
+                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
                     .foregroundStyle(.primary)
             }
         }
@@ -659,6 +668,7 @@ struct SettingsView: View {
             .labelsHidden()
             .datePickerStyle(.compact)
             .foregroundStyle(Color.brandAccent)
+            .padding(.trailing, responsiveTypeScale >= 1.30 ? 14 : 10)
             .opacity(isVisible ? 1 : 0)
             .animation(.easeInOut(duration: 0.2), value: isVisible)
             .allowsHitTesting(isVisible)
@@ -736,7 +746,7 @@ struct SettingsView: View {
                         .toolbar {
                             ToolbarItem(placement: .principal) {
                                 Text(L10n.string("settings.title", language: settings.language))
-                                    .font(.headline)
+                                    .font(.system(size: headlineFontSize * responsiveTypeScale, weight: .semibold))
                                     .onTapGesture(count: 5) {
                                         withAnimation(.easeInOut(duration: 0.2)) {
                                             showSecretMenu = true
@@ -761,6 +771,7 @@ struct SettingsView: View {
             infoOverlay
                 .zIndex(100)
         }
+        .controlSize(responsiveTypeScale >= 1.30 ? .large : .regular)
         .coordinateSpace(name: "settingsView")
         .onPreferenceChange(SettingsInfoFramePreferenceKey.self) { frames in
             infoFrames = frames
@@ -793,19 +804,7 @@ struct SettingsView: View {
                 nextDayReminderPickerDate = Self.defaultReminderDate(for: defaultNextDayReminderTime)
             }
 
-            faceIdLockEnabled = settings.faceIdLockEnabled
             appleIdConnected = settings.appleIdConnected
-        }
-        .alert(L10n.string("settings.faceid.required", language: settings.language),
-               isPresented: $showFaceIdSettingsAlert) {
-            Button(L10n.string("settings.go.to.settings", language: settings.language)) {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
-            }
-            Button(L10n.string("common.close", language: settings.language), role: .cancel) { }
-        } message: {
-            Text(L10n.string("settings.faceid.required.message", language: settings.language))
         }
         .alert(L10n.string("settings.import.error.title", language: settings.language),
                isPresented: Binding(
@@ -1375,9 +1374,10 @@ struct SettingsView: View {
                 .animation(.easeInOut(duration: 0.2), value: text)
             Text(flag)
             Image(systemName: "chevron.down")
-                .font(.caption.weight(.semibold))
+                .font(.system(size: captionFontSize * responsiveTypeScale, weight: .semibold))
                 .foregroundStyle(Color.brandAccent)
         }
+        .font(.system(size: addDayInputFontSize * responsiveTypeScale))
     }
 
     private func localizedCountText(_ count: Int) -> String {
@@ -1400,7 +1400,7 @@ struct SettingsView: View {
             }
         } label: {
             Text(title)
-                .font(.body.weight(.semibold))
+                .font(.system(size: bodyFontSize * responsiveTypeScale, weight: .semibold))
                 .foregroundStyle(.primary)
                 .contentTransition(.opacity)
                 .animation(.easeInOut(duration: 0.2), value: title)
@@ -1418,7 +1418,7 @@ struct SettingsView: View {
 
     private func infoPopover(text: String) -> some View {
         Text(text)
-            .font(.body)
+            .font(.system(size: bodyFontSize * responsiveTypeScale))
             .foregroundStyle(.primary)
             .multilineTextAlignment(.leading)
             .padding(.horizontal, 14)
@@ -1457,8 +1457,6 @@ struct SettingsView: View {
             return L10n.string("settings.info.entries.per.day", language: settings.language)
         case .appleId:
             return L10n.string("settings.info.apple.id", language: settings.language)
-        case .faceId:
-            return L10n.string("settings.info.faceid", language: settings.language)
         case .scoreDay:
             return L10n.string("settings.info.score.day", language: settings.language)
         case .statistics:
@@ -1480,7 +1478,7 @@ struct SettingsView: View {
                                        action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.footnote.weight(.semibold))
+                .font(.system(size: footnoteFontSize * responsiveTypeScale, weight: .semibold))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(
@@ -1570,47 +1568,6 @@ struct SettingsView: View {
             return nil
         }
         return DayIdentity.canonicalDate(for: DayIdentity.identifier(year: year, month: month, day: day))
-    }
-
-    private func handleFaceIdToggleChange(_ enabled: Bool) {
-        if !enabled {
-            settings.faceIdLockEnabled = false
-            faceIdLockEnabled = false
-            return
-        }
-
-        guard !isFaceIdAuthenticating else { return }
-        isFaceIdAuthenticating = true
-        faceIdLockEnabled = true
-
-        let context = LAContext()
-        var error: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            settings.faceIdLockEnabled = false
-            faceIdLockEnabled = false
-            isFaceIdAuthenticating = false
-            showFaceIdSettingsAlert = shouldShowFaceIdSettingsAlert(for: error)
-            return
-        }
-
-        let reason = L10n.string("settings.faceid.reason", language: settings.language)
-
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
-            Task { @MainActor in
-                settings.faceIdLockEnabled = success
-                faceIdLockEnabled = success
-                isFaceIdAuthenticating = false
-                if !success {
-                    showFaceIdSettingsAlert = shouldShowFaceIdSettingsAlert(for: error as NSError?)
-                }
-            }
-        }
-    }
-
-    private func shouldShowFaceIdSettingsAlert(for error: NSError?) -> Bool {
-        guard let error else { return false }
-        let laError = LAError.Code(rawValue: error.code)
-        return laError == .biometryLockout || laError == .biometryNotEnrolled || laError == .biometryNotAvailable
     }
 
     private func handleAppleIdToggleChange(_ enabled: Bool) {

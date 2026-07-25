@@ -421,7 +421,6 @@ final class SettingsStore: ObservableObject {
 
     @AppStorage("moonEnabled") var moonEnabled: Bool = true
     @AppStorage("holidaysEnabled") var holidaysEnabled: Bool = false
-    @AppStorage("faceIdLockEnabled") var faceIdLockEnabled: Bool = false
     @AppStorage("statisticsEnabled") var statisticsEnabled: Bool = true
     @AppStorage("scoreEnabled") var scoreEnabled: Bool = false
     @AppStorage("appleIdConnected") var appleIdConnected: Bool = false

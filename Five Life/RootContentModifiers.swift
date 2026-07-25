@@ -6,7 +6,6 @@ struct RootContentBaseModifier: ViewModifier {
     let hasSeenAccessScreen: Bool
     let headerView: AnyView
     let shareSheetItem: Binding<ShareSheetItem?>
-    let lockOverlay: AnyView
 
     func body(content: Content) -> some View {
         content
@@ -20,11 +19,6 @@ struct RootContentBaseModifier: ViewModifier {
             .navigationBarTitleDisplayMode(.inline)
             .sheet(item: shareSheetItem) { item in
                 ShareSheet(items: item.items, cleanupURLs: item.cleanupURLs)
-            }
-            .overlay {
-                if hasSeenAccessScreen {
-                    lockOverlay
-                }
             }
     }
 }
@@ -206,12 +200,9 @@ struct RootContentUnfinishedChangeModifier: ViewModifier {
 
 struct RootContentLifecycleModifier: ViewModifier {
     @Binding var hasAppeared: Bool
-    @Binding var isUnlocked: Bool
     @Binding var lastUnfinishedCount: Int
 
-    let settings: SettingsStore
     let unfinishedEntries: [DayEntry]
-    let updateUnlockStateIfNeeded: () -> Void
     let showNextSeeYouTomorrowMessage: () -> Void
 
     func body(content: Content) -> some View {
@@ -219,10 +210,6 @@ struct RootContentLifecycleModifier: ViewModifier {
             .onAppear {
                 if !hasAppeared {
                     hasAppeared = true
-                    if settings.faceIdLockEnabled {
-                        isUnlocked = false
-                        updateUnlockStateIfNeeded()
-                    }
                 }
                 if lastUnfinishedCount == -1 {
                     lastUnfinishedCount = unfinishedEntries.count
@@ -231,19 +218,12 @@ struct RootContentLifecycleModifier: ViewModifier {
                     }
                 }
             }
-            .onChange(of: settings.faceIdLockEnabled) { _, _ in
-                if settings.faceIdLockEnabled {
-                    isUnlocked = false
-                }
-                updateUnlockStateIfNeeded()
-            }
     }
 }
 
 struct RootContentScenePhaseModifier: ViewModifier {
     private let autoEntryAnimation = Animation.snappy(duration: 0.34, extraBounce: 0)
 
-    @Binding var isUnlocked: Bool
     @Binding var midnightTask: Task<Void, Never>?
 
     let settings: SettingsStore
@@ -252,13 +232,9 @@ struct RootContentScenePhaseModifier: ViewModifier {
     let scenePhase: ScenePhase
     let refreshEntryLists: () -> Void
     let scheduleMidnightRefresh: () -> Void
-    let updateUnlockStateIfNeeded: () -> Void
 
     func body(content: Content) -> some View {
         content.onChange(of: scenePhase) { _, phase in
-            if phase != .active, settings.faceIdLockEnabled {
-                isUnlocked = false
-            }
             if phase == .active {
                 withAnimation(autoEntryAnimation) {
                     vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
@@ -269,7 +245,6 @@ struct RootContentScenePhaseModifier: ViewModifier {
                     )
                 }
                 scheduleMidnightRefresh()
-                updateUnlockStateIfNeeded()
                 refreshEntryLists()
             } else {
                 vm.flushPendingSaves(modelContext: modelContext)
