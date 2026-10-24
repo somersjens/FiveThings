@@ -10,8 +10,22 @@ struct ContentView: View {
             value = nextValue()
         }
     }
+    private struct DayCardBoundsKey: PreferenceKey {
+        static var defaultValue: [DayEntry.ID: Anchor<CGRect>] = [:]
+
+        static func reduce(value: inout [DayEntry.ID: Anchor<CGRect>],
+                           nextValue: () -> [DayEntry.ID: Anchor<CGRect>]) {
+            value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+        }
+    }
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var completionPhases: [DayEntry.ID: DayCardCompletionPhase] = [:]
+    @State private var pendingCompletionMoves: Set<DayEntry.ID> = []
+    @State private var completionTasks: [DayEntry.ID: Task<Void, Never>] = [:]
+    @State private var completionStatistics: StatisticsSnapshot?
 
     @StateObject private var settings = SettingsStore()
     @StateObject private var vm = ContentViewModel()
@@ -83,8 +97,17 @@ struct ContentView: View {
     }
 
     private var smoothCardTransition: AnyTransition {
-        .asymmetric(
+        if reduceMotion { return .opacity }
+        return .asymmetric(
             insertion: .opacity.combined(with: .scale(scale: 0.985, anchor: .top)),
+            removal: .opacity
+        )
+    }
+
+    private var newCardTransition: AnyTransition {
+        if reduceMotion { return .identity }
+        return .asymmetric(
+            insertion: DayCardAnimation.insertion,
             removal: .opacity
         )
     }
@@ -96,7 +119,8 @@ struct ContentView: View {
     }
 
     private func isFinishedEntry(_ entry: DayEntry) -> Bool {
-        entry.isLocked || entry.wasCompleted
+        // Save immediately, but keep the card in place for its brief confirmation.
+        !pendingCompletionMoves.contains(entry.id) && (entry.isLocked || entry.wasCompleted)
     }
 
     private func isEntryEmptyForLimit(_ entry: DayEntry) -> Bool {
@@ -564,7 +588,7 @@ struct ContentView: View {
     }
 
     private func statisticsRow(scale: CGFloat) -> some View {
-        let stats = statisticsSnapshot
+        let stats = completionStatistics ?? statisticsSnapshot
         let streakLabel = L10n.string("stats.streak", language: settings.language)
         let daysLabel = L10n.string("stats.days", language: settings.language)
         let entriesLabel = L10n.string("stats.entries", language: settings.language)
@@ -598,6 +622,9 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.secondary.opacity(0.10))
         )
+        // Move the number, label and tile in one coordinate space.
+        .compositingGroup()
+        .geometryGroup()
     }
 
     var body: some View {
@@ -605,6 +632,7 @@ struct ContentView: View {
             let scale = ResponsiveTypeScale.scale(for: proxy.size.width)
             let isTabletLayout = ResponsiveTypeScale.isTabletLayout(width: proxy.size.width)
             let horizontalContentPadding = ResponsiveTypeScale.horizontalContentPadding(for: proxy.size.width)
+            let contentWidth = max(0, proxy.size.width - 2 * horizontalContentPadding)
             let unfinishedEntries = unfinished
             let finishedEntries = finished
             let emptyUnfinishedEntries = unfinishedEntries.filter { isEntryEmptyForLimit($0) }
@@ -612,15 +640,15 @@ struct ContentView: View {
             let pinnedCardCount = 3
             let pinnedUnfinishedEntries = Array(unfinishedEntries.prefix(pinnedCardCount))
             let remainingUnfinishedEntries = Array(unfinishedEntries.dropFirst(pinnedCardCount))
-            let pinnedFinishedEntries = Array(
-                finishedEntries.prefix(max(0, pinnedCardCount - pinnedUnfinishedEntries.count))
-            )
+            // Keep finished cards in the same stack when a new unfinished card arrives.
+            let pinnedFinishedEntries = Array(finishedEntries.prefix(pinnedCardCount))
             let remainingFinishedEntries = Array(finishedEntries.dropFirst(pinnedFinishedEntries.count))
             NavigationStack {
                 rootContent(
                     scale: scale,
                     isTabletLayout: isTabletLayout,
                     horizontalContentPadding: horizontalContentPadding,
+                    contentWidth: contentWidth,
                     unfinishedEntries: unfinishedEntries,
                     finishedEntries: finishedEntries,
                     thirdEmptyEntryID: thirdEmptyEntryID,
@@ -639,6 +667,7 @@ struct ContentView: View {
         scale: CGFloat,
         isTabletLayout: Bool,
         horizontalContentPadding: CGFloat,
+        contentWidth: CGFloat,
         unfinishedEntries: [DayEntry],
         finishedEntries: [DayEntry],
         thirdEmptyEntryID: DayEntry.ID?,
@@ -658,6 +687,7 @@ struct ContentView: View {
             scrollContent(
                 scale: scale,
                 horizontalContentPadding: horizontalContentPadding,
+                contentWidth: contentWidth,
                 unfinishedEntries: unfinishedEntries,
                 finishedEntries: finishedEntries,
                 thirdEmptyEntryID: thirdEmptyEntryID,
@@ -739,6 +769,7 @@ struct ContentView: View {
     private func scrollContent(
         scale: CGFloat,
         horizontalContentPadding: CGFloat,
+        contentWidth: CGFloat,
         unfinishedEntries: [DayEntry],
         finishedEntries: [DayEntry],
         thirdEmptyEntryID: DayEntry.ID?,
@@ -774,6 +805,7 @@ struct ContentView: View {
                         pinnedUnfinishedEntries: pinnedUnfinishedEntries,
                         remainingUnfinishedEntries: remainingUnfinishedEntries
                     )
+                    .zIndex(2)
 
                     postSettingsSection(scale: scale)
 
@@ -782,6 +814,7 @@ struct ContentView: View {
                         pinnedFinishedEntries: pinnedFinishedEntries,
                         remainingFinishedEntries: remainingFinishedEntries
                     )
+                    .zIndex(1)
 
                     if vm.finishedLimit != .all {
                         filterActiveNotice(scale: scale, limit: vm.finishedLimit)
@@ -794,8 +827,17 @@ struct ContentView: View {
                     }
                     .padding(.top, 10)
                 }
+                // Resolve width from the viewport before animating new rows.
+                // A partially revealed card must never determine the list width.
+                .frame(width: contentWidth, alignment: .leading)
                 .padding(.horizontal, horizontalContentPadding)
                 .padding(.vertical, 16 * scale)
+                // SwiftData can deliver the query update after the insertion's
+                // transaction. Animate the rendered IDs so every section moves together.
+                .animation(DayCardAnimation.layout(reduceMotion: reduceMotion), value: entries.map(\.id))
+                .overlayPreferenceValue(DayCardBoundsKey.self) { anchors in
+                    completionOverlay(anchors: anchors)
+                }
             }
             .onTapGesture {
                 if showExportOptions {
@@ -1095,17 +1137,33 @@ struct ContentView: View {
         pinnedUnfinishedEntries: [DayEntry],
         remainingUnfinishedEntries: [DayEntry]
     ) -> some View {
-        Group {
-            if !unfinishedEntries.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(pinnedUnfinishedEntries) { entry in
-                        DayCardView(settings: settings,
-                                    vm: vm,
-                                    searchHighlightsEnabled: false,
-                                    highlightLockIcon: highlightLockIcons,
-                                    showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
-                                    entry: entry)
-                            .transition(smoothCardTransition)
+        // Keep the stack alive while empty, so the first card receives its own
+        // insertion transition instead of appearing with a replacement container.
+        VStack(alignment: .leading, spacing: 10) {
+            if unfinishedEntries.isEmpty {
+                Text(L10n.string(seeYouTomorrowMessageKey, language: settings.language))
+                    .font(.system(size: title3FontSize * scale, weight: .semibold))
+                    .foregroundStyle(Color.brandAccent)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 8)
+                    .transition(.opacity)
+            }
+
+            ForEach(pinnedUnfinishedEntries) { entry in
+                dayCard(entry, searchHighlightsEnabled: false)
+
+                if !dismissedEmptyLimitNotice,
+                   let thirdEmptyEntryID,
+                   entry.id == thirdEmptyEntryID {
+                    emptyLimitNotice(scale: scale)
+                }
+            }
+
+            if !remainingUnfinishedEntries.isEmpty {
+                LazyVStack(alignment: .leading, spacing: 10) {
+                    ForEach(remainingUnfinishedEntries) { entry in
+                        dayCard(entry, searchHighlightsEnabled: false)
 
                         if !dismissedEmptyLimitNotice,
                            let thirdEmptyEntryID,
@@ -1113,38 +1171,10 @@ struct ContentView: View {
                             emptyLimitNotice(scale: scale)
                         }
                     }
-
-                    if !remainingUnfinishedEntries.isEmpty {
-                        LazyVStack(alignment: .leading, spacing: 10) {
-                            ForEach(remainingUnfinishedEntries) { entry in
-                                DayCardView(settings: settings,
-                                            vm: vm,
-                                            searchHighlightsEnabled: false,
-                                            highlightLockIcon: highlightLockIcons,
-                                            showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
-                                            entry: entry)
-                                    .transition(smoothCardTransition)
-
-                                if !dismissedEmptyLimitNotice,
-                                   let thirdEmptyEntryID,
-                                   entry.id == thirdEmptyEntryID {
-                                    emptyLimitNotice(scale: scale)
-                                }
-                            }
-                        }
-                    }
                 }
-                .animation(.easeInOut(duration: settingsOpenAnimationDuration),
-                           value: showSettings)
-            } else {
-                Text(L10n.string(seeYouTomorrowMessageKey, language: settings.language))
-                    .font(.system(size: title3FontSize * scale, weight: .semibold))
-                    .foregroundStyle(Color.brandAccent)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .multilineTextAlignment(.center)
-                    .padding(.vertical, 8)
             }
         }
+        .animation(.easeInOut(duration: settingsOpenAnimationDuration), value: showSettings)
     }
 
     private func finishedSection(
@@ -1172,25 +1202,13 @@ struct ContentView: View {
             }
 
             ForEach(pinnedFinishedEntries) { entry in
-                DayCardView(settings: settings,
-                            vm: vm,
-                            searchHighlightsEnabled: true,
-                            highlightLockIcon: highlightLockIcons,
-                            showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
-                            entry: entry)
-                    .transition(smoothCardTransition)
+                dayCard(entry, searchHighlightsEnabled: true)
             }
 
             if !remainingFinishedEntries.isEmpty {
                 LazyVStack(alignment: .leading, spacing: 10) {
                     ForEach(remainingFinishedEntries) { entry in
-                        DayCardView(settings: settings,
-                                    vm: vm,
-                                    searchHighlightsEnabled: true,
-                                    highlightLockIcon: highlightLockIcons,
-                                    showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
-                                    entry: entry)
-                            .transition(smoothCardTransition)
+                        dayCard(entry, searchHighlightsEnabled: true)
                     }
                 }
             }
@@ -1219,6 +1237,124 @@ struct ContentView: View {
         .animation(infoCardDismissAnimation, value: shouldShowInfoCard)
     }
 
+    private func dayCard(_ entry: DayEntry, searchHighlightsEnabled: Bool) -> some View {
+        let phase = completionPhases[entry.id] ?? .idle
+        let isInFlight = completionPhases[entry.id] != nil && !reduceMotion
+        return dayCardContent(entry, searchHighlightsEnabled: searchHighlightsEnabled, phase: phase)
+            // The live cards reserve layout space. Only the overlay is drawn
+            // during a move, so no crossfade can expose another card underneath.
+            .opacity(isInFlight ? 0 : 1)
+            .animation(nil, value: isInFlight)
+            .allowsHitTesting(!isInFlight)
+            .accessibilityHidden(isInFlight)
+            .anchorPreference(key: DayCardBoundsKey.self, value: .bounds) { [entry.id: $0] }
+            .transition(phase == .idle || reduceMotion
+                        ? (searchHighlightsEnabled ? smoothCardTransition : newCardTransition)
+                        : .identity)
+    }
+
+    private func dayCardContent(_ entry: DayEntry,
+                                searchHighlightsEnabled: Bool,
+                                phase: DayCardCompletionPhase) -> some View {
+        DayCardView(settings: settings,
+                           vm: vm,
+                           searchHighlightsEnabled: searchHighlightsEnabled,
+                           highlightLockIcon: highlightLockIcons,
+                           showsFirstEntryPrompts: entry.id == firstCreatedEntryID,
+                           completionPhase: phase,
+                           onComplete: { requiredCount in
+                               completeEntry(entry, requiredCount: requiredCount)
+                           },
+                           entry: entry)
+    }
+
+    private func completionOverlay(anchors: [DayEntry.ID: Anchor<CGRect>]) -> some View {
+        GeometryReader { proxy in
+            ForEach(entries.filter { completionPhases[$0.id] != nil && !reduceMotion }) { entry in
+                if let anchor = anchors[entry.id] {
+                    let bounds = proxy[anchor]
+                    dayCardContent(entry, searchHighlightsEnabled: false,
+                                   phase: completionPhases[entry.id] ?? .idle)
+                        .frame(width: bounds.width)
+                        .fixedSize(horizontal: false, vertical: true)
+                        // Isolate the moving geometry from the header, rows and
+                        // shadow so all parts travel together at full opacity.
+                        .geometryGroup()
+                        .position(x: bounds.midX, y: bounds.midY)
+                        .transition(.identity)
+                }
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func completeEntry(_ entry: DayEntry, requiredCount: Int) {
+        guard completionTasks[entry.id] == nil, !entry.isLocked else { return }
+        // Persist without animating the text-field replacement, header reflow or
+        // statistics. The presentation gets its own animation transaction.
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            if completionStatistics == nil {
+                completionStatistics = statisticsSnapshot
+            }
+            if !isFinishedEntry(entry), !reduceMotion {
+                pendingCompletionMoves.insert(entry.id)
+            }
+            completionPhases[entry.id] = .confirming
+            vm.lock(entry, requiredCount: requiredCount, settings: settings, modelContext: modelContext)
+        }
+        completionTasks[entry.id] = Task { @MainActor in
+            do {
+                if !reduceMotion {
+                    // Let the single overlay appear before animating its lift.
+                    try await Task.sleep(for: .milliseconds(16))
+                    withAnimation(.easeOut(duration: 0.16)) {
+                        completionPhases[entry.id] = .lifting
+                    }
+                    try await Task.sleep(for: .milliseconds(180))
+                    withAnimation(DayCardAnimation.movement) {
+                        pendingCompletionMoves.remove(entry.id)
+                        completionPhases[entry.id] = .settling
+                    }
+                    // Keep the overlay through the spring's settling tail. A
+                    // bounded handoff also works when lazy rows leave the tree.
+                    try await Task.sleep(for: .milliseconds(680))
+                    finishCompletion(entry.id)
+                } else {
+                    try await Task.sleep(for: .milliseconds(180))
+                    finishCompletion(entry.id)
+                }
+            } catch {
+                // Lifecycle cleanup removes the temporary presentation state.
+            }
+        }
+    }
+
+    private func finishCompletion(_ id: DayEntry.ID) {
+        guard completionPhases[id] != nil else { return }
+        completionTasks[id] = Task { @MainActor in
+            do {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    completionPhases[id] = .idle
+                }
+                try await Task.sleep(for: .milliseconds(220))
+                var transaction = Transaction(animation: nil)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    completionPhases[id] = nil
+                    completionTasks[id] = nil
+                    if completionTasks.isEmpty {
+                        completionStatistics = nil
+                    }
+                }
+            } catch {
+                // Backgrounding cancels the handoff, not the saved completion.
+            }
+        }
+    }
+
     private func scheduleMidnightRefresh() {
         midnightTask?.cancel()
         midnightTask = Task {
@@ -1230,14 +1366,12 @@ struct ContentView: View {
                     return
                 }
                 await MainActor.run {
-                    withAnimation(.snappy(duration: 0.34, extraBounce: 0)) {
-                        vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                        AppleSyncManager.shared.captureMidnightSnapshotIfNeeded(
-                            modelContext: modelContext,
-                            settings: settings,
-                            isConnected: settings.appleIdConnected
-                        )
-                    }
+                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                    AppleSyncManager.shared.captureMidnightSnapshotIfNeeded(
+                        modelContext: modelContext,
+                        settings: settings,
+                        isConnected: settings.appleIdConnected
+                    )
                 }
                 let nextReminderDate = await MainActor.run {
                     vm.nextDayReminderDate(allEntries: entries, reminderTime: settings.nextDayReminderTime)
@@ -1475,6 +1609,11 @@ struct ContentView: View {
     }
 
     private func cancelTransientTasks() {
+        completionTasks.values.forEach { $0.cancel() }
+        completionTasks.removeAll()
+        pendingCompletionMoves.removeAll()
+        completionPhases.removeAll()
+        completionStatistics = nil
         settingsScrollTask?.cancel()
         settingsScrollTask = nil
         infoCardScrollTask?.cancel()

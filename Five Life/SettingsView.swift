@@ -31,6 +31,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var notifier = NotificationManager.shared
     @StateObject private var appleSignInCoordinator = AppleSignInCoordinator()
     @ScaledMetric(relativeTo: .body) private var settingsRowHeight: CGFloat = 44
@@ -56,6 +57,7 @@ struct SettingsView: View {
     @State private var addDayMessageTask: Task<Void, Never>?
     @State private var addDayHasExistingEntry = false
     @State private var addDayFieldFocused: Bool = false
+    @State private var addDayKeyboardIsVisible = false
     @State private var isSigningInWithApple: Bool = false
     @State private var showImportPicker: Bool = false
     @State private var importErrorMessage: String?
@@ -462,7 +464,7 @@ struct SettingsView: View {
     private var addDaySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                infoTitle(addDayTitle, info: .addDay)
+                infoTitle(L10n.string("settings.day.add.delete", language: settings.language), info: .addDay)
 
                 Spacer(minLength: 8)
 
@@ -473,6 +475,7 @@ struct SettingsView: View {
                         handleAddDay()
                     } label: {
                         Image(systemName: addDayHasExistingEntry ? "xmark" : "checkmark")
+                            .contentTransition(reduceMotion ? .opacity : .symbolEffect(.replace))
                             .font(.system(size: addDayButtonFontSize * responsiveTypeScale, weight: .semibold))
                             .frame(width: addDayButtonSize * responsiveTypeScale,
                                    height: addDayButtonSize * responsiveTypeScale)
@@ -482,30 +485,51 @@ struct SettingsView: View {
                             )
                             .foregroundStyle(addDayHasExistingEntry ? .red : .white)
                     }
+                    .buttonStyle(.plain)
+                    .disabled(parseAddDayDate() == nil)
+                    .opacity(parseAddDayDate() == nil ? 0.45 : 1)
                     .accessibilityLabel(addDayTitle)
+                    .accessibilityHint(addDayInstructionText?.text ?? "")
+                    .animation(addDayFeedbackAnimation, value: addDayHasExistingEntry)
                 }
             }
 
-            if let rangeWarning = addDayRangeWarning {
-                Text(rangeWarning)
-                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
-                    .foregroundStyle(.red)
-            }
-
-            if let instruction = addDayInstructionText {
-                Text(instruction.text)
-                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
-                    .foregroundStyle(instruction.isError ? .red : Color.brandAccent)
-            }
-
-            if let message = addDayMessage {
-                Text(message)
-                    .font(.system(size: footnoteFontSize * responsiveTypeScale))
-                    .foregroundStyle(addDayMessageIsError ? .red : Color.brandAccent)
+            if let feedback = addDayFeedback {
+                addDayFeedbackView(feedback)
                     .transition(.opacity)
             }
         }
         .padding(.vertical, 8)
+    }
+
+    private struct AddDayFeedback: Hashable {
+        let text: String
+        let isError: Bool
+    }
+
+    private var addDayFeedbackAnimation: Animation {
+        .easeInOut(duration: reduceMotion ? 0.12 : 0.22)
+    }
+
+    private var addDayFeedback: AddDayFeedback? {
+        if let message = addDayMessage {
+            return AddDayFeedback(text: message, isError: addDayMessageIsError)
+        }
+        // Let the keyboard finish closing before drawing attention to the action.
+        guard !addDayFieldFocused, !addDayKeyboardIsVisible else { return nil }
+        if let warning = addDayRangeWarning {
+            return AddDayFeedback(text: warning, isError: true)
+        }
+        return addDayInstructionText
+    }
+
+    private func addDayFeedbackView(_ feedback: AddDayFeedback) -> some View {
+        Text(feedback.text)
+            .font(.system(size: footnoteFontSize * responsiveTypeScale))
+            .foregroundStyle(feedback.isError ? .red : Color.brandAccent)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .id(feedback)
     }
 
     private var addDayTitle: String {
@@ -528,7 +552,7 @@ struct SettingsView: View {
             : L10n.string("settings.day.range", language: settings.language)
     }
 
-    private var addDayInstructionText: (text: String, isError: Bool)? {
+    private var addDayInstructionText: AddDayFeedback? {
         guard addDayDigits.count == 8,
               let selectedDay = parseAddDayDate(),
               isAddDayWithinRange(selectedDay) else {
@@ -536,10 +560,10 @@ struct SettingsView: View {
         }
 
         if addDayHasExistingEntry {
-            return (L10n.string("settings.day.delete.hint", language: settings.language), true)
+            return AddDayFeedback(text: L10n.string("settings.day.delete.hint", language: settings.language), isError: true)
         }
 
-        return (L10n.string("settings.day.create.hint", language: settings.language), false)
+        return AddDayFeedback(text: L10n.string("settings.day.create.hint", language: settings.language), isError: false)
     }
 
     private var addDayFormat: AddDayDateFormat {
@@ -564,6 +588,7 @@ struct SettingsView: View {
                     nextDigits = String(nextDigits.dropLast())
                 }
                 addDayDigits = nextDigits
+                addDayMessageTask?.cancel()
                 addDayMessage = nil
                 updateAddDayExistingEntry()
                 let formatted = formattedAddDayDigits(nextDigits)
@@ -706,6 +731,7 @@ struct SettingsView: View {
             }
         }
         .animation(.easeInOut(duration: 0.12), value: settings.language)
+        .animation(addDayFeedbackAnimation, value: addDayFeedback)
     }
 
     private var inlineSettings: some View {
@@ -735,6 +761,7 @@ struct SettingsView: View {
             reminderSettingsSection
         }
         .animation(.easeInOut(duration: 0.12), value: settings.language)
+        .animation(addDayFeedbackAnimation, value: addDayFeedback)
     }
 
     var body: some View {
@@ -838,6 +865,12 @@ struct SettingsView: View {
         }
         .onChange(of: settings.language) { _, _ in
             resetAddDayInput()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            addDayKeyboardIsVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidHideNotification)) { _ in
+            addDayKeyboardIsVisible = false
         }
         .onAppear {
             addDayFieldFocused = false
@@ -1280,16 +1313,13 @@ struct SettingsView: View {
         }
 
         func updateUIView(_ uiView: UITextField, context: Context) {
+            context.coordinator.parent = self
             if uiView.text != text {
                 uiView.text = text
                 context.coordinator.previousText = text
             }
 
-            if isFocused, !uiView.isFirstResponder {
-                uiView.becomeFirstResponder()
-            } else if !isFocused, uiView.isFirstResponder {
-                uiView.resignFirstResponder()
-            }
+            context.coordinator.updateFocus(for: uiView)
         }
 
         func makeCoordinator() -> Coordinator {
@@ -1297,12 +1327,25 @@ struct SettingsView: View {
         }
 
         final class Coordinator: NSObject, UITextFieldDelegate {
-            private let parent: AddDayTextField
+            var parent: AddDayTextField
             var previousText: String
 
             init(_ parent: AddDayTextField) {
                 self.parent = parent
                 self.previousText = parent.text
+            }
+
+            func updateFocus(for textField: UITextField) {
+                guard parent.isFocused != textField.isFirstResponder else { return }
+                // Keyboard notifications can update SwiftUI state; finish this render first.
+                DispatchQueue.main.async { [weak self, weak textField] in
+                    guard let self, let textField else { return }
+                    if self.parent.isFocused, !textField.isFirstResponder {
+                        textField.becomeFirstResponder()
+                    } else if !self.parent.isFocused, textField.isFirstResponder {
+                        textField.resignFirstResponder()
+                    }
+                }
             }
 
             func textField(_ textField: UITextField,
@@ -1526,7 +1569,11 @@ struct SettingsView: View {
             addDayMessage = message
         }
         addDayMessageTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(5))
+            do {
+                try await Task.sleep(for: .seconds(5))
+            } catch {
+                return
+            }
             withAnimation(.easeInOut(duration: 0.2)) {
                 addDayMessage = nil
             }

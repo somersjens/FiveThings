@@ -3,19 +3,28 @@ import SwiftUI
 import SwiftData
 import UIKit
 
+enum DayCardCompletionPhase {
+    case idle
+    case confirming
+    case lifting
+    case settling
+}
+
 struct DayCardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.responsiveTypeScale) private var responsiveTypeScale
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ObservedObject var settings: SettingsStore
     @ObservedObject var vm: ContentViewModel
     let searchHighlightsEnabled: Bool
     let highlightLockIcon: Bool
     let showsFirstEntryPrompts: Bool
+    let completionPhase: DayCardCompletionPhase
+    let onComplete: (Int) -> Void
 
     @Bindable var entry: DayEntry
 
-    @State private var showSuccess: Bool = false
     @State private var showIncompleteHint: Bool = false
     @State private var dragIndex: Int?
     @State private var dropTarget: DropTarget?
@@ -121,8 +130,11 @@ struct DayCardView: View {
     }
 
     private var shouldPulse: Bool {
-        !entry.isLocked && entry.isComplete(requiredCount: requiredCount) && !showSuccess
+        !entry.isLocked && entry.isComplete(requiredCount: requiredCount) && !showsCompletionFeedback
     }
+
+    private var showsCompletionFeedback: Bool { completionPhase != .idle }
+    private var isLifted: Bool { completionPhase == .lifting && !reduceMotion }
 
     private var isTypingFocused: Bool {
         focusedIndex != nil
@@ -135,7 +147,7 @@ struct DayCardView: View {
     }
 
     private var outlineColor: Color {
-        if showSuccess { return Color.brandAccent }
+        if showsCompletionFeedback { return Color.brandAccent }
         if shouldPulse { return .yellow }
         if entry.isLocked { return Color.brandAccent }
         return .orange
@@ -174,7 +186,7 @@ struct DayCardView: View {
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(cardBackgroundColor)
-                .shadow(radius: 6, y: 2)
+                .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -183,6 +195,17 @@ struct DayCardView: View {
         .animation(nil, value: entry.isLocked)
         .animation(nil, value: displayCount)
         .animation(.easeInOut(duration: 0.2), value: outlineColor)
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.brandAccent.opacity(showsCompletionFeedback ? 0.08 : 0))
+                .allowsHitTesting(false)
+        }
+        .compositingGroup()
+        .geometryGroup()
+        .shadow(color: Color.brandAccent.opacity(showsCompletionFeedback ? 0.16 : 0),
+                radius: isLifted ? 12 : 6, y: isLifted ? 8 : 2)
+        .scaleEffect(isLifted ? 1.012 : 1)
+        .offset(y: isLifted ? -3 : 0)
         .onAppear {
             syncEntryCounts()
         }
@@ -190,9 +213,7 @@ struct DayCardView: View {
             syncEntryCounts()
         }
         .onChange(of: entry.isLocked) { _, locked in
-            if !locked {
-                showSuccess = false
-            } else {
+            if locked {
                 focusedIndex = nil
                 clearUndoHistory()
             }
@@ -285,7 +306,6 @@ struct DayCardView: View {
             Button {
                 if entry.isLocked {
                     vm.unlock(entry, settings: settings, modelContext: modelContext)
-                    showSuccess = false
                 } else if showsKeyboardDismissButton {
                     focusedIndex = nil
                 } else {
@@ -301,20 +321,29 @@ struct DayCardView: View {
                     }
                 }
             } label: {
-                Image(systemName: entry.isLocked
+                Image(systemName: showsCompletionFeedback
+                      ? "checkmark"
+                      : (entry.isLocked
                       ? "lock.fill"
                       : (showsKeyboardDismissButton
                          ? "checkmark"
-                         : (shouldPulse ? "lock.open.fill" : "lock.open")))
+                         : (shouldPulse ? "lock.open.fill" : "lock.open"))))
                     .font(.system(size: scaledHeaderIconFontSize, weight: .semibold))
-                    .foregroundStyle(highlightLockIcon ? .orange : .primary)
+                    .foregroundStyle(showsCompletionFeedback ? .white : (highlightLockIcon ? .orange : .primary))
                     .frame(width: scaledHeaderIconSize, height: scaledHeaderIconSize)
-                    .background(.thinMaterial)
+                    .background {
+                        if showsCompletionFeedback {
+                            Color.brandAccent
+                        } else {
+                            Rectangle().fill(.thinMaterial)
+                        }
+                    }
                     .clipShape(Circle())
                     .scaleEffect(highlightLockIcon ? 1.2 : 1)
                     .animation(.easeInOut(duration: 0.25), value: highlightLockIcon)
             }
             .buttonStyle(.plain)
+            .disabled(showsCompletionFeedback)
             .accessibilityLabel(entry.isLocked
                                 ? L10n.string("daycard.unlock", language: settings.language)
                                 : (showsKeyboardDismissButton
@@ -519,6 +548,24 @@ struct DayCardView: View {
     }
 
     private func rowTextField(placeholderText: String, idx: Int) -> some View {
+        let text = entry.items[safe: idx] ?? ""
+
+        // A vertical TextField briefly changes its intrinsic height when Return
+        // inserts a newline and focus is cleared. Size the row from the saved,
+        // newline-free text so that keyboard dismissal cannot resize the card.
+        return Text(text.isEmpty ? placeholderText : text)
+            .font(.system(size: bodyFontSize * responsiveTypeScale))
+            .lineLimit(1...4)
+            .lineSpacing(0)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .hidden()
+            .overlay(alignment: .topLeading) {
+                editableRowTextField(placeholderText: placeholderText, idx: idx)
+            }
+    }
+
+    private func editableRowTextField(placeholderText: String, idx: Int) -> some View {
         TextField(
             placeholderText,
             text: Binding(
@@ -546,7 +593,6 @@ struct DayCardView: View {
         .font(.system(size: bodyFontSize * responsiveTypeScale))
         .lineLimit(1...4)
         .lineSpacing(0)
-        .fixedSize(horizontal: false, vertical: true)
         .foregroundStyle(.primary)
         .multilineTextAlignment(.leading)
         .focused($focusedIndex, equals: idx)
@@ -783,16 +829,9 @@ struct DayCardView: View {
     }
 
     private func triggerLockFlow() {
-        vm.lock(entry, requiredCount: requiredCount, settings: settings, modelContext: modelContext)
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-            showSuccess = true
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                showSuccess = false
-            }
-        }
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        focusedIndex = nil
+        onComplete(requiredCount)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     private func updateScore(_ score: Int?) {

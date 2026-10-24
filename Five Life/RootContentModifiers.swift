@@ -24,8 +24,6 @@ struct RootContentBaseModifier: ViewModifier {
 }
 
 struct RootContentTaskModifier: ViewModifier {
-    private let autoEntryAnimation = Animation.snappy(duration: 0.34, extraBounce: 0)
-
     let settings: SettingsStore
     let vm: ContentViewModel
     let notifier: NotificationManager
@@ -36,9 +34,9 @@ struct RootContentTaskModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.task {
-            let didCreateTodayEntry = withAnimation(autoEntryAnimation) {
-                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-            }
+            // ContentView animates the resulting list update after its width
+            // is resolved; the initial navigation layout must not animate.
+            let didCreateTodayEntry = vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
             if didCreateTodayEntry {
                 refreshEntryLists()
             }
@@ -222,8 +220,6 @@ struct RootContentLifecycleModifier: ViewModifier {
 }
 
 struct RootContentScenePhaseModifier: ViewModifier {
-    private let autoEntryAnimation = Animation.snappy(duration: 0.34, extraBounce: 0)
-
     @Binding var midnightTask: Task<Void, Never>?
 
     let settings: SettingsStore
@@ -236,14 +232,12 @@ struct RootContentScenePhaseModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.onChange(of: scenePhase) { _, phase in
             if phase == .active {
-                withAnimation(autoEntryAnimation) {
-                    vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
-                    AppleSyncManager.shared.catchUpSnapshotIfNeeded(
-                        modelContext: modelContext,
-                        settings: settings,
-                        isConnected: settings.appleIdConnected
-                    )
-                }
+                vm.ensureTodayEntry(modelContext: modelContext, settings: settings)
+                AppleSyncManager.shared.catchUpSnapshotIfNeeded(
+                    modelContext: modelContext,
+                    settings: settings,
+                    isConnected: settings.appleIdConnected
+                )
                 scheduleMidnightRefresh()
                 refreshEntryLists()
             } else {
